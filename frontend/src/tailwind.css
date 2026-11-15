@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typographie "Obsidienne Runique & Laiton Doré" */
+  --font-display: "Cinzel", Georgia, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Profondeur de surface (du puits d'obsidienne au panneau surélevé) */
+  --color-arcane-void: #060811;
+  --color-arcane-primary: #0a0e1a;
+  --color-arcane-recessed: #080c17;
+  --color-arcane-surface: #121829;
+  --color-arcane-elevated: #1b233a;
+
+  /* Encres & hiérarchie typographique (parchemin chaud) */
+  --color-arcane-ink: #f4efe6;
+  --color-arcane-ink-secondary: #cbd5e1;
+  --color-arcane-ink-muted: #94a3b8;
+
+  /* Laiton antique & or de maîtrise (focus / CTA / prestige) */
+  --color-arcane-gold: #d9a441;
+  --color-arcane-gold-bright: #f0c96e;
+  --color-arcane-bronze: #8c621d;
+
+  /* Sémantique UI */
+  --color-arcane-success: #34d399;
+  --color-arcane-danger: #fb7185;
+  --color-arcane-info: #60a5fa;
+  --color-arcane-warning: #fbbf24;
+
+  /* Couleurs de faction (séparées du laiton CTA et du rouge erreur) */
+  --color-arcane-fire: #f97316;
+  --color-arcane-ice: #38bdf8;
+  --color-arcane-shadow: #a855f7;
+  --color-arcane-light: #fef08a;
+}

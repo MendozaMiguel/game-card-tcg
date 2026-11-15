@@ -1,0 +1,165 @@
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: arcane-card;
+}
+
+.arcane-card-root {
+  --card-rx: 0deg;
+  --card-ry: 0deg;
+  --foil-x: 50%;
+  --foil-y: 50%;
+}
+
+.arcane-card-standard {
+  min-block-size: 20.5rem;
+}
+
+.arcane-card-tilt {
+  transform: perspective(760px) rotateX(var(--card-rx)) rotateY(var(--card-ry));
+  will-change: transform;
+}
+
+.arcane-card-defense {
+  @media (prefers-reduced-motion: no-preference) {
+    transform: rotate(90deg) scale(0.92);
+  }
+}
+
+.arcane-cardback {
+  background-color: #0b0e17;
+  background-image:
+    radial-gradient(circle at 50% 45%, rgb(217 164 65 / 0.16), transparent 60%),
+    repeating-linear-gradient(45deg,
+      rgb(217 164 65 / 0.045) 0 1px,
+      transparent 1px 12px),
+    repeating-linear-gradient(-45deg,
+      rgb(217 164 65 / 0.045) 0 1px,
+      transparent 1px 12px);
+}
+
+.arcane-art-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(217 164 65 / 0.34);
+  background-color: var(--arcane-bg-recessed);
+  box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.68);
+}
+
+.arcane-art-frame::before,
+.arcane-art-frame::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  z-index: 15;
+  border-radius: 0.32rem;
+  border: 1px solid rgb(217 164 65 / 0.16);
+}
+
+.arcane-art-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 22%, rgb(244 239 230 / 0.08) 23%, transparent 24.5%),
+    radial-gradient(circle at 50% 50%, transparent 40%, rgb(217 164 65 / 0.14) 41%, transparent 42.5%),
+    linear-gradient(90deg, transparent 49.5%, rgb(217 164 65 / 0.08) 50%, transparent 50.5%);
+}
+
+@keyframes arcane-foil-drift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.arcane-foil-sheen {
+  background:
+    radial-gradient(circle at var(--foil-x) var(--foil-y),
+      rgb(245 208 118 / 0.28),
+      transparent 46%),
+    linear-gradient(115deg,
+      transparent 18%,
+      rgb(255 255 255 / 0.14) 38%,
+      rgb(217 164 65 / 0.24) 50%,
+      transparent 68%);
+  background-size: 100% 100%, 200% 200%;
+  pointer-events: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: arcane-foil-drift 7s ease-in-out infinite;
+  }
+}
+
+.arcane-card-ready {
+  box-shadow:
+    0 0 0 1px rgb(52 211 153 / 0.55),
+    0 6px 16px -8px rgb(52 211 153 / 0.45);
+}
+
+@container arcane-card (max-width: 12.49rem) {
+  .arcane-emblem-label,
+  .arcane-posture-text {
+    display: none;
+  }
+}
+
+@container arcane-card (max-width: 6.75rem) {
+  .arcane-card-root.arcane-cardback,
+  .arcane-card-body {
+    min-block-size: 3rem !important;
+    padding: 0.2rem !important;
+    gap: 0.125rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .arcane-orb-energy {
+    inline-size: 0.9rem !important;
+    block-size: 0.9rem !important;
+    font-size: 8.5px !important;
+  }
+
+  .arcane-card-name {
+    font-size: 8.5px !important;
+  }
+
+  .arcane-card-ramp,
+  .arcane-card-badges,
+  .arcane-status-text {
+    display: none !important;
+  }
+
+  .arcane-card-posture-pill,
+  .arcane-status-badge {
+    padding: 0 0.15rem !important;
+  }
+
+  .arcane-card-statuses {
+    margin-block-start: 0 !important;
+    gap: 0.15rem !important;
+  }
+
+  .arcane-card-stats {
+    padding-block-start: 0.125rem !important;
+    font-size: 9px !important;
+    gap: 0.125rem !important;
+  }
+
+  .arcane-card-stat-pill {
+    padding: 0.05rem 0.2rem !important;
+    gap: 0.125rem !important;
+  }
+}
+
+@container arcane-card (min-width: 12.5rem) {
+  .arcane-card-body {
+    padding: 0.7rem;
+  }
+}

@@ -1,0 +1,478 @@
+<main id="main-content" tabindex="-1" class="mx-auto max-w-[1440px] px-3 py-4 sm:px-4 sm:py-6">
+  <header class="arcane-panel-hero mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4 sm:p-5">
+    <div>
+      <h1 class="arcane-display text-xl font-bold text-arcane-ink sm:text-2xl">Grimoire &amp; Forge de Decks</h1>
+      <p class="mt-0.5 text-xs sm:text-sm text-arcane-ink-secondary">
+        120 cartes débloquées d'office. Respectez les 4 Lois Anti-Méta pour valider un deck en duel classé et tournoi.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        (click)="startNewDeck()"
+        class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-arcane-gold/55 bg-arcane-gold/15 px-3.5 text-xs font-bold text-arcane-gold-bright hover:bg-arcane-gold/25">
+        <ng-icon name="lucidePlus" size="14px" aria-hidden="true" />
+        <span>Nouveau Deck</span>
+      </button>
+      @if (editingDeckId()) {
+        <button
+          type="button"
+          (click)="onToggleFavorite(editingDeckId()!)"
+          class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-arcane-surface px-3.5 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
+          <ng-icon name="lucideStar" size="13px" [class]="draftFavorite() ? 'text-arcane-gold-bright' : 'text-arcane-ink-muted'" aria-hidden="true" />
+          <span>{{ draftFavorite() ? 'Favori actif' : 'Définir favori' }}</span>
+        </button>
+        <button
+          type="button"
+          (click)="openDeleteDialog()"
+          class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-rose-500/45 bg-rose-950/45 px-3.5 text-xs font-semibold text-rose-200 hover:bg-rose-950/70">
+          <ng-icon name="lucideTrash2" size="13px" aria-hidden="true" />
+          <span>Supprimer</span>
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Mes Decks Existants (horizontal swipe strip on mobile, wrap on desktop) -->
+  <section aria-label="Mes decks sauvegardés" class="arcane-hand-rail mb-5 flex flex-nowrap gap-2 overflow-x-auto pb-1 sm:flex-wrap">
+    @for (deck of decks(); track deck.deckId) {
+      <button
+        type="button"
+        (click)="selectDeck(deck)"
+        class="arcane-btn flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold"
+        [class]="editingDeckId() === deck.deckId ? 'border-arcane-gold bg-arcane-gold/20 text-arcane-gold-bright shadow-sm' : 'border-slate-800 bg-arcane-surface/90 text-arcane-ink-secondary hover:border-slate-600 hover:text-arcane-ink'">
+        @if (deck.favorite) {
+          <ng-icon name="lucideStar" size="12px" class="text-arcane-gold-bright" aria-label="Favori" />
+        }
+        <span>{{ deck.name }}</span>
+        @if (deck.primaryFaction) {
+          <span class="rounded border px-1.5 py-0.5 text-[10px]" [class]="factionMeta[deck.primaryFaction].badgeClass">
+            {{ factionMeta[deck.primaryFaction].shortLabel }}
+          </span>
+        }
+        <ng-icon
+          [name]="deck.validAntimeta ? 'lucideCheck' : 'lucideX'"
+          size="13px"
+          [class]="deck.validAntimeta ? 'text-emerald-300' : 'text-rose-300'"
+          [attr.aria-label]="deck.validAntimeta ? 'Conforme Anti-Méta' : 'Incomplet'" />
+      </button>
+    }
+  </section>
+
+  <div class="grid gap-5 lg:grid-cols-12">
+    <!-- Catalogue 120 Cartes (Mobile: après la synthèse deck ; Desktop: Gauche 8 cols) -->
+    <section class="order-2 lg:order-1 min-w-0 lg:col-span-8 space-y-4">
+      <div class="arcane-panel rounded-2xl p-4 space-y-3">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div>
+            <label for="filter-search" class="mb-1 block text-xs font-semibold text-slate-300">Recherche</label>
+            <input
+              id="filter-search"
+              type="search"
+              placeholder="Nom ou effet…"
+              class="arcane-input"
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)" />
+          </div>
+          <div>
+            <label for="filter-faction" class="mb-1 block text-xs font-semibold text-slate-300">Faction</label>
+            <select id="filter-faction" class="arcane-input" [value]="factionFilter()" (change)="onFactionChange($event)">
+              <option value="ALL">Toutes (4)</option>
+              <option value="FIRE">Feu Ardent</option>
+              <option value="ICE">Glace Éternelle</option>
+              <option value="SHADOW">Ombres Occultes</option>
+              <option value="LIGHT">Lumière Astrale</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-type" class="mb-1 block text-xs font-semibold text-slate-300">Catégorie</label>
+            <select id="filter-type" class="arcane-input" [value]="typeFilter()" (change)="onTypeChange($event)">
+              <option value="ALL">Tous types</option>
+              <option value="MONSTER">Monstres</option>
+              <option value="FAMILIAR">Familiers</option>
+              <option value="SPELL_NORMAL">Sorts Normaux</option>
+              <option value="SPELL_REACTIVE">Sorts Réactifs</option>
+              <option value="SPELL_ULTIMATE">Sorts Ultimes</option>
+              <option value="CURSE">Malédictions</option>
+              <option value="ARTIFACT">Artefacts</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-cost" class="mb-1 block text-xs font-semibold text-slate-300">Coût Énergie</label>
+            <select id="filter-cost" class="arcane-input" [value]="costFilter()" (change)="onCostChange($event)">
+              <option value="ALL">Tous coûts</option>
+              <option value="1-2">1 – 2 Énergie</option>
+              <option value="3-4">3 – 4 Énergie</option>
+              <option value="5+">5+ Énergie</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-kw" class="mb-1 block text-xs font-semibold text-slate-300">Mot-clé / Ramp</label>
+            <select id="filter-kw" class="arcane-input" [value]="keywordFilter()" (change)="onKeywordChange($event)">
+              <option value="ALL">Tous</option>
+              <option value="GARDIEN">GARDIEN</option>
+              <option value="CHARGE">CHARGE</option>
+              <option value="SURVOL">SURVOL / VOL</option>
+              <option value="CAMOUFLAGE">CAMOUFLAGE / ESQUIVE</option>
+              <option value="RALENTIT">RALENTIT</option>
+              <option value="RAMP">Générateurs Ramp ⚡</option>
+            </select>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400">
+          {{ filteredCatalog().length }} carte(s) affichée(s) sur {{ allCards().length }} — cliquez sur une carte pour l'ajouter ou la retirer du deck.
+        </p>
+      </div>
+
+      @if (loadingCatalog()) {
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-sm text-slate-400">
+          Chargement du catalogue officiel des 120 cartes…
+        </div>
+      } @else {
+        <div class="arcane-catalog-grid grid grid-cols-1 min-[440px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          @for (c of filteredCatalog(); track c.cardId) {
+            @let inDeck = draftCardIdSet().has(c.cardId);
+            <div #catalogTile class="arcane-catalog-tile group">
+              <button
+                type="button"
+                (click)="toggleCardInDraft(c)"
+                [attr.aria-pressed]="inDeck"
+                class="flex h-full w-full flex-col rounded-xl text-left transition hover:-translate-y-0.5 focus-visible:outline-none">
+                <app-arcane-card class="block h-full w-full flex-1" [catalogCard]="c" [selected]="inDeck" [showArtwork]="true" />
+              </button>
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  (click)="toggleCardInDraft(c)"
+                  [attr.aria-pressed]="inDeck"
+                  [class]="inDeck ? 'arcane-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/60 bg-emerald-950/60 px-2.5 text-xs font-bold text-emerald-200 transition hover:bg-emerald-950/80' : 'arcane-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-arcane-surface px-2.5 text-xs font-bold text-arcane-ink-secondary transition hover:border-arcane-gold/55 hover:text-arcane-ink'">
+                  <ng-icon [name]="inDeck ? 'lucideCheck' : 'lucidePlus'" size="14px" aria-hidden="true" />
+                  <span>{{ inDeck ? 'Dans le deck' : 'Ajouter (1/1)' }}</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="openCardPreview(c)"
+                  [attr.aria-label]="'Aperçu détaillé de ' + c.name"
+                  title="Aperçu grand format"
+                  class="arcane-btn inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-arcane-recessed px-2.5 text-arcane-ink-secondary transition hover:border-arcane-gold/60 hover:text-arcane-gold-bright">
+                  <ng-icon name="lucideEye" size="16px" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Synthèse Anti-Méta & Liste 30 cartes (Mobile: en tête ; Desktop: Droite 4 cols) -->
+    <aside class="order-1 lg:order-2 min-w-0 lg:col-span-4 space-y-4">
+      @let val = liveValidation();
+      @let st = val.stats;
+
+      <form (submit)="onSaveDeck($event)" class="arcane-panel rounded-2xl p-4 space-y-4">
+        <div class="arcane-field">
+          <label for="deck-name" class="mb-1 block text-xs font-bold tracking-wide text-arcane-ink-secondary uppercase">
+            Nom du Deck
+          </label>
+          <input
+            id="deck-name"
+            type="text"
+            class="arcane-input"
+            required
+            minlength="2"
+            maxlength="64"
+            [value]="draftName()"
+            (input)="onDeckNameInput($event)"
+            [appFormAriaSync]="'deck-name-error'" />
+          <div id="deck-name-error" class="arcane-error-msg">
+            <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+            <span>Le nom doit comporter 2 à 64 caractères.</span>
+          </div>
+        </div>
+
+        <!-- Tableau 4 Lois Anti-Méta en direct -->
+        <div class="rounded-xl border p-3 space-y-2.5"
+          [class]="val.valid ? 'border-emerald-500/50 bg-emerald-950/25' : 'border-amber-500/40 bg-arcane-recessed'">
+          <div class="flex items-center justify-between text-xs font-extrabold">
+            <span>Validation Anti-Méta</span>
+            <span class="arcane-num inline-flex items-center gap-1" [class]="val.valid ? 'text-emerald-300' : 'text-amber-300'">
+              <ng-icon [name]="val.valid ? 'lucideCheck' : 'lucideAlertTriangle'" size="13px" aria-hidden="true" />
+              <span>{{ val.valid ? 'VALIDE (30/30)' : 'INCOMPLET (' + st.totalCards + '/30)' }}</span>
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="rounded-lg bg-slate-900/90 p-2">
+              <span class="block text-[11px] text-slate-400">Monstres</span>
+              <strong [class]="st.monsterCount === 10 && st.epicMonsterCount <= 3 && st.standardMonsterCount >= 7 ? 'text-emerald-300' : 'text-slate-100'">
+                {{ st.monsterCount }}/10
+              </strong>
+              <span class="block text-[10px] text-slate-400">★ Épiques: {{ st.epicMonsterCount }}/3</span>
+            </div>
+            <div class="rounded-lg bg-slate-900/90 p-2">
+              <span class="block text-[11px] text-slate-400">Familiers / Sorts</span>
+              <strong [class]="st.familiarCount === 10 && st.spellCategoryCount === 10 ? 'text-emerald-300' : 'text-slate-100'">
+                {{ st.familiarCount }}/10 · {{ st.spellCategoryCount }}/10
+              </strong>
+              <span class="block text-[10px] text-slate-400">Courbe: {{ st.cost1To2Count }}/14 · {{ st.cost3To4Count }}/12 · {{ st.cost5PlusCount }}/4</span>
+            </div>
+            <div class="rounded-lg bg-slate-900/90 p-2">
+              <span class="block text-[11px] text-slate-400">Allégeance (Max 2)</span>
+              <div class="flex flex-wrap gap-1 mt-0.5">
+                @for (entry of factionEntries(st.factionCounts); track entry[0]) {
+                  <span class="rounded border px-1 text-[10px] font-bold" [class]="factionMeta[entry[0]].badgeClass">
+                    {{ factionMeta[entry[0]].shortLabel }}: {{ entry[1] }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="rounded-lg bg-slate-900/90 p-2">
+              <span class="block text-[11px] text-slate-400">Plafond Ramp ⚡</span>
+              <strong [class]="st.rampCount <= 3 ? 'text-emerald-300' : 'text-rose-300'">
+                {{ st.rampCount }}/3 max
+              </strong>
+              <span class="block text-[10px] text-slate-400">Singleton: 1×/carte</span>
+            </div>
+          </div>
+
+          @if (val.violations.length > 0) {
+            <ul class="space-y-1 border-t border-slate-800 pt-2 text-[11px] text-rose-200">
+              @for (v of val.violations; track v) {
+                <li class="flex items-start gap-1.5">
+                  <ng-icon name="lucideX" size="13px" class="mt-0.5 shrink-0 text-rose-300" aria-hidden="true" />
+                  <span>{{ v }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="saving() || !val.valid"
+            class="arcane-btn flex-1 rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-3 text-xs font-extrabold text-arcane-void shadow-md hover:brightness-105 disabled:opacity-45">
+            {{ saving() ? 'Sauvegarde…' : editingDeckId() ? 'Mettre à jour le Deck' : 'Enregistrer le Deck' }}
+          </button>
+          <button
+            type="button"
+            (click)="verifyWithServer()"
+            class="arcane-btn rounded-xl border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
+            Test Serveur
+          </button>
+        </div>
+      </form>
+
+      <!-- Liste des cartes sélectionnées -->
+      <div class="arcane-panel rounded-2xl p-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="arcane-num text-sm font-bold text-slate-100">
+            Cartes du Deck ({{ draftEntries().length }}/30)
+          </h2>
+          <button
+            type="button"
+            (click)="showDraftListOnMobile.set(!showDraftListOnMobile())"
+            [attr.aria-expanded]="showDraftListOnMobile()"
+            class="arcane-btn inline-flex items-center rounded-lg border border-slate-700 bg-arcane-recessed px-3 text-xs font-semibold text-arcane-ink-secondary lg:hidden">
+            {{ showDraftListOnMobile() ? 'Masquer' : 'Voir la liste' }}
+          </button>
+        </div>
+        <ul
+          [class]="showDraftListOnMobile() ? 'mt-3 max-h-[26rem] space-y-1.5 overflow-y-auto pr-1' : 'mt-3 hidden max-h-[30rem] space-y-1.5 overflow-y-auto pr-1 lg:block'">
+          @for (item of draftEntries(); track item.card.cardId) {
+            <li class="flex items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-2.5 py-1.5 text-xs">
+              <div class="min-w-0 flex items-center gap-2">
+                <span class="arcane-num inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-[11px] font-bold text-amber-200">
+                  {{ item.card.energyCost }}
+                </span>
+                <span class="inline-flex min-w-0 items-center gap-1 truncate font-semibold text-arcane-ink">
+                  @if (item.card.isEpic) {
+                    <ng-icon name="lucideStar" size="11px" class="shrink-0 text-arcane-gold-bright" aria-label="Épique" />
+                  }
+                  <span class="truncate">{{ item.card.name }}</span>
+                </span>
+                <span class="hidden text-[10px] text-slate-400 sm:inline">{{ typeLabels[item.card.cardType] }}</span>
+              </div>
+              <div class="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  (click)="toggleFoil(item.card.cardId)"
+                  [attr.aria-pressed]="item.foil"
+                  [class]="item.foil ? 'arcane-btn rounded border border-amber-300 bg-amber-500/20 px-2.5 text-[11px] font-bold text-amber-200 lg:min-h-7 lg:min-w-0 lg:px-2' : 'arcane-btn rounded border border-slate-700 px-2.5 text-[11px] font-bold text-slate-400 lg:min-h-7 lg:min-w-0 lg:px-2'">
+                  Foil
+                </button>
+                <button
+                  type="button"
+                  (click)="removeCardFromDraft(item.card.cardId)"
+                  [attr.aria-label]="'Retirer ' + item.card.name"
+                  class="arcane-btn inline-flex items-center justify-center rounded border border-rose-500/40 px-2.5 text-[11px] font-bold text-rose-300 hover:bg-rose-950/60 lg:min-h-7 lg:min-w-0 lg:px-2">
+                  <ng-icon name="lucideX" size="12px" aria-hidden="true" />
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Dialogue confirmation suppression -->
+<dialog
+  #deleteDialog
+  class="arcane-dialog"
+  aria-labelledby="delete-deck-title">
+  <div class="p-6 space-y-4">
+    <h2 id="delete-deck-title" class="text-lg font-extrabold text-slate-100">
+      Supprimer ce deck ?
+    </h2>
+    <p class="text-sm text-slate-300">
+      Cette action supprimera définitivement <strong>{{ draftName() }}</strong>.
+    </p>
+    <div class="flex justify-end gap-2">
+      <button
+        type="button"
+        autofocus
+        (click)="closeDeleteDialog()"
+        class="arcane-btn rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-bold text-slate-200">
+        Annuler
+      </button>
+      <button
+        type="button"
+        (click)="confirmDeleteDeck()"
+        class="arcane-btn rounded-xl bg-rose-500 px-4 text-xs font-extrabold text-white hover:bg-rose-400">
+        Supprimer définitivement
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Dialogue Aperçu Carte Haute Définition (3D Foil interactif + détails mécaniques) -->
+<dialog
+  #cardPreviewDialog
+  closedby="any"
+  class="arcane-dialog arcane-dialog-wide"
+  aria-labelledby="card-preview-title">
+  @if (previewedCard(); as card) {
+    @let inDeckPreview = draftCardIdSet().has(card.cardId);
+    @let pMeta = factionMeta[card.faction];
+    <div class="max-h-[90dvh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="rounded border px-2 py-0.5 text-[11px] font-bold" [class]="pMeta.badgeClass">
+            {{ pMeta.label }} · {{ typeLabels[card.cardType] }}
+          </span>
+          <h2 id="card-preview-title" class="arcane-display mt-1.5 text-xl font-bold text-arcane-ink">
+            {{ card.name }}
+          </h2>
+          <p class="arcane-num text-xs text-arcane-ink-muted">ID Catalogue : {{ card.cardId }}</p>
+        </div>
+
+        <button
+          type="button"
+          autofocus
+          (click)="closeCardPreview()"
+          aria-label="Fermer l'aperçu de la carte"
+          class="arcane-btn inline-flex items-center justify-center rounded-lg border border-slate-700 bg-arcane-recessed px-2.5 text-arcane-ink-secondary hover:border-arcane-gold/60 hover:text-arcane-ink">
+          <ng-icon name="lucideX" size="16px" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-12 md:items-center">
+        <!-- Carte Interactive 3D & Foil -->
+        <div class="md:col-span-5 mx-auto flex w-full max-w-72 flex-col gap-2.5">
+          <app-arcane-card
+            [catalogCard]="card"
+            [showArtwork]="true"
+            [interactiveTilt]="true"
+            [unclampDescription]="true"
+            [foilOverride]="previewFoilActive()" />
+          <div class="flex items-center justify-between gap-1.5">
+            <button
+              type="button"
+              (click)="stepCardPreview(-1)"
+              aria-label="Carte précédente"
+              class="arcane-btn inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-slate-700 bg-arcane-recessed px-2 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/50 hover:text-arcane-ink">
+              <ng-icon name="lucideChevronLeft" size="14px" aria-hidden="true" />
+              <span>Précédente</span>
+            </button>
+            <button
+              type="button"
+              (click)="togglePreviewFoil()"
+              [attr.aria-pressed]="previewFoilActive()"
+              class="arcane-btn inline-flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold"
+              [class]="previewFoilActive() ? 'border-arcane-gold bg-arcane-gold/20 text-arcane-gold-bright' : 'border-slate-700 bg-arcane-recessed text-arcane-ink-muted hover:text-arcane-ink'">
+              <ng-icon name="lucideSparkles" size="13px" aria-hidden="true" />
+              <span>Foil</span>
+            </button>
+            <button
+              type="button"
+              (click)="stepCardPreview(1)"
+              aria-label="Carte suivante"
+              class="arcane-btn inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-slate-700 bg-arcane-recessed px-2 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/50 hover:text-arcane-ink">
+              <span>Suivante</span>
+              <ng-icon name="lucideChevronRight" size="14px" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Fiche Tactique Complète -->
+        <div class="md:col-span-7 space-y-4">
+          <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="arcane-well rounded-xl p-3">
+              <span class="block text-[11px] uppercase text-arcane-ink-muted">Énergie</span>
+              <strong class="arcane-num text-lg font-extrabold text-arcane-gold-bright">{{ card.energyCost }}</strong>
+            </div>
+            <div class="arcane-well rounded-xl p-3">
+              <span class="block text-[11px] uppercase text-arcane-ink-muted">Attaque</span>
+              <strong class="arcane-num text-lg font-extrabold text-rose-200">{{ card.baseAtk ?? '—' }}</strong>
+            </div>
+            <div class="arcane-well rounded-xl p-3">
+              <span class="block text-[11px] uppercase text-arcane-ink-muted">Défense</span>
+              <strong class="arcane-num text-lg font-extrabold text-sky-200">{{ card.baseDef ?? '—' }}</strong>
+            </div>
+          </div>
+
+          <div class="arcane-well rounded-xl p-4 space-y-2">
+            <h3 class="text-xs font-bold tracking-wider uppercase text-arcane-gold-bright">Effet de la Carte</h3>
+            <p class="text-sm leading-relaxed text-arcane-ink">{{ card.description }}</p>
+            @if (card.keywords.length > 0 || card.isEpic || card.isRamp) {
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                @if (card.isEpic) {
+                  <span class="rounded border border-arcane-gold/50 bg-arcane-gold/15 px-2 py-0.5 text-[11px] font-bold text-arcane-gold-bright">
+                    Carte Épique (3 max / deck)
+                  </span>
+                }
+                @if (card.isRamp) {
+                  <span class="rounded border border-emerald-500/45 bg-emerald-950/60 px-2 py-0.5 text-[11px] font-bold text-emerald-200">
+                    Générateur Ramp (3 max / deck)
+                  </span>
+                }
+                @for (kw of card.keywords; track kw) {
+                  <span class="rounded border border-slate-700 bg-arcane-surface px-2 py-0.5 text-[11px] font-bold text-arcane-ink-secondary">
+                    {{ kw }}
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <span class="text-xs text-arcane-ink-muted">
+              Survolez la carte à gauche pour admirer l'inclinaison 3D et le reflet Foil.
+            </span>
+            <button
+              type="button"
+              (click)="toggleCardInDraft(card)"
+              class="arcane-btn inline-flex items-center gap-1.5 rounded-xl px-4 text-xs font-extrabold"
+              [class]="inDeckPreview ? 'border border-emerald-500/60 bg-emerald-950/70 text-emerald-200' : 'bg-arcane-gold text-arcane-void hover:bg-arcane-gold-bright'">
+              <ng-icon [name]="inDeckPreview ? 'lucideCheck' : 'lucidePlus'" size="14px" aria-hidden="true" />
+              <span>{{ inDeckPreview ? 'Retirer du deck' : 'Ajouter au deck (1/1)' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</dialog>

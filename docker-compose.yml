@@ -1,0 +1,69 @@
+services:
+  arcane-db:
+    image: postgres:17-alpine
+    container_name: arcane-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-arcane_online}
+      POSTGRES_USER: ${POSTGRES_USER:-arcane}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arcane_dev_password_change_me}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - arcane_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-arcane} -d ${POSTGRES_DB:-arcane_online}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - arcane-net
+
+  arcane-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arcane-server
+    restart: unless-stopped
+    depends_on:
+      arcane-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://arcane-db:5432/${POSTGRES_DB:-arcane_online}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-arcane}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-arcane_dev_password_change_me}
+      ARCANE_JWT_SECRET: ${ARCANE_JWT_SECRET:-dev-only-64-byte-arcane-hs512-secret-key-please-override-in-prod!!}
+      ARCANE_COOKIE_SECURE: ${ARCANE_COOKIE_SECURE:-false}
+      ARCANE_ALLOWED_ORIGINS: ${ARCANE_ALLOWED_ORIGINS:-http://localhost,http://localhost:80,http://localhost:4200}
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - arcane-net
+
+  arcane-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arcane-web
+    restart: unless-stopped
+    depends_on:
+      arcane-server:
+        condition: service_healthy
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "${WEB_PORT:-80}:8080"
+    networks:
+      - arcane-net
+
+volumes:
+  arcane_pg_data:
+
+networks:
+  arcane-net:
+    driver: bridge

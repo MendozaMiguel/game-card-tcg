@@ -1,0 +1,3400 @@
+[
+  {
+    "cardId": "FIRE_M_01",
+    "name": "Salamandre Mineure",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Si elle survit à une Phase de Combat où elle a attaqué, inflige 1 dégât aux PV d'un adversaire.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_ATTACK_SURVIVE",
+        "condition": "NONE",
+        "target": "OPPONENT_PLAYER",
+        "action": "DAMAGE_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_02",
+    "name": "Chien de Feu",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Peut attaquer une 2e fois durant la même Phase de Combat si l'adversaire contrôle au moins 1 Familier.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "OPPONENT_HAS_FAMILIAR",
+        "target": "SELF",
+        "action": "ALLOW_EXTRA_ATTACK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_03",
+    "name": "Dragonnet Écarlate",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Gagne +1 ATQ tant que tu contrôles au moins un autre Monstre sur ton terrain.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_OTHER_MONSTER",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_04",
+    "name": "Dragonneau Ardent",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "À l'invocation : Inflige -1 DEF à une créature adverse jusqu'à la fin du tour (détruite si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_CREATURE",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_05",
+    "name": "Bélier de Magma",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [
+      "CHARGE"
+    ],
+    "description": "Charge : L'adversaire ne peut activer aucun effet réactif contre son attaque.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_CHARGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_06",
+    "name": "Griffon de Feu",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 4,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Survol : Peut attaquer directement les PV adverses s'il n'y a que des Familiers en face.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_07",
+    "name": "Golem Obsidien",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 6,
+    "keywords": [],
+    "description": "Mur Impénétrable : Gagne +1 DEF jusqu'à la fin du prochain tour adverse et réduit de 1 les dégâts sur tes PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      },
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "REDUCE_LP_DAMAGE_TAKEN",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_08",
+    "name": "Phénix de Flammes",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Une fois par tour durant ta Phase Principale : Tu récupères 2 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_09",
+    "name": "Salamandre Ardente",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 4,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Une fois par tour : Inflige -1 ATQ et -1 DEF à tous les Monstres adverses jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_M_10",
+    "name": "Dragon de Braise d'Aurëa",
+    "faction": "FIRE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 5,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Flamme Dévorante : Lorsqu'il attaque, si l'adversaire contrôle un Familier, il gagne +2 ATQ ou inflige 2 dégâts aux PV adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_ATTACK",
+        "condition": "OPPONENT_HAS_FAMILIAR",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "+2 ATQ pour ce tour",
+            "action": "MODIFY_ATK",
+            "target": "SELF",
+            "value": 2,
+            "duration": "END_OF_TURN"
+          },
+          {
+            "label": "2 dégâts aux PV adverses",
+            "action": "DAMAGE_LP",
+            "target": "OPPONENT_PLAYER",
+            "value": 2,
+            "duration": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_01",
+    "name": "Petit Phénix",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Régénération : À la fin de ton tour, si ce familier est sur le terrain, tu récupères 1 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_TURN_END",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_02",
+    "name": "Lutin des Brumes",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Camouflage : Ne peut pas être attaqué ce tour (ne bloque pas les attaques directes).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_03",
+    "name": "Salamandrin",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Donne +1 ATQ à un Monstre allié ciblé jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_04",
+    "name": "Chouette de Feu",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Surveille : Regarde la carte du dessus du deck d'un adversaire.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_PLAYER",
+        "action": "PEEK_OPPONENT_TOP_CARD",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_05",
+    "name": "Esprit de Braise",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Catalyseur (Énergie) : Sacrifie ce familier pour gagner immédiatement +2 jetons d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "SACRIFICE_SELF",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_06",
+    "name": "Chat Arcanique",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Éclair Magique : Inflige -1 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_07",
+    "name": "Mini-Dragon",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Flamme : Inflige 1 dégât direct aux PV d'un adversaire (ou -1 ATQ à un Monstre adverse).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "1 dégât direct aux PV adverses",
+            "action": "DAMAGE_LP",
+            "target": "OPPONENT_PLAYER",
+            "value": 1,
+            "duration": null
+          },
+          {
+            "label": "-1 ATQ à un Monstre adverse",
+            "action": "MODIFY_ATK",
+            "target": "OPPONENT_MONSTER",
+            "value": -1,
+            "duration": "END_OF_TURN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_08",
+    "name": "Petit Loup de Magma",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Gagne +1 ATQ tant que tu contrôles au moins un autre Familier allié sur ton terrain.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_OTHER_FAMILIAR",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_09",
+    "name": "Petit Griffon",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 3,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Survol + Vent Ardent (Énergie) : Donne +1 jeton d'Énergie au début de ton tour si tu contrôles un Monstre Épique.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_TURN_START",
+        "condition": "ALLY_EPIC_MONSTER_PRESENT",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_F_10",
+    "name": "Bébé Salamandre",
+    "faction": "FIRE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Brûlure : Inflige -1 DEF à tous les Familiers ennemis (ceux qui tombent à 0 DEF sont détruits).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_01",
+    "name": "Chaleur Arcanique",
+    "faction": "FIRE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Donne +1 ATQ à un Monstre allié jusqu'à la fin du tour ET fait gagner +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_02",
+    "name": "Feu de Camp",
+    "faction": "FIRE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Régénère 2 PV à un joueur et te fait piocher 1 carte.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALLY_OR_OWNER_PLAYER",
+        "action": "HEAL_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "DRAW_CARD",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_03",
+    "name": "Boule de Feu Arcanique",
+    "faction": "FIRE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit un Monstre adverse ayant 3 DEF ou moins, OU inflige 2 dégâts directs aux PV d'un adversaire.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "Détruire un Monstre adverse (≤ 3 DEF)",
+            "action": "DESTROY_TARGET",
+            "target": "OPPONENT_MONSTER_DEF_LE_3",
+            "value": null,
+            "duration": null
+          },
+          {
+            "label": "2 dégâts directs aux PV adverses",
+            "action": "DAMAGE_LP",
+            "target": "OPPONENT_PLAYER",
+            "value": 2,
+            "duration": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_04",
+    "name": "Mur de Feu",
+    "faction": "FIRE",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Active pendant le tour adverse : Empêche toutes les attaques directes contre tes PV ce tour-ci.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_DIRECT_ATTACK",
+        "target": "OWNER",
+        "action": "BLOCK_DIRECT_ATTACKS",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_05",
+    "name": "Tempête de Cendres",
+    "faction": "FIRE",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Active lorsqu'un Monstre adverse déclare une attaque : Annule son attaque et termine son combat.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_MONSTER_ATTACK",
+        "target": "ATTACKING_MONSTER",
+        "action": "CANCEL_ATTACK",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_06",
+    "name": "Brasier Ciblé",
+    "faction": "FIRE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit immédiatement 1 Familier adverse ciblé.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_07",
+    "name": "Explosion Magique",
+    "faction": "FIRE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 ATQ et -2 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -2,
+        "secondaryValue": -2,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_08",
+    "name": "Flamme de l'Ordre",
+    "faction": "FIRE",
+    "cardType": "CURSE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Reste active 2 tours : Tous les Monstres adverses subissent -1 ATQ et -1 DEF.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "PERSISTENT_2_TURNS",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_09",
+    "name": "Flamme Expansive",
+    "faction": "FIRE",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à tous les Monstres adverses jusqu'à la fin du tour (ceux à 0 DEF sont détruits).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "FIRE_S_10",
+    "name": "Éruption",
+    "faction": "FIRE",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit tous les Familiers adverses et inflige -1 DEF à tous les Monstres adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "DESTROY_ALL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_01",
+    "name": "Dragonnet Polaire",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Givre : Réduit de -1 l'ATQ d'un Monstre adverse jusqu'à la fin du prochain tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_02",
+    "name": "Loup Arctique",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 3,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Si l'adversaire contrôle un Familier, inflige 1 dégât aux PV adverses lorsqu'il attaque.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_ATTACK",
+        "condition": "OPPONENT_HAS_FAMILIAR",
+        "target": "OPPONENT_PLAYER",
+        "action": "DAMAGE_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_03",
+    "name": "Serpent de Glace",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Gagne +1 ATQ jusqu'à la fin du tour chaque fois que tu joues un Sort.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_SPELL_CAST",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_04",
+    "name": "Grizzli Hivernal",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [
+      "CHARGE"
+    ],
+    "description": "Charge : L'adversaire ne peut activer aucun effet réactif contre son attaque.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_CHARGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_05",
+    "name": "Spectre de Gel",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "À l'invocation : Ralentit 1 Monstre adverse ciblé (ne peut pas attaquer à son prochain tour).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_06",
+    "name": "Banshee Hivernale",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Une fois par tour : Inflige -1 DEF à tous les Familiers ennemis (détruits si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_07",
+    "name": "Troll de Glace",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Absorption : Gagne +1 DEF pendant le tour adverse et réduit de 1 les dégâts sur tes PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ON_OPPONENT_TURN",
+        "target": "SELF",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      },
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "REDUCE_LP_DAMAGE_TAKEN",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_08",
+    "name": "Yéti des Montagnes",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": 4,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Défense Accrue : Gagne +2 DEF tant que tu contrôles au moins un Familier allié.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_FAMILIAR_PRESENT",
+        "target": "SELF",
+        "action": "MODIFY_DEF",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_09",
+    "name": "Golem de Glace",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 3,
+    "baseDef": 6,
+    "keywords": [],
+    "description": "Mur Impénétrable : En Position de Défense, il ne peut pas être détruit par les Sorts adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "IN_DEFENSE_POSTURE",
+        "target": "SELF",
+        "action": "SPELL_DESTRUCTION_IMMUNITY",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_M_10",
+    "name": "Dragon des Glaces",
+    "faction": "ICE",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 5,
+    "baseDef": 5,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "Une fois par tour : Ralentit jusqu'à 2 créatures adverses (ne peuvent pas attaquer au prochain tour).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "UP_TO_2_OPPONENT_CREATURES",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_01",
+    "name": "Lutin des Glaces",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Camouflage : Ne peut pas être ciblé ce tour (ne bloque pas les attaques directes).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_02",
+    "name": "Petit Pingouin",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Source Gelée (Énergie) : Récupère 1 PV (ou gagne +1 jeton d'Énergie si tes PV sont à 20 ou plus).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_OR_GAIN_ENERGY_IF_LP_GE_20",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_03",
+    "name": "Bébé Yéti",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Donne +1 DEF à un Monstre allié jusqu'à la fin du prochain tour adverse.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_04",
+    "name": "Hibou Polaire",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Surveille : Regarde la prochaine carte du deck adverse ; si c'est un Sort, donne +1 DEF à un Monstre allié jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_PLAYER",
+        "action": "PEEK_OPPONENT_TOP_CARD_BUFF_IF_SPELL",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_05",
+    "name": "Mini-Serpent",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "Ralentit un Familier ou un Monstre adverse de Coût 2 ou moins.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_CREATURE_COST_LE_2",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_06",
+    "name": "Chat des Neiges",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Éclair Glacial : Inflige -1 ATQ et -1 DEF à un Monstre adverse jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_07",
+    "name": "Loutre Arctique",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Effet Réactif : Redirige une attaque adverse sur elle-même et gagne +1 DEF pour ce combat.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_ALLY_ATTACKED",
+        "target": "SELF",
+        "action": "REDIRECT_ATTACK_TO_SELF",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_ALLY_ATTACKED",
+        "target": "SELF",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_COMBAT",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_08",
+    "name": "Hérisson de Neige",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "Épines de Gel : Si un Monstre adverse l'attaque, l'adversaire perd 1 PV et le monstre est Ralenti.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_BEING_ATTACKED",
+        "condition": "NONE",
+        "target": "ATTACKER_OWNER",
+        "action": "DAMAGE_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_BEING_ATTACKED",
+        "condition": "NONE",
+        "target": "ATTACKING_MONSTER",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_09",
+    "name": "Petit Troll",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 3,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Donne +1 DEF à un Monstre allié et génère +1 jeton d'Énergie au début de ton tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_TURN_START",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_F_10",
+    "name": "Mini-Banshee",
+    "faction": "ICE",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Inflige -1 DEF à tous les Familiers ennemis (ceux qui tombent à 0 DEF sont détruits).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_01",
+    "name": "Givre Protecteur",
+    "faction": "ICE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Donne +2 DEF à un Monstre allié jusqu'au prochain tour ET fait gagner +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_02",
+    "name": "Chaînes de Glace",
+    "faction": "ICE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "Ralentit un Monstre adverse ciblé (il ne peut pas attaquer pendant 1 tour).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_03",
+    "name": "Gel Arcanique",
+    "faction": "ICE",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Annule l'effet activé d'un Familier adverse et l'Épuise immédiatement.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_FAMILIAR_EFFECT",
+        "target": "TRIGGERING_FAMILIAR",
+        "action": "CANCEL_AND_EXHAUST",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_04",
+    "name": "Glace Ciblée",
+    "faction": "ICE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit immédiatement 1 Familier adverse ciblé.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_05",
+    "name": "Frimas",
+    "faction": "ICE",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Réduit l'ATQ d'un Monstre adverse de -2 jusqu'à la fin du prochain tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_06",
+    "name": "Mur de Glace",
+    "faction": "ICE",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Active pendant le tour adverse : Empêche toutes les attaques directes contre tes PV ce tour-ci.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_DIRECT_ATTACK",
+        "target": "OWNER",
+        "action": "BLOCK_DIRECT_ATTACKS",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_07",
+    "name": "Souffle Polaire",
+    "faction": "ICE",
+    "cardType": "CURSE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Pendant 2 tours, tous les Monstres adverses perdent -1 ATQ et perdent le mot-clé Charge.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_ATK",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "PERSISTENT_2_TURNS",
+        "options": null
+      },
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "STRIP_CHARGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "PERSISTENT_2_TURNS",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_08",
+    "name": "Malédiction du Froid",
+    "faction": "ICE",
+    "cardType": "CURSE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -1 DEF à tous les Monstres adverses à chaque début de tour pendant 2 tours.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_OPPONENT_TURN_START",
+        "condition": "PERSISTENT_2_TURNS",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_09",
+    "name": "Blizzard",
+    "faction": "ICE",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -1 ATQ et -1 DEF à toutes les créatures adverses (celles à 0 DEF sont détruites).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_CREATURES",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "ICE_S_10",
+    "name": "Tempête Hivernale",
+    "faction": "ICE",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à tous les Monstres adverses et force les survivants à passer en Position de Défense.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "FORCE_DEFENSE_POSTURE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_01",
+    "name": "Loup Fantôme",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 2,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Gagne +1 ATQ tant que tu contrôles au moins un autre Monstre allié.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_OTHER_MONSTER",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_02",
+    "name": "Ombre Rampante",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 3,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Camouflage : Lorsqu'elle est invoquée, ne peut pas être ciblée ni attaquée pendant 1 tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_03",
+    "name": "Harpie Noire",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 3,
+    "baseDef": 2,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Vol : Peut attaquer directement les PV adverses s'il n'y a que des Familiers en face.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_04",
+    "name": "Spectre de Minuit",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [
+      "RALENTIT"
+    ],
+    "description": "Une fois par tour : Ralentit un Monstre adverse (ne peut pas attaquer lors de son prochain tour).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "APPLY_SLOW",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_05",
+    "name": "Liche Sombre",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Lorsqu'elle attaque et détruit un Familier, inflige 2 dégâts directs aux PV du propriétaire de ce Familier.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_DESTROY_ENEMY_FAMILIAR_COMBAT",
+        "condition": "NONE",
+        "target": "VICTIM_OWNER",
+        "action": "DAMAGE_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_06",
+    "name": "Vampire Arcanique",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 4,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Chaque fois qu'il détruit une créature en combat ou blesse l'adversaire, tu récupères 1 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_DESTROY_OR_DAMAGE_COMBAT",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_07",
+    "name": "Goule Affamée",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Lorsqu'elle déclare une attaque contre un Monstre, détruit automatiquement 1 Familier adverse ayant 1 DEF.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_ATTACK",
+        "condition": "TARGET_IS_MONSTER",
+        "target": "OPPONENT_FAMILIAR_DEF_1",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_08",
+    "name": "Démon des Abysses",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": 5,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Une fois par tour : Si l'adversaire contrôle un Familier, inflige 2 dégâts directs aux PV adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "OPPONENT_HAS_FAMILIAR",
+        "target": "OPPONENT_PLAYER",
+        "action": "DAMAGE_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_09",
+    "name": "Dragon Ombre",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 5,
+    "baseDef": 5,
+    "keywords": [],
+    "description": "Au début de ta Phase de Combat, inflige 2 dégâts aux PV adverses si un Familier est sur le terrain.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_COMBAT_PHASE_START",
+        "condition": "ANY_FAMILIAR_ON_FIELD",
+        "target": "OPPONENT_PLAYER",
+        "action": "DAMAGE_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_M_10",
+    "name": "Hydre des Abysses",
+    "faction": "SHADOW",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 6,
+    "baseDef": 5,
+    "keywords": [],
+    "description": "Croissance : À la fin de chaque tour où cette créature survit sur le terrain, elle gagne +1 ATQ permanent.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_TURN_END",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "PERMANENT",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_01",
+    "name": "Mini-Spectre",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Régénère 1 PV à ton joueur.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_02",
+    "name": "Lutin Sombre",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Camouflage + Génère +1 jeton d'Énergie la première fois qu'il active son Camouflage.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_FIRST_CAMOUFLAGE",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_03",
+    "name": "Petit Vampire",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Pacte de Sang (Énergie) : Paye 1 PV pour gagner +1 jeton d'Énergie, OU régénère 1 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "Payer 1 PV pour +1 Énergie",
+            "action": "BLOOD_PACT_ENERGY",
+            "target": "OWNER",
+            "value": 1,
+            "duration": null
+          },
+          {
+            "label": "Régénérer 1 PV",
+            "action": "HEAL_LP",
+            "target": "OWNER",
+            "value": 1,
+            "duration": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_04",
+    "name": "Mini-Harpie",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Vol : Peut attaquer directement les PV adverses si aucun Monstre adverse ne bloque.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_05",
+    "name": "Petit Dragon Noir",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Si tu contrôles un Monstre allié, inflige -1 DEF à une créature adverse jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "ALLY_MONSTER_PRESENT",
+        "target": "OPPONENT_CREATURE",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_06",
+    "name": "Petit Démon",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Inflige -1 ATQ et -1 DEF à un Monstre adverse jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_07",
+    "name": "Chat Noir Arcanique",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Éclair Sombre : Inflige -1 DEF à un Monstre adverse (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_08",
+    "name": "Ombre Agile",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Esquive (Camouflage) : Ne peut pas être ciblée ni attaquée ce tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_09",
+    "name": "Mini-Liche",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Réduit l'ATQ et la DEF d'un Monstre adverse de -1 jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_F_10",
+    "name": "Mini-Goule",
+    "faction": "SHADOW",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Sacrifice Vorace : Sacrifie ce Familier pour détruire immédiatement 1 Familier adverse ciblé.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "SACRIFICE_SELF",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_01",
+    "name": "Voile Sombre",
+    "faction": "SHADOW",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE",
+      "CAMOUFLAGE"
+    ],
+    "description": "Donne Camouflage ou +2 DEF à un Monstre allié ciblé par une attaque ou un sort adverse.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_ALLY_TARGETED",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "Donner Camouflage",
+            "action": "GRANT_CAMOUFLAGE",
+            "target": "TARGETED_ALLY_MONSTER",
+            "value": null,
+            "duration": "UNTIL_NEXT_OWN_TURN"
+          },
+          {
+            "label": "Donner +2 DEF",
+            "action": "MODIFY_DEF",
+            "target": "TARGETED_ALLY_MONSTER",
+            "value": 2,
+            "duration": "END_OF_TURN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_02",
+    "name": "Brume Noire",
+    "faction": "SHADOW",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Empêche 1 Monstre adverse ciblé d'attaquer ce tour-ci.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_MONSTER_ATTACK",
+        "target": "ATTACKING_MONSTER",
+        "action": "CANCEL_ATTACK",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_03",
+    "name": "Cri Fantomatique",
+    "faction": "SHADOW",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -1 DEF à un Familier adverse, l'empêche d'agir ce tour et donne +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "EXHAUST_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_04",
+    "name": "Ombres Rampantes",
+    "faction": "SHADOW",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit immédiatement 1 Familier adverse ciblé.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_FAMILIAR",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_05",
+    "name": "Siphon de Vie",
+    "faction": "SHADOW",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à un Monstre adverse (ou 2 dégâts aux PV si terrain vide) et régénère 2 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF_OR_LP_IF_EMPTY",
+        "value": -2,
+        "secondaryValue": 2,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 2,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_06",
+    "name": "Malédiction des Ombres",
+    "faction": "SHADOW",
+    "cardType": "CURSE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "À la fin du tour adverse, inflige -1 DEF à tous les Monstres adverses (détruits si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_OPPONENT_TURN_END",
+        "condition": "PERSISTENT_CURSE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_07",
+    "name": "Main de l'Ombre",
+    "faction": "SHADOW",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit immédiatement un Monstre adverse ayant 2 ATQ ou moins.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER_ATK_LE_2",
+        "action": "DESTROY_TARGET",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_08",
+    "name": "Malédiction du Démon",
+    "faction": "SHADOW",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 ATQ et -2 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -2,
+        "secondaryValue": -2,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_09",
+    "name": "Éclipse",
+    "faction": "SHADOW",
+    "cardType": "CURSE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Pendant 2 tours, réduit de -2 l'ATQ de tous les Monstres adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_ATK",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "PERSISTENT_2_TURNS",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "SHADOW_S_10",
+    "name": "Nuit Éternelle",
+    "faction": "SHADOW",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Pendant le prochain tour adverse, l'adversaire ne peut jouer ni activer aucun Sort.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_PLAYER",
+        "action": "LOCK_OPPONENT_SPELLS",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "NEXT_OPPONENT_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_01",
+    "name": "Licorne Lumineuse",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Une fois par tour : Régénère 1 PV à ton joueur.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_02",
+    "name": "Garde Céleste",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 3,
+    "keywords": [
+      "GARDIEN"
+    ],
+    "description": "Gardien : Tant qu'il est sur le terrain, l'adversaire est obligé de le cibler en priorité en combat.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_GARDIEN",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_03",
+    "name": "Chevalier de l'Aube",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Gagne +1 DEF tant que tu contrôles au moins un Familier allié.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_FAMILIAR_PRESENT",
+        "target": "SELF",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_04",
+    "name": "Dragonon Solaire",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Gagne +1 ATQ jusqu'à la fin du tour chaque fois que tu joues un Sort allié.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_SPELL_CAST",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_05",
+    "name": "Lion de Lumière",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 4,
+    "keywords": [
+      "CHARGE"
+    ],
+    "description": "Charge : L'adversaire ne peut activer aucun effet réactif contre son attaque.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_CHARGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_06",
+    "name": "Paladin Arcanique",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 3,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Une fois par tour : Donne +1 ATQ à un autre Monstre allié jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALLY_OTHER_MONSTER",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_07",
+    "name": "Griffon Éclatant",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Survol : Peut attaquer directement les PV adverses s'il n'y a que des Familiers en face.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_08",
+    "name": "Archange Mineur",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": 4,
+    "baseDef": 3,
+    "keywords": [],
+    "description": "Si tu contrôles un Familier, inflige -2 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "ALLY_FAMILIAR_PRESENT",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_09",
+    "name": "Golem de Lumière",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 4,
+    "baseDef": 6,
+    "keywords": [],
+    "description": "Armure Sacrée : Donne +1 DEF à toutes tes créatures et réduit de 1 les dégâts sur tes PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_ALLY_CREATURES",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      },
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "REDUCE_LP_DAMAGE_TAKEN",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_M_10",
+    "name": "Dragon Céleste",
+    "faction": "LIGHT",
+    "cardType": "MONSTER",
+    "isEpic": true,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": 5,
+    "baseDef": 4,
+    "keywords": [],
+    "description": "Tant que tu contrôles un Familier, gagne +1 ATQ et ses attaques infligent 1 dégât direct aux PV adverses.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_FAMILIAR_PRESENT",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      },
+      {
+        "trigger": "ON_ATTACK",
+        "condition": "ALLY_FAMILIAR_PRESENT",
+        "target": "OPPONENT_PLAYER",
+        "action": "DAMAGE_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_01",
+    "name": "Petit Phoenix Lumineux",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Régénération : À la fin de ton tour, tu récupères 1 PV.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_TURN_END",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "HEAL_LP",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_02",
+    "name": "Lutin de Lumière",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [
+      "CAMOUFLAGE"
+    ],
+    "description": "Camouflage : Ne peut pas être attaqué ce tour (ne bloque pas les attaques directes).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "GRANT_CAMOUFLAGE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": "UNTIL_NEXT_OWN_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_03",
+    "name": "Bébé Licorne",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Donne +1 DEF à un Monstre allié jusqu'à la fin du prochain tour adverse.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "END_OF_NEXT_OPPONENT_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_04",
+    "name": "Fée Astrale",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Bénédiction de Mana (Énergie) : Si tu as récupéré des PV ce tour-ci, gagne +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "HEALED_THIS_TURN",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_05",
+    "name": "Petit Dragonon",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 1,
+    "baseAtk": 1,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Si tu contrôles un Monstre allié, inflige -1 DEF à une créature adverse jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "ALLY_MONSTER_PRESENT",
+        "target": "OPPONENT_CREATURE",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_06",
+    "name": "Petit Lion",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 1,
+    "keywords": [],
+    "description": "Gagne +1 ATQ tant que tu contrôles un autre Familier allié.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "ALLY_OTHER_FAMILIAR",
+        "target": "SELF",
+        "action": "MODIFY_ATK",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_07",
+    "name": "Chat Arcanique Doré",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 2,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Éclair : Inflige -1 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_08",
+    "name": "Mini-Griffon",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [
+      "SURVOL"
+    ],
+    "description": "Survol : Peut attaquer directement les PV adverses si aucun Monstre adverse ne bloque.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "SELF",
+        "action": "KEYWORD_SURVOL",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_09",
+    "name": "Mini-Garde",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 3,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Effet Réactif : Annule la destruction d'un Monstre allié en combat et donne +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_ALLY_MONSTER_DESTROYED_COMBAT",
+        "target": "ALLY_MONSTER",
+        "action": "PREVENT_DESTRUCTION",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_ALLY_MONSTER_DESTROYED_COMBAT",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_F_10",
+    "name": "Petit Archange",
+    "faction": "LIGHT",
+    "cardType": "FAMILIAR",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": 1,
+    "baseDef": 2,
+    "keywords": [],
+    "description": "Inflige -1 DEF à tous les Familiers ennemis (ceux qui tombent à 0 DEF sont détruits).",
+    "abilitiesScript": [
+      {
+        "trigger": "ACTIVATED",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_01",
+    "name": "Malédiction Purificatrice",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": true,
+    "energyCost": 1,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Retire tous les effets négatifs/malus d'un Monstre allié ET fait gagner +1 jeton d'Énergie.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALLY_MONSTER",
+        "action": "CLEANSE_DEBUFFS",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER",
+        "action": "GAIN_ENERGY",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_02",
+    "name": "Soin Arcanique",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Régénère 3 PV à ton joueur (ou aux PV communs de ton équipe en 2v2).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OWNER_TEAM",
+        "action": "HEAL_LP",
+        "value": 3,
+        "secondaryValue": null,
+        "duration": null,
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_03",
+    "name": "Rayon de Lumière",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 2,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à un Monstre adverse jusqu'à la fin du tour (détruit si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_04",
+    "name": "Bouclier Sacré",
+    "faction": "LIGHT",
+    "cardType": "SPELL_REACTIVE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [
+      "REACTIVE"
+    ],
+    "description": "Active pendant le tour adverse : Empêche la destruction d'un Monstre allié OU annule une attaque directe.",
+    "abilitiesScript": [
+      {
+        "trigger": "REACTIVE",
+        "condition": "ON_COMBAT_OR_DIRECT_ATTACK",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "Empêcher la destruction d’un Monstre allié",
+            "action": "PREVENT_DESTRUCTION",
+            "target": "ALLY_MONSTER",
+            "value": null,
+            "duration": null
+          },
+          {
+            "label": "Annuler une attaque directe",
+            "action": "CANCEL_ATTACK",
+            "target": "ATTACKING_MONSTER",
+            "value": null,
+            "duration": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_05",
+    "name": "Aura Protectrice",
+    "faction": "LIGHT",
+    "cardType": "ARTIFACT",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Tant que cet Artefact est en jeu sur ta Ligne de Soutien, tous tes Monstres alliés gagnent +1 DEF.",
+    "abilitiesScript": [
+      {
+        "trigger": "PASSIVE",
+        "condition": "NONE",
+        "target": "ALL_ALLY_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": 1,
+        "secondaryValue": null,
+        "duration": "WHILE_ON_FIELD",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_06",
+    "name": "Bénédiction Arcanique",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 3,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Donne +1 ATQ et +1 DEF à tous tes Monstres alliés jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_ALLY_MONSTERS",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": 1,
+        "secondaryValue": 1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_07",
+    "name": "Éclat de Lumière",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -1 ATQ et -1 DEF à tous les Monstres adverses jusqu'à la fin du tour.",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_ATK_AND_DEF",
+        "value": -1,
+        "secondaryValue": -1,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_08",
+    "name": "Lame Céleste",
+    "faction": "LIGHT",
+    "cardType": "SPELL_NORMAL",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 4,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Détruit un Monstre adverse ayant 3 DEF ou moins (ou inflige -3 DEF jusqu'à la fin du tour).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "NONE",
+        "action": "MODAL_CHOICE",
+        "value": null,
+        "secondaryValue": null,
+        "duration": null,
+        "options": [
+          {
+            "label": "Détruire un Monstre adverse (≤ 3 DEF)",
+            "action": "DESTROY_TARGET",
+            "target": "OPPONENT_MONSTER_DEF_LE_3",
+            "value": null,
+            "duration": null
+          },
+          {
+            "label": "Infliger -3 DEF jusqu’à la fin du tour",
+            "action": "MODIFY_DEF",
+            "target": "OPPONENT_MONSTER",
+            "value": -3,
+            "duration": "END_OF_TURN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_09",
+    "name": "Flamme Divine",
+    "faction": "LIGHT",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à un Monstre adverse ET -1 DEF à tous les Familiers ennemis (détruits si 0 DEF).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "OPPONENT_MONSTER",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      },
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_FAMILIARS",
+        "action": "MODIFY_DEF",
+        "value": -1,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  },
+  {
+    "cardId": "LIGHT_S_10",
+    "name": "Explosion de Lumière",
+    "faction": "LIGHT",
+    "cardType": "SPELL_ULTIMATE",
+    "isEpic": false,
+    "isRamp": false,
+    "energyCost": 5,
+    "baseAtk": null,
+    "baseDef": null,
+    "keywords": [],
+    "description": "Inflige -2 DEF à tous les Monstres adverses jusqu'à la fin du tour (ceux à 0 DEF sont détruits).",
+    "abilitiesScript": [
+      {
+        "trigger": "ON_PLAY",
+        "condition": "NONE",
+        "target": "ALL_OPPONENT_MONSTERS",
+        "action": "MODIFY_DEF",
+        "value": -2,
+        "secondaryValue": null,
+        "duration": "END_OF_TURN",
+        "options": null
+      }
+    ]
+  }
+]

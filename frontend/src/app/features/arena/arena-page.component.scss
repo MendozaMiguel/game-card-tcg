@@ -1,0 +1,122 @@
+:host {
+  display: block;
+}
+
+.arena-svg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.arena-rope-bar {
+  transition: inline-size 0.2s linear;
+}
+
+.arena-scroll-region {
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+.arena-action-mini {
+  min-block-size: 1.75rem;
+  min-inline-size: 1.75rem;
+
+  @media (pointer: coarse) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
+.arena-play-col,
+.arena-side-col,
+.arena-battlefield,
+.arena-hand-band,
+.arena-battlefield > section,
+.arena-battlefield > section > div {
+  min-inline-size: 0;
+}
+
+.arena-hand-rail {
+  overscroll-behavior-x: contain;
+}
+
+.arena-tab-panel[hidden] {
+  display: none;
+}
+
+.arena-tab-list-scroll {
+  max-block-size: 18rem;
+  overflow-y: auto;
+}
+
+/* Single-screen zero-scroll Arena cockpit across Mobile Portrait (390x844) & Desktop (1440x900) */
+@media (min-height: 35rem) {
+  .arena-shell {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    inline-size: 100%;
+    min-block-size: 0;
+    overflow: hidden;
+  }
+
+  .arena-grid {
+    flex: 1 1 0%;
+    min-block-size: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .arena-play-col {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-block-size: 0;
+    overflow: hidden;
+  }
+
+  .arena-battlefield {
+    flex: 1 1 0%;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 80rem) and (min-height: 35rem) {
+  .arena-grid {
+    display: grid;
+  }
+
+  .arena-side-col {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 0;
+    block-size: 100%;
+    overflow: hidden;
+  }
+
+  .arena-tab-container {
+    flex: 1 1 0%;
+    min-block-size: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .arena-tab-panel:not([hidden]) {
+    flex: 1 1 0%;
+    min-block-size: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .arena-tab-list-scroll {
+    flex: 1 1 0%;
+    max-block-size: none;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+}

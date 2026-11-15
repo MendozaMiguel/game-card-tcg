@@ -1,0 +1,559 @@
+<main id="main-content" tabindex="-1" class="mx-auto max-w-[1440px] space-y-5 px-3 py-4 sm:space-y-6 sm:px-5 sm:py-6">
+  @if (activeMatchId()) {
+  <div role="status"
+    class="arcane-panel-hero flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-3.5">
+    <div class="flex items-center gap-3 text-sm font-bold text-arcane-gold-bright">
+      <span
+        class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-arcane-gold/50 bg-arcane-gold/20 text-arcane-gold-bright">
+        <ng-icon name="lucideSwords" size="18px" aria-hidden="true" />
+      </span>
+      <div>
+        <span class="block">Un duel est actuellement en cours sur votre compte.</span>
+        <span class="block text-xs font-normal text-arcane-ink-secondary">Votre plateau vous attend dans l'Arène.</span>
+      </div>
+    </div>
+    <a [routerLink]="['/arena', activeMatchId()]"
+      class="arcane-btn inline-flex items-center gap-1.5 rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-4 text-xs font-extrabold text-arcane-void no-underline shadow-md hover:brightness-105">
+      <span>Reprendre le duel</span>
+      <ng-icon name="lucideArrowRight" size="14px" aria-hidden="true" />
+    </a>
+  </div>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-12">
+    <!-- Colonne Principale (8 cols) -->
+    <div class="min-w-0 space-y-6 lg:col-span-8">
+      <!-- Panneau Héros : Sanctuaire des Duels -->
+      <section class="arcane-panel-hero rounded-2xl p-4 sm:p-6 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-arcane-gold/20 pb-4">
+          <div class="space-y-1">
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-arcane-gold/35 bg-arcane-gold/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-arcane-gold-bright uppercase">
+              <ng-icon name="lucideSparkles" size="12px" aria-hidden="true" />
+              <span>Champ d'Honneur · L'Ordre des Arcanes</span>
+            </span>
+            <h1 class="arcane-display text-xl font-bold tracking-wide text-arcane-ink sm:text-2xl">
+              Sanctuaire des Duels
+            </h1>
+            <p class="max-w-2xl text-xs leading-relaxed text-arcane-ink-secondary">
+              Choisissez votre deck conforme aux 4 Lois Anti-Méta pour lancer un affrontement classé, amical ou
+              d'entraînement contre le Mage Automate.
+            </p>
+          </div>
+          <a routerLink="/deckbuilder"
+            class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-arcane-gold/35 bg-arcane-surface px-3.5 text-xs font-bold text-arcane-gold-bright no-underline hover:border-arcane-gold/70 hover:bg-arcane-elevated">
+            <ng-icon name="lucideBookOpen" size="14px" aria-hidden="true" />
+            <span>Modifier mes Decks</span>
+          </a>
+        </div>
+
+        <div class="grid gap-3.5 sm:grid-cols-2">
+          <div class="arcane-well rounded-xl p-3">
+            <label for="lobby-deck"
+              class="mb-1.5 block text-[11px] font-bold tracking-wider text-arcane-ink-muted uppercase">Deck
+              sélectionné</label>
+            <select id="lobby-deck" class="arcane-input" [value]="selectedDeckId()" (change)="onDeckChange($event)">
+              @for (d of validDecks(); track d.deckId) {
+              <option [value]="d.deckId">
+                {{ d.favorite ? '★ ' : '' }}{{ d.name }}
+              </option>
+              }
+            </select>
+            @if (selectedDeck(); as activeDeck) {
+            <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+              @if (activeDeck.primaryFaction) {
+              <span class="rounded border px-1.5 py-0.5 font-bold"
+                [class]="factionMeta[activeDeck.primaryFaction].badgeClass">
+                {{ factionMeta[activeDeck.primaryFaction].label }}
+              </span>
+              }
+              <span
+                class="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-950/50 px-1.5 py-0.5 font-semibold text-emerald-200">
+                <ng-icon name="lucideCheck" size="11px" aria-hidden="true" />
+                <span>Anti-Méta 30/30</span>
+              </span>
+            </div>
+            }
+          </div>
+
+          <div class="arcane-well rounded-xl p-3">
+            <label for="lobby-mode"
+              class="mb-1.5 block text-[11px] font-bold tracking-wider text-arcane-ink-muted uppercase">Format du
+              Match</label>
+            <select id="lobby-mode" class="arcane-input" [value]="selectedMode()" (change)="onModeChange($event)">
+              <option value="DUEL_1V1">1v1 Duel (25 PV)</option>
+              <option value="TEAM_2V2">2v2 Équipe (40 PV communs)</option>
+            </select>
+            <p class="mt-2 text-[11px] text-arcane-ink-muted">
+              {{ selectedMode() === 'TEAM_2V2' ? 'Alliance coopérative à 2 mages · 40 PV d’équipe' : 'Affrontement
+              tactique individuel · 25 PV' }}
+            </p>
+          </div>
+        </div>
+
+        @if (!selectedDeckId()) {
+        <div role="alert"
+          class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/45 bg-amber-950/35 px-4 py-3 text-xs text-amber-100">
+          <span class="inline-flex items-center gap-2 font-semibold">
+            <ng-icon name="lucideAlertTriangle" size="15px" class="text-amber-300" aria-hidden="true" />
+            <span>Aucun deck conforme disponible. Créez ou validez un deck de 40 cartes avant d'entrer en duel.</span>
+          </span>
+          <a routerLink="/deckbuilder" class="font-bold text-arcane-gold-bright underline hover:text-arcane-ink">
+            Ouvrir l'Atelier de Decks
+          </a>
+        </div>
+        }
+
+        @if (queueStatus().queued) {
+        <div
+          class="arcane-well flex flex-wrap items-center justify-between gap-3 rounded-xl border-sky-400/50 bg-sky-950/45 px-4 py-3">
+          <div class="flex items-center gap-3 text-sm text-sky-100">
+            <span
+              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-400/40 bg-sky-500/20 text-sky-200">
+              <ng-icon name="lucideClock" size="16px" aria-hidden="true" />
+            </span>
+            <div>
+              <strong class="block">Recherche d'adversaire en cours…</strong>
+              <span class="text-xs text-sky-300">
+                Mode {{ queueStatus().mode === 'TEAM_2V2' ? '2v2 Équipe' : '1v1 Duel' }} ·
+                {{ queueStatus().ranked ? 'Classé (MMR)' : 'Amical' }}
+              </span>
+            </div>
+          </div>
+          <button type="button" (click)="onLeaveQueue()"
+            class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-rose-400/50 bg-rose-950/60 px-4 text-xs font-bold text-rose-200 hover:bg-rose-900/70">
+            <ng-icon name="lucideX" size="14px" aria-hidden="true" />
+            <span>Quitter la file</span>
+          </button>
+        </div>
+        } @else {
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button type="button" (click)="onJoinQueue(true)" [disabled]="!selectedDeckId() || busyPlay()"
+            class="arcane-btn arcane-mode-card flex items-center gap-3 rounded-xl border-arcane-gold/55 bg-linear-to-br from-arcane-gold/25 via-arcane-surface to-arcane-void px-4 py-3 text-left shadow-[0_10px_28px_-16px_rgb(217_164_65/0.55)] hover:border-arcane-gold-bright disabled:opacity-45">
+            <span
+              class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold text-arcane-void shadow-md">
+              <ng-icon name="lucideSwords" size="18px" aria-hidden="true" />
+            </span>
+            <span class="min-w-0">
+              <span class="block text-xs font-extrabold text-arcane-gold-bright">File Classée</span>
+              <span class="block truncate text-[11px] text-arcane-ink-secondary">Classement MMR &amp; Ligue</span>
+            </span>
+          </button>
+
+          <button type="button" (click)="onJoinQueue(false)" [disabled]="!selectedDeckId() || busyPlay()"
+            class="arcane-btn arcane-mode-card flex items-center gap-3 rounded-xl border-sky-400/45 bg-linear-to-br from-sky-500/15 via-arcane-surface to-arcane-void px-4 py-3 text-left hover:border-sky-300/75 disabled:opacity-45">
+            <span
+              class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/45 bg-sky-500/20 text-sky-200">
+              <ng-icon name="lucideUsers" size="18px" aria-hidden="true" />
+            </span>
+            <span class="min-w-0">
+              <span class="block text-xs font-extrabold text-sky-100">Duel Amical</span>
+              <span class="block truncate text-[11px] text-arcane-ink-secondary">Partie libre sans enjeu MMR</span>
+            </span>
+          </button>
+        </div>
+
+        <div
+          class="arcane-well rounded-xl border border-emerald-400/30 bg-linear-to-br from-emerald-500/[0.06] via-arcane-surface/85 to-arcane-void/95 p-3.5 sm:p-4 space-y-2.5">
+          <div class="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-end">
+            <div class="lg:col-span-4">
+              <label for="lobby-bot-faction"
+                class="mb-1.5 block text-[11px] font-bold tracking-wider text-arcane-ink-muted uppercase">
+                Faction IA
+              </label>
+              <select id="lobby-bot-faction" class="arcane-input" [value]="selectedBotFaction()"
+                (change)="onBotFactionChange($event)">
+                <option value="">Aléatoire</option>
+                <option value="FIRE">Feu Ardent</option>
+                <option value="ICE">Glace Éternelle</option>
+                <option value="SHADOW">Ombres Occultes</option>
+                <option value="LIGHT">Lumière Astrale</option>
+              </select>
+            </div>
+
+            <fieldset class="m-0 border-0 p-0 lg:col-span-4">
+              <legend class="mb-1.5 block text-[11px] font-bold tracking-wider text-arcane-ink-muted uppercase">
+                Difficulté IA
+              </legend>
+              <div class="arcane-seg-group">
+                @for (tier of aiDifficultyOrder; track tier) {
+                <label [for]="'lobby-ai-diff-' + tier" class="arcane-seg-option" [attr.data-tier]="tier">
+                  <input type="radio" class="arcane-sr-radio" name="aiDifficulty" [id]="'lobby-ai-diff-' + tier"
+                    [value]="tier" [checked]="selectedBotDifficulty() === tier"
+                    (change)="onBotDifficultyChange(tier)" />
+                  <ng-icon [name]="tier === 'EASY' ? 'lucideFeather' : tier === 'MEDIUM' ? 'lucideBot' : 'lucideSwords'"
+                    size="14px" aria-hidden="true" />
+                  <span>{{ aiDifficultyMeta[tier].label }}</span>
+                </label>
+                }
+              </div>
+            </fieldset>
+
+            <div class="lg:col-span-4">
+              <button type="button" (click)="onStartAiMatch()" [disabled]="!selectedDeckId() || busyPlay()"
+                class="arcane-btn arcane-mode-card flex w-full items-center gap-3 rounded-xl border-emerald-400/50 bg-linear-to-br from-emerald-500/20 via-arcane-surface to-arcane-void px-4 py-2.5 text-left hover:border-emerald-300/80 disabled:opacity-45">
+                <span
+                  class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-400/45 bg-emerald-500/20 text-emerald-200">
+                  <ng-icon name="lucideBot" size="18px" aria-hidden="true" />
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-xs font-extrabold text-emerald-100">Affronter Mage Automate (IA)</span>
+                  <span class="block truncate text-[11px] text-arcane-ink-secondary">
+                    Niveau {{ aiDifficultyMeta[selectedBotDifficulty()].label }} ·
+                    {{ selectedBotFaction() ? factionMeta[selectedBotFaction() || 'FIRE'].label : 'Faction aléatoire' }}
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-arcane-ink-muted">
+            <strong class="font-semibold text-arcane-ink-secondary">IA {{
+              aiDifficultyMeta[selectedBotDifficulty()].label }} :</strong>
+            {{ aiDifficultyMeta[selectedBotDifficulty()].shortDesc }}
+          </p>
+        </div>
+        }
+      </section>
+
+      <!-- Salles Personnalisées & Spectateur -->
+      <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <span
+              class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-indigo-400/35 bg-indigo-500/15 text-indigo-200">
+              <ng-icon name="lucideShield" size="16px" aria-hidden="true" />
+            </span>
+            <div>
+              <h2 class="arcane-display text-base font-bold text-arcane-ink sm:text-lg">Salles Personnalisées &amp;
+                Spectateur</h2>
+              <p class="text-xs text-arcane-ink-muted">
+                Créez un salon privé ou observez un match en cours en mode Brouillard double-aveugle.
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" (click)="refreshRooms()"
+              class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-slate-500 hover:text-arcane-ink">
+              <ng-icon name="lucideRefreshCw" size="14px" aria-hidden="true" />
+              <span>Actualiser</span>
+            </button>
+            <button type="button" (click)="openCreateRoomDialog()" [disabled]="!selectedDeckId()"
+              class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/55 bg-indigo-500/25 px-4 text-xs font-extrabold text-indigo-100 hover:bg-indigo-500/35 disabled:opacity-45">
+              <ng-icon name="lucidePlus" size="15px" aria-hidden="true" />
+              <span>Créer une Salle</span>
+            </button>
+          </div>
+        </div>
+
+        @if (customRooms().length === 0) {
+        <div class="arcane-well flex flex-col items-center justify-center gap-1.5 rounded-xl px-4 py-6 text-center">
+          <ng-icon name="lucideShield" size="22px" class="text-slate-500" aria-hidden="true" />
+          <p class="text-xs font-semibold text-arcane-ink-secondary">Aucune salle ouverte pour le moment.</p>
+          <p class="text-[11px] text-arcane-ink-muted">Créez un salon privé pour affronter un ami ou tester une
+            composition avec des bots.</p>
+        </div>
+        } @else {
+        <div class="space-y-3">
+          @for (room of customRooms(); track room.roomCode) {
+          <article class="arcane-well rounded-xl p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <strong class="text-sm font-bold text-arcane-ink">{{ room.name }}</strong>
+                  <span
+                    class="arcane-num rounded border border-arcane-gold/30 bg-arcane-surface px-2 py-0.5 text-[11px] font-bold text-arcane-gold-bright">
+                    {{ room.roomCode }}
+                  </span>
+                </div>
+                <span class="mt-1 block text-xs text-arcane-ink-muted">
+                  {{ room.mode === 'TEAM_2V2' ? '2v2' : '1v1' }} ·
+                  {{ room.started ? 'En cours' : 'En attente' }} ·
+                  {{ room.spectatorCount }} spectateur(s)
+                </span>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                @if (!room.started) {
+                <button type="button" (click)="onJoinRoom(room.roomCode, 'TEAM_A', false)"
+                  [disabled]="!selectedDeckId()"
+                  class="arcane-btn rounded-lg border border-sky-400/45 bg-sky-950/45 px-3 text-xs font-bold text-sky-100 hover:bg-sky-900/55">
+                  Rejoindre Équipe A
+                </button>
+                <button type="button" (click)="onJoinRoom(room.roomCode, 'TEAM_B', false)"
+                  [disabled]="!selectedDeckId()"
+                  class="arcane-btn rounded-lg border border-rose-400/45 bg-rose-950/45 px-3 text-xs font-bold text-rose-100 hover:bg-rose-900/55">
+                  Rejoindre Équipe B
+                </button>
+                }
+                @if (room.allowSpectators) {
+                <button type="button" (click)="onSpectateRoom(room)"
+                  class="arcane-btn inline-flex items-center gap-1.5 rounded-lg border border-purple-400/50 bg-purple-950/45 px-3 text-xs font-bold text-purple-100 hover:bg-purple-900/55">
+                  <ng-icon name="lucideEye" size="14px" aria-hidden="true" />
+                  <span>Observer</span>
+                </button>
+                }
+                @if (!room.started && room.hostUserId === auth.user()?.userId) {
+                <button type="button" (click)="onStartRoom(room.roomCode, false)"
+                  class="arcane-btn rounded-lg bg-emerald-500 px-3.5 text-xs font-extrabold text-arcane-void hover:bg-emerald-400">
+                  Lancer
+                </button>
+                <button type="button" (click)="onStartRoom(room.roomCode, true)"
+                  class="arcane-btn inline-flex items-center gap-1 rounded-lg border border-emerald-400/55 bg-emerald-950/55 px-3 text-xs font-bold text-emerald-100 hover:bg-emerald-900/65">
+                  <ng-icon name="lucideBot" size="14px" aria-hidden="true" />
+                  <span>Lancer + Bots</span>
+                </button>
+                }
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 text-xs">
+              @for (slot of room.slots; track slot.userId) {
+              <span class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1"
+                [class]="slot.teamId === 'TEAM_A' ? 'border-sky-500/40 bg-sky-950/35 text-sky-100' : 'border-rose-500/40 bg-rose-950/35 text-rose-100'">
+                <span>{{ slot.teamId === 'TEAM_A' ? 'Équipe A' : 'Équipe B' }} · {{ slot.username }}</span>
+                @if (slot.host) {
+                <ng-icon name="lucideCrown" size="12px" class="text-arcane-gold-bright" aria-label="Hôte" />
+                }
+              </span>
+              }
+            </div>
+          </article>
+          }
+        </div>
+        }
+      </section>
+
+      <!-- Historique récent -->
+      <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="arcane-display inline-flex items-center gap-2 text-base font-bold text-arcane-ink">
+            <ng-icon name="lucideHistory" size="16px" class="text-arcane-gold-bright" aria-hidden="true" />
+            <span>Historique récent des Duels</span>
+          </h2>
+          <a routerLink="/profile"
+            class="arcane-btn inline-flex items-center rounded-lg px-2.5 text-xs font-semibold text-arcane-gold-bright hover:bg-arcane-elevated hover:underline">
+            Voir mon profil
+          </a>
+        </div>
+
+        @if (matchHistory().length === 0) {
+        <p class="arcane-well rounded-xl p-4 text-center text-xs text-arcane-ink-muted">
+          Aucun match terminé enregistré pour le moment.
+        </p>
+        } @else {
+        <!-- Mobile card summary list (zero cramped table scroll) -->
+        <ul class="space-y-2 sm:hidden">
+          @for (m of matchHistory(); track m.matchId) {
+          @let srcMeta = matchSourceForSummary(m);
+          <li class="arcane-well flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-xs">
+            <div class="min-w-0 space-y-1">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="rounded border px-1.5 py-0.5 text-[10px] font-semibold" [class]="srcMeta.badgeClass">{{
+                  srcMeta.shortLabel }}</span>
+                <span class="font-bold text-arcane-ink">{{ m.mode }}</span>
+              </div>
+              <span class="block truncate text-[11px] text-arcane-ink-muted">{{ m.endReason ?
+                (endReasonLabels[m.endReason] ?? m.endReason) : '-' }}</span>
+            </div>
+            <div class="shrink-0 text-right">
+              <strong class="block text-xs font-extrabold text-arcane-gold-bright">{{ matchWinnerLabel(m) }}</strong>
+              <span class="arcane-num text-[11px] text-arcane-ink-muted">{{ m.turnCount }} tours</span>
+            </div>
+          </li>
+          }
+        </ul>
+
+        <!-- Desktop accessible table -->
+        <div tabindex="0" role="region" aria-label="Historique récent des duels"
+          class="hidden sm:block overflow-x-auto rounded-xl border border-slate-800/80">
+          <table class="w-full text-left text-xs">
+            <caption class="visually-hidden">Derniers duels terminés</caption>
+            <thead>
+              <tr class="border-b border-slate-800 bg-arcane-recessed text-arcane-ink-muted">
+                <th scope="col" class="whitespace-nowrap px-3 py-2.5">Mode</th>
+                <th scope="col" class="whitespace-nowrap px-3 py-2.5">Type</th>
+                <th scope="col" class="whitespace-nowrap px-3 py-2.5">Vainqueur</th>
+                <th scope="col" class="whitespace-nowrap px-3 py-2.5">Raison</th>
+                <th scope="col" class="whitespace-nowrap px-3 py-2.5 text-right">Tours</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of matchHistory(); track m.matchId) {
+              @let srcMeta = matchSourceForSummary(m);
+              <tr
+                class="border-b border-slate-800/60 text-arcane-ink-secondary last:border-b-0 hover:bg-arcane-elevated/45">
+                <td class="whitespace-nowrap px-3 py-2.5 font-semibold text-arcane-ink">{{ m.mode }}</td>
+                <td class="whitespace-nowrap px-3 py-2.5">
+                  <span class="inline-block rounded border px-1.5 py-0.5 text-[11px] font-semibold"
+                    [class]="srcMeta.badgeClass">
+                    {{ srcMeta.label }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2.5 font-bold text-arcane-gold-bright">{{ matchWinnerLabel(m) }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-2.5">{{ m.endReason ? (endReasonLabels[m.endReason] ?? m.endReason)
+                  : '-' }}</td>
+                <td class="arcane-num whitespace-nowrap px-3 py-2.5 text-right font-semibold text-arcane-ink">{{
+                  m.turnCount }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
+      </section>
+    </div>
+
+    <!-- Colonne Droite: Amis & Chat Global (4 cols) -->
+    <aside class="min-w-0 space-y-6 lg:col-span-4">
+      <!-- Amis -->
+      <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-3.5">
+        <h2 class="arcane-display inline-flex items-center gap-2 text-base font-bold text-arcane-ink">
+          <ng-icon name="lucideUsers" size="16px" class="text-arcane-gold-bright" aria-hidden="true" />
+          <span>Liste d'Amis</span>
+        </h2>
+
+        <form (submit)="onSendFriendRequest($event)" class="flex gap-2">
+          <label for="friend-username" class="visually-hidden">Pseudo du mage à ajouter</label>
+          <input id="friend-username" type="text" placeholder="Pseudo du mage…" class="arcane-input min-w-0 flex-1"
+            required pattern="[A-Za-z0-9_\-]{3,32}" [value]="friendUsername()" (input)="onFriendInput($event)" />
+          <button type="submit"
+            class="arcane-btn inline-flex shrink-0 items-center gap-1 rounded-xl bg-arcane-gold px-3.5 text-xs font-extrabold text-arcane-void hover:bg-arcane-gold-bright">
+            <ng-icon name="lucideUserPlus" size="14px" aria-hidden="true" />
+            <span>Inviter</span>
+          </button>
+        </form>
+
+        <ul class="space-y-2 text-xs">
+          @for (f of friends(); track f.friendshipId) {
+          <li class="arcane-well flex items-center justify-between gap-2 rounded-xl px-3 py-2">
+            <div class="min-w-0">
+              <span class="inline-flex items-center gap-1.5 font-bold text-arcane-ink">
+                <span class="inline-block h-2 w-2 shrink-0 rounded-full"
+                  [class]="f.online ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-slate-500'"
+                  aria-hidden="true"></span>
+                <span class="truncate">{{ f.friendUsername }}</span>
+              </span>
+              <span class="mt-0.5 block text-[11px] text-arcane-ink-muted">
+                {{ f.status === 'PENDING' ? (f.incoming ? 'Demande reçue' : 'Envoyée') : f.online ? 'En ligne' : 'Hors
+                ligne' }}
+              </span>
+            </div>
+            <div class="flex shrink-0 gap-1.5">
+              @if (f.status === 'PENDING' && f.incoming) {
+              <button type="button" (click)="onAcceptFriend(f.friendshipId)"
+                [attr.aria-label]="'Accepter ' + f.friendUsername"
+                class="arcane-btn inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 text-[11px] font-bold text-arcane-void hover:bg-emerald-400">
+                <ng-icon name="lucideCheck" size="13px" aria-hidden="true" />
+                <span>Accepter</span>
+              </button>
+              }
+              <button type="button" (click)="onRemoveFriend(f.friendshipId)"
+                [attr.aria-label]="'Retirer ' + f.friendUsername"
+                class="arcane-btn inline-flex items-center justify-center rounded-lg border border-slate-700 bg-arcane-surface px-2.5 text-arcane-ink-secondary hover:border-rose-500 hover:text-rose-200">
+                <ng-icon name="lucideX" size="14px" aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+          }
+          @if (friends().length === 0) {
+          <li class="arcane-well rounded-xl px-3 py-3 text-center text-arcane-ink-muted">
+            Aucun ami enregistré.
+          </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Chat Global du Sanctuaire -->
+      <section class="arcane-panel flex h-[28rem] flex-col rounded-2xl p-4 sm:p-5">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="arcane-display inline-flex items-center gap-2 text-base font-bold text-arcane-ink">
+            <ng-icon name="lucideMessageSquare" size="16px" class="text-arcane-gold-bright" aria-hidden="true" />
+            <span>Chat du Sanctuaire</span>
+          </h2>
+          <span
+            class="rounded border border-slate-700/70 bg-arcane-recessed px-2 py-0.5 text-[10px] font-semibold text-arcane-ink-muted">
+            Anti-XSS · 1 msg/s
+          </span>
+        </div>
+
+        <ul
+          #globalChatList
+          aria-live="polite"
+          aria-relevant="additions"
+          class="arcane-well mb-3 flex-1 space-y-2 overflow-y-auto rounded-xl p-3 text-xs">
+          @for (msg of stomp.globalMessages(); track msg.messageId) {
+          <li class="leading-relaxed">
+            <strong class="text-arcane-gold-bright">{{ msg.senderUsername }} :</strong>
+            <span class="break-words text-arcane-ink-secondary"> {{ msg.content }}</span>
+          </li>
+          }
+          @if (stomp.globalMessages().length === 0) {
+          <li class="py-6 text-center text-arcane-ink-muted">
+            Aucun message dans le canal global pour le moment.
+          </li>
+          }
+        </ul>
+
+        <form (submit)="onSendGlobalChat($event)" class="flex gap-2">
+          <label for="global-chat-input" class="visually-hidden">Message dans le chat du Sanctuaire</label>
+          <textarea id="global-chat-input" name="globalChatMessage" rows="1" appImeEnterSubmit enterkeyhint="send"
+            placeholder="Message global (Entrée)…"
+            maxlength="300" class="arcane-input min-h-11 flex-1 resize-none py-2.5" [value]="chatInput()"
+            (input)="onChatInput($event)"></textarea>
+          <button type="submit" [disabled]="!chatInput().trim()"
+            class="arcane-btn inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-arcane-gold px-4 text-xs font-extrabold text-arcane-void hover:bg-arcane-gold-bright disabled:opacity-45">
+            <ng-icon name="lucideSend" size="14px" aria-hidden="true" />
+            <span>Envoyer</span>
+          </button>
+        </form>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<!-- Dialogue Création Salle Personnalisée -->
+<dialog #createRoomDialog closedby="any" class="arcane-dialog" aria-labelledby="create-room-title">
+  <form (submit)="onCreateRoomSubmit($event)" class="p-6 space-y-4">
+    <h2 id="create-room-title" class="arcane-display text-lg font-bold text-arcane-ink">
+      Nouvelle Salle Personnalisée
+    </h2>
+
+    <div class="arcane-field">
+      <label for="room-name" class="mb-1.5 block text-xs font-semibold text-arcane-ink-secondary">Nom de la
+        salle</label>
+      <input id="room-name" type="text" class="arcane-input" autofocus required minlength="2" maxlength="48"
+        [value]="newRoomName()" (input)="onRoomNameInput($event)" [appFormAriaSync]="'room-name-error'" />
+      <div id="room-name-error" class="arcane-error-msg">
+        <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+        <span>Nom requis (2 à 48 caractères).</span>
+      </div>
+    </div>
+
+    <div>
+      <label for="room-mode" class="mb-1.5 block text-xs font-semibold text-arcane-ink-secondary">Mode</label>
+      <select id="room-mode" class="arcane-input" [value]="newRoomMode()" (change)="onRoomModeChange($event)">
+        <option value="DUEL_1V1">1v1 Duel</option>
+        <option value="TEAM_2V2">2v2 Équipe</option>
+      </select>
+    </div>
+
+    <label class="flex items-center gap-2 text-xs text-arcane-ink-secondary">
+      <input type="checkbox" [checked]="newRoomSpectators()" (change)="onRoomSpecChange($event)"
+        class="h-4 w-4 accent-amber-400" />
+      <span>Autoriser les spectateurs (Brouillard double-aveugle)</span>
+    </label>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <button type="button" (click)="closeCreateRoomDialog()"
+        class="arcane-btn rounded-xl border border-slate-700 bg-arcane-elevated px-4 text-xs font-bold text-arcane-ink-secondary hover:text-arcane-ink">
+        Annuler
+      </button>
+      <button type="submit"
+        class="arcane-btn rounded-xl bg-arcane-gold px-4 text-xs font-extrabold text-arcane-void hover:bg-arcane-gold-bright">
+        Créer la Salle
+      </button>
+    </div>
+  </form>
+</dialog>

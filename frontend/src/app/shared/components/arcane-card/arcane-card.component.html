@@ -1,0 +1,243 @@
+@let viewCard = card();
+@let defCard = catalogCard();
+@let isHidden = viewCard ? viewCard.hidden : false;
+@let faction = viewCard?.faction ?? defCard?.faction ?? null;
+@let cardType = viewCard?.cardType ?? defCard?.cardType ?? null;
+@let name = viewCard?.name ?? defCard?.name ?? 'Carte Mystère';
+@let cost = viewCard?.energyCost ?? defCard?.energyCost ?? null;
+@let epic = viewCard?.epic ?? defCard?.isEpic ?? false;
+@let ramp = viewCard?.ramp ?? defCard?.isRamp ?? false;
+@let foil = foilOverride() ?? viewCard?.foil ?? false;
+@let keywords = viewCard?.keywords ?? defCard?.keywords ?? [];
+@let baseAtk = viewCard?.baseAtk ?? defCard?.baseAtk ?? null;
+@let baseDef = viewCard?.baseDef ?? defCard?.baseDef ?? null;
+@let effAtk = viewCard?.effectiveAtk ?? baseAtk;
+@let effDef = viewCard?.effectiveDef ?? baseDef;
+@let posture = viewCard?.posture ?? null;
+@let meta = faction ? factionMeta[faction] : null;
+@let artSrc = resolvedArtworkSrc();
+@let artVisual = artTheme();
+@let illustration = artSpec();
+@let displayArt = shouldShowArtwork();
+
+@if (isHidden) {
+<div
+  class="arcane-card-root arcane-card-frame arcane-cardback relative flex h-full w-full flex-col items-center justify-center rounded-xl border-arcane-gold/45 text-center select-none"
+  [class]="compact() ? 'min-h-18 p-1.5' : 'min-h-40 p-2.5'">
+  <div class="pointer-events-none absolute inset-1.5 rounded-lg border border-arcane-gold/25" aria-hidden="true"></div>
+  <div
+    class="relative z-10 flex items-center justify-center rounded-full border border-arcane-gold/50 bg-arcane-elevated/90 shadow-inner"
+    [class]="compact() ? 'h-8 w-8' : 'h-12 w-12'">
+    <ng-icon name="lucideSparkles" [size]="compact() ? '15px' : '20px'" class="text-arcane-gold-bright"
+      aria-hidden="true" />
+  </div>
+  <span
+    class="arcane-display relative z-10 mt-1.5 text-[10px] font-semibold tracking-wider text-arcane-gold-bright/90 uppercase">
+    {{ viewCard?.faceDown ? 'Sort face cachée' : 'Dos Arcanes' }}
+  </span>
+</div>
+} @else {
+<div
+  class="arcane-card-root arcane-card-frame arcane-card-body relative flex h-full w-full flex-col overflow-hidden rounded-xl bg-linear-to-br text-left select-none"
+  [attr.data-faction]="faction ?? null"
+  [attr.data-effect]="illustration.effect"
+  [class.arcane-card-tilt]="interactiveTilt()" [style.--card-rx.deg]="tiltX()" [style.--card-ry.deg]="tiltY()"
+  [style.--foil-x.%]="foilX()" [style.--foil-y.%]="foilY()" (pointermove)="onPointerMove($event)"
+  (pointerleave)="onPointerLeave()"
+  [class]="(meta ? meta.surfaceClass + ' ' + meta.borderClass : 'from-arcane-surface to-arcane-void border-slate-700') + (compact() ? (showCompactText() ? ' justify-between px-1.5 py-1.5 min-h-22' : ' justify-between px-1.5 py-1 min-h-18') : ' arcane-card-standard gap-1.5 p-2.5') + (selected() ? ' arcane-card-selected' : '') + (highlightedTarget() ? ' arcane-card-targetable' : '') + (viewCard?.canAttackNow ? ' arcane-card-ready' : '') + (viewCard?.exhausted ? ' opacity-75 saturate-75' : '')">
+  @if (foil) {
+  <div class="arcane-foil-sheen absolute inset-0 z-20" aria-hidden="true"></div>
+  }
+
+  <!-- Subtle inner filigree border inside outer frame -->
+  <div class="pointer-events-none absolute inset-1 rounded-[0.55rem] border border-arcane-ink/10" aria-hidden="true">
+  </div>
+
+  <!-- Top Header Crest: Energy Orb + Nameplate + Posture -->
+  <div class="relative z-10 flex shrink-0 items-center justify-between gap-1">
+    <div class="flex min-w-0 items-center gap-1.5">
+      @if (cost !== null) {
+      <span
+        class="arcane-orb-energy arcane-num inline-flex shrink-0 items-center justify-center rounded-full font-extrabold"
+        [class]="compact() ? 'h-5 w-5 text-[11px]' : 'h-6 w-6 text-xs'" title="Coût en Énergie">
+        {{ cost }}
+      </span>
+      }
+      @if (epic) {
+      <span class="inline-flex shrink-0 items-center text-arcane-gold-bright" title="Carte Épique (1 exemplaire max)">
+        <ng-icon name="lucideCrown" [size]="compact() ? '10px' : '12px'" aria-hidden="true" />
+      </span>
+      }
+      <span class="arcane-card-name arcane-display truncate font-semibold text-arcane-ink"
+        [class]="compact() ? 'text-[11px]' : 'text-[13px]'" [title]="name">
+        {{ name }}
+      </span>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-1">
+      @if (ramp) {
+      <span
+        class="inline-flex items-center rounded border border-emerald-400/40 bg-emerald-500/20 px-1 py-0.5 text-[10px] font-bold text-emerald-200"
+        title="Générateur Ramp">
+        <ng-icon name="lucideZap" size="11px" aria-hidden="true" />
+      </span>
+      }
+      @if (showPosture() && posture) {
+      <span class="inline-flex items-center gap-0.5 rounded border font-bold uppercase"
+        [class]="(compact() ? 'px-1 py-0 text-[9px] ' : 'px-1.5 py-0.5 text-[10px] ') + (posture === 'ATTACK' ? 'border-rose-400/50 bg-rose-500/25 text-rose-100' : 'border-sky-400/50 bg-sky-500/25 text-sky-100')"
+        [title]="posture === 'ATTACK' ? 'Posture Attaque' : 'Posture Défense'">
+        <ng-icon [name]="posture === 'ATTACK' ? 'lucideArrowUp' : 'lucideRotateCw'" [size]="compact() ? '9px' : '10px'"
+          aria-hidden="true" />
+        <span class="arcane-posture-text">{{ posture === 'ATTACK' ? 'ATQ' : 'DÉF' }}</span>
+      </span>
+      }
+    </div>
+  </div>
+
+  <!-- Artwork Window: custom illustration when provided, thematic SVG scene fallback meanwhile -->
+  @if (displayArt) {
+  <div class="arcane-art-frame relative z-10 flex shrink-0 items-center justify-center"
+    [class]="compact() ? 'my-1.5 h-14' : 'aspect-16/9 w-full'">
+    @if (artSrc) {
+    <img [src]="artSrc" [alt]="name" loading="lazy" class="h-full w-full object-cover" />
+    } @else {
+    <app-arcane-card-art class="block h-full w-full" [spec]="illustration" [compact]="compact()" />
+    }
+  </div>
+  }
+
+  <!-- Center strip: type / keywords / defense emblem -->
+  <div class="arcane-card-badges relative z-10 flex shrink-0 items-center justify-between gap-1"
+    [class]="compact() ? 'my-0.5' : 'min-h-6'">
+    <div class="flex flex-wrap items-center gap-1">
+      @if (cardType) {
+      <span class="inline-flex shrink-0 items-center gap-1 rounded border font-semibold whitespace-nowrap"
+        [class]="(compact() ? 'px-1 py-0 text-[9px] ' : 'px-1.5 py-0.5 text-[10px] ') + (meta ? meta.badgeClass : 'border-slate-600 text-slate-300')">
+        @if (!displayArt) {
+        <ng-icon [name]="typeIconName(cardType)" size="10px" aria-hidden="true" />
+        }
+        <span>{{ typeLabels[cardType] }}</span>
+      </span>
+      }
+      @if (!displayArt) {
+      <span
+        class="inline-flex shrink-0 items-center gap-0.5 rounded border border-slate-600/50 bg-arcane-void/75 px-1 py-0 text-[9px] font-semibold whitespace-nowrap"
+        [style.color]="illustration.secondaryColor"
+        [title]="illustration.effectTag"
+        aria-hidden="true">
+        <ng-icon [name]="effectIconName(illustration.effect)" size="9px" />
+      </span>
+      }
+      @for (kw of keywords; track kw) {
+      <span
+        class="rounded border border-arcane-gold/35 bg-arcane-recessed/95 font-bold tracking-wide whitespace-nowrap text-arcane-gold-bright"
+        [class]="compact() ? 'px-1 py-0 text-[9px]' : 'px-1.5 py-0.5 text-[10px]'">
+        {{ kw }}
+      </span>
+      }
+    </div>
+
+    @if (showPosture() && posture === 'DEFENSE') {
+    <span
+      class="arcane-card-defense inline-flex shrink-0 items-center justify-center rounded border border-sky-400/60 bg-sky-900/70 text-sky-200"
+      [class]="compact() ? 'h-5 w-5' : 'h-6 w-6'" aria-label="Posture Défense inclinée 90 degrés">
+      <ng-icon name="lucideShield" [size]="compact() ? '11px' : '13px'" aria-hidden="true" />
+    </span>
+    }
+  </div>
+
+  <!-- Rules / Description Scroll Strip -->
+  @if (!compact()) {
+  <div class="relative z-10 flex flex-1 flex-col rounded-md border border-slate-700/45 bg-arcane-void/55 px-2.5 py-2">
+    @if (viewCard?.description || defCard?.description) {
+    <p class="text-[11px] leading-[1.38] text-arcane-ink-secondary" [class.arcane-line-clamp-4]="!unclampDescription()">
+      {{ viewCard?.description ?? defCard?.description }}
+    </p>
+    }
+  </div>
+  } @else if (showCompactText() && (viewCard?.description || defCard?.description)) {
+  <p class="relative z-10 text-arcane-ink-secondary text-[10px] leading-tight"
+    [class]="effAtk === null && effDef === null ? 'line-clamp-2' : 'line-clamp-1'">
+    {{ viewCard?.description ?? defCard?.description }}
+  </p>
+  }
+
+  <!-- Status Badges with Non-Color Lucide Iconography -->
+  @if (viewCard && (viewCard.exhausted || viewCard.slowed || viewCard.camouflaged || viewCard.canAttackNow ||
+  viewCard.curseRemainingTurns !== null)) {
+  <div class="relative z-10 mt-0.5 flex shrink-0 flex-wrap gap-1">
+    @if (viewCard.canAttackNow) {
+    <span
+      class="inline-flex items-center gap-0.5 rounded border border-emerald-400/65 bg-emerald-900/55 px-1 py-0.2 text-[9px] font-bold text-emerald-100">
+      <ng-icon name="lucideCheck" size="9px" aria-hidden="true" />
+      <span>PRÊT</span>
+    </span>
+    }
+    @if (viewCard.exhausted) {
+    <span
+      class="inline-flex items-center gap-0.5 rounded border border-slate-500/50 bg-slate-800/85 px-1 text-[9px] font-bold text-slate-200">
+      <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
+      <span>ÉPUISÉ</span>
+    </span>
+    }
+    @if (viewCard.slowed) {
+    <span
+      class="inline-flex items-center gap-0.5 rounded border border-cyan-400/50 bg-cyan-900/75 px-1 text-[9px] font-bold text-cyan-100">
+      <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
+      <span>RALENTI</span>
+    </span>
+    }
+    @if (viewCard.camouflaged) {
+    <span
+      class="inline-flex items-center gap-0.5 rounded border border-indigo-400/50 bg-indigo-900/75 px-1 text-[9px] font-bold text-indigo-100">
+      <ng-icon name="lucideEyeOff" size="9px" aria-hidden="true" />
+      <span>CAMOUFLÉ</span>
+    </span>
+    }
+    @if (viewCard.curseRemainingTurns !== null) {
+    <span
+      class="inline-flex items-center gap-0.5 rounded border border-purple-400/50 bg-purple-900/80 px-1 text-[9px] font-bold text-purple-100">
+      <ng-icon name="lucideSkull" size="9px" aria-hidden="true" />
+      <span>Malédiction {{ viewCard.curseRemainingTurns }}t</span>
+    </span>
+    }
+  </div>
+  }
+
+  <!-- Bottom Sculpted Stat Capsules: ATK / DEF (or Arcane Spell/Artifact Seal on full card) -->
+  @if (effAtk !== null || effDef !== null) {
+  <div
+    class="arcane-card-stats arcane-num relative z-10 mt-auto flex shrink-0 items-center justify-between gap-1.5 border-t border-arcane-gold/20 font-extrabold"
+    [class]="compact() ? 'pt-1 text-[11px]' : 'pt-1.5 text-xs'">
+    <span class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5"
+      [class]="effAtk !== null && baseAtk !== null && effAtk > baseAtk ? 'text-emerald-300 border-emerald-500/45' : effAtk !== null && baseAtk !== null && effAtk < baseAtk ? 'text-rose-300 border-rose-500/45' : 'text-rose-200'">
+      <ng-icon name="lucideSwords" [size]="compact() ? '11px' : '13px'" aria-hidden="true" />
+      <span>{{ effAtk ?? '-' }}</span>
+    </span>
+    <span class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5"
+      [class]="effDef !== null && baseDef !== null && effDef > baseDef ? 'text-emerald-300 border-emerald-500/45' : effDef !== null && baseDef !== null && effDef < baseDef ? 'text-rose-300 border-rose-500/45' : 'text-sky-200'">
+      <ng-icon name="lucideShield" [size]="compact() ? '11px' : '13px'" aria-hidden="true" />
+      <span>{{ effDef ?? '-' }}</span>
+    </span>
+  </div>
+  } @else if (!compact()) {
+  <div
+    class="relative z-10 mt-auto flex shrink-0 items-center justify-between gap-1.5 border-t border-arcane-gold/20 pt-1.5 text-[11px] font-bold">
+    @if (meta) {
+    <span
+      class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5 text-arcane-ink-secondary">
+      <ng-icon [name]="factionIconName(faction)" size="12px" [style.color]="artVisual.sigilColor" aria-hidden="true" />
+      <span>{{ meta.shortLabel }}</span>
+    </span>
+    }
+    @if (cardType) {
+    <span
+      class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5 text-arcane-ink-muted">
+      <ng-icon [name]="typeIconName(cardType)" size="12px" aria-hidden="true" />
+      <span>{{ typeLabels[cardType] }}</span>
+    </span>
+    }
+  </div>
+  }
+</div>
+}

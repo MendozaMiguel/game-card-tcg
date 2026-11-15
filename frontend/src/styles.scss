@@ -1,0 +1,1908 @@
+@use "./tailwind";
+
+/* Typographie auto-hébergée (CSP-safe: font-src 'self' data:) */
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("/fonts/cinzel-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D1, U+02D3-02D5, U+02D7-02D9, U+02DB-02DD, U+02EF-02FF, U+0300-036F, U+0374-0375, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("/fonts/cinzel-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D1, U+02D3-02D5, U+02D7-02D9, U+02DB-02DD, U+02EF-02FF, U+0300-036F, U+0374-0375, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* 1. Primitives — Obsidienne Runique & Laiton Doré */
+  --arcane-palette-void: #060811;
+  --arcane-palette-primary: #0a0e1a;
+  --arcane-palette-recessed: #080c17;
+  --arcane-palette-surface: #121829;
+  --arcane-palette-elevated: #1b233a;
+
+  --arcane-palette-ink: #f4efe6;
+  --arcane-palette-ink-secondary: #cbd5e1;
+  --arcane-palette-ink-muted: #94a3b8;
+
+  --arcane-palette-gold: #d9a441;
+  --arcane-palette-gold-bright: #f0c96e;
+  --arcane-palette-bronze: #8c621d;
+
+  --arcane-palette-success: #34d399;
+  --arcane-palette-danger: #fb7185;
+  --arcane-palette-info: #60a5fa;
+  --arcane-palette-warning: #fbbf24;
+
+  --arcane-palette-fire: #f97316;
+  --arcane-palette-ice: #38bdf8;
+  --arcane-palette-shadow: #a855f7;
+  --arcane-palette-light: #fef08a;
+
+  /* 2. Tokens Sémantiques */
+  --arcane-font-display: "Cinzel", Georgia, "Times New Roman", serif;
+  --arcane-font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --arcane-bg-void: var(--arcane-palette-void);
+  --arcane-bg-primary: var(--arcane-palette-primary);
+  --arcane-bg-recessed: var(--arcane-palette-recessed);
+  --arcane-bg-surface: var(--arcane-palette-surface);
+  --arcane-bg-elevated: var(--arcane-palette-elevated);
+
+  --arcane-ink-primary: var(--arcane-palette-ink);
+  --arcane-ink-secondary: var(--arcane-palette-ink-secondary);
+  --arcane-ink-muted: var(--arcane-palette-ink-muted);
+
+  /* Alias hérités maintenus pour rétrocompatibilité */
+  --arcane-text-primary: var(--arcane-ink-primary);
+  --arcane-text-muted: var(--arcane-ink-muted);
+
+  --arcane-border-subtle: rgb(148 163 184 / 0.24);
+  --arcane-border-brass: rgb(217 164 65 / 0.42);
+  --arcane-border-focus: var(--arcane-palette-gold-bright);
+
+  --arcane-accent-gold: var(--arcane-palette-gold);
+  --arcane-accent-gold-bright: var(--arcane-palette-gold-bright);
+  --arcane-accent-bronze: var(--arcane-palette-bronze);
+
+  --arcane-status-success: var(--arcane-palette-success);
+  --arcane-status-danger: var(--arcane-palette-danger);
+  --arcane-status-info: var(--arcane-palette-info);
+  --arcane-status-warning: var(--arcane-palette-warning);
+  --arcane-danger: var(--arcane-status-danger);
+  --arcane-success: var(--arcane-status-success);
+
+  --arcane-faction-fire: var(--arcane-palette-fire);
+  --arcane-faction-ice: var(--arcane-palette-ice);
+  --arcane-faction-shadow: var(--arcane-palette-shadow);
+  --arcane-faction-light: var(--arcane-palette-light);
+
+  --arcane-scrollbar-track: var(--arcane-bg-recessed);
+  --arcane-scrollbar-thumb: #334155;
+  --arcane-target-size: 2.5rem;
+  accent-color: var(--arcane-accent-gold);
+  scrollbar-color: var(--arcane-scrollbar-thumb) var(--arcane-scrollbar-track);
+}
+
+@media (pointer: coarse) {
+  :root {
+    --arcane-target-size: 2.75rem;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  min-block-size: 100%;
+  overflow-wrap: anywhere;
+  background-color: var(--arcane-bg-primary);
+  background-image:
+    radial-gradient(ellipse 80% 45% at 50% -12%, rgb(217 164 65 / 0.08), transparent 72%),
+    radial-gradient(ellipse 60% 35% at 88% 8%, rgb(56 189 248 / 0.05), transparent 65%);
+  color: var(--arcane-ink-primary);
+  font-family: var(--arcane-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video {
+  max-inline-size: 100%;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+::selection {
+  background-color: rgb(217 164 65 / 0.3);
+  color: var(--arcane-ink-primary);
+}
+
+.arcane-display {
+  font-family: var(--arcane-font-display);
+  letter-spacing: 0.025em;
+}
+
+.arcane-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.arcane-panel {
+  background-color: var(--arcane-bg-surface);
+  background-image: linear-gradient(180deg, rgb(255 248 232 / 0.035) 0%, transparent 28%);
+  border: 1px solid var(--arcane-border-subtle);
+  box-shadow:
+    0 20px 44px -26px rgb(0 0 0 / 0.84),
+    inset 0 1px 0 0 rgb(217 164 65 / 0.14);
+}
+
+.arcane-panel-hero {
+  background-color: var(--arcane-bg-elevated);
+  background-image:
+    radial-gradient(ellipse 85% 60% at 50% 0%, rgb(217 164 65 / 0.09), transparent 72%),
+    linear-gradient(180deg, rgb(255 248 232 / 0.05) 0%, transparent 35%);
+  border: 1px solid rgb(217 164 65 / 0.34);
+  box-shadow:
+    0 24px 52px -24px rgb(0 0 0 / 0.9),
+    inset 0 1px 0 0 rgb(245 208 118 / 0.22);
+}
+
+.arcane-well {
+  background-color: var(--arcane-bg-recessed);
+  border: 1px solid rgb(148 163 184 / 0.18);
+  box-shadow: inset 0 2px 8px 0 rgb(0 0 0 / 0.52);
+}
+
+/* Collectible card frame primitives (Container Queries + zero-shift selection) */
+.arcane-card-container {
+  container-type: inline-size;
+  container-name: arcane-card;
+}
+
+.arcane-card-frame {
+  border-width: 1px;
+  border-style: solid;
+  box-shadow:
+    0 12px 26px -14px rgb(0 0 0 / 0.88),
+    inset 0 1px 0 0 rgb(255 248 230 / 0.16),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.65);
+  transition: border-color 180ms ease-out, box-shadow 180ms ease-out, outline-color 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arcane-card-frame {
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease-out, box-shadow 180ms ease-out, outline-color 180ms ease-out;
+  }
+}
+
+.arcane-card-selected {
+  outline: 2px solid var(--arcane-accent-gold);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 28px -6px rgb(217 164 65 / 0.58),
+    0 18px 34px -16px rgb(0 0 0 / 0.9),
+    inset 0 1px 0 0 rgb(245 208 118 / 0.28);
+}
+
+.arcane-card-targetable {
+  outline: 2px solid #f43f5e;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 24px -6px rgb(244 63 94 / 0.56),
+    inset 0 1px 0 0 rgb(254 205 211 / 0.2);
+}
+
+.arcane-orb-energy {
+  background: radial-gradient(circle at 32% 28%, #fde68a 0%, #d9a441 42%, #785312 100%);
+  color: #0b0e17;
+  border: 1px solid rgb(254 243 199 / 0.65);
+  box-shadow:
+    0 3px 10px -2px rgb(0 0 0 / 0.78),
+    inset 0 1px 1px rgb(255 255 255 / 0.65);
+}
+
+.arcane-arena-north {
+  background-color: rgb(10 14 26 / 0.92);
+  background-image:
+    radial-gradient(ellipse 78% 62% at 50% 0%, rgb(244 63 94 / 0.085), transparent 72%),
+    linear-gradient(180deg, rgb(251 113 133 / 0.04) 0%, transparent 38%);
+  border: 1px solid rgb(244 63 94 / 0.24);
+  box-shadow:
+    0 14px 32px -22px rgb(0 0 0 / 0.88),
+    inset 0 1px 0 0 rgb(251 113 133 / 0.14);
+}
+
+.arcane-arena-south {
+  background-color: rgb(11 16 30 / 0.94);
+  background-image:
+    radial-gradient(ellipse 82% 64% at 50% 100%, rgb(217 164 65 / 0.095), transparent 74%),
+    linear-gradient(0deg, rgb(245 208 118 / 0.045) 0%, transparent 38%);
+  border: 1px solid rgb(217 164 65 / 0.28);
+  box-shadow:
+    0 14px 32px -22px rgb(0 0 0 / 0.88),
+    inset 0 1px 0 0 rgb(245 208 118 / 0.16);
+}
+
+.arcane-slot-empty {
+  position: relative;
+  background-color: rgb(7 10 18 / 0.72);
+  background-image:
+    radial-gradient(circle at 50% 50%, rgb(217 164 65 / 0.055) 0%, transparent 64%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.025) 0%, transparent 45%);
+  border: 1px solid rgb(148 163 184 / 0.18);
+  box-shadow:
+    inset 0 2px 10px rgb(0 0 0 / 0.62),
+    0 1px 0 rgb(255 255 255 / 0.03);
+  transition: border-color 160ms ease-out, background-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.arcane-slot-empty:hover {
+  border-color: rgb(217 164 65 / 0.34);
+  background-color: rgb(14 19 32 / 0.82);
+}
+
+.arcane-slot-empty--active {
+  border-color: rgb(217 164 65 / 0.68);
+  background-color: rgb(217 164 65 / 0.07);
+}
+
+/* Uniform Catalog Card Subgrid & Multi-Line Clipping */
+.arcane-catalog-grid {
+  row-gap: 0.5rem;
+  column-gap: 0.875rem;
+}
+
+.arcane-catalog-tile {
+  grid-row: span 2;
+  display: grid;
+  /* Same-cascade fallback: ignored when subgrid is supported. */
+  grid-template-rows: 1fr auto;
+  grid-template-rows: subgrid;
+  row-gap: 0.5rem;
+  padding-block-end: 0.5rem;
+}
+
+.arcane-line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  line-clamp: 4;
+  overflow: clip;
+}
+
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--arcane-scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--arcane-scrollbar-thumb);
+  }
+}
+
+/* Accessibility: focus ring and visually-hidden utility */
+:where(a:any-link, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--arcane-border-focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 9999;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--arcane-accent-gold);
+  color: var(--arcane-bg-void);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Native <dialog> scroll containment and top-layer animation */
+dialog.arcane-dialog {
+  margin: auto;
+  max-inline-size: min(94vw, 42rem);
+  max-block-size: min(90dvh, 48rem);
+  padding: 0;
+  border: 1px solid var(--arcane-border-brass);
+  border-radius: 1rem;
+  background-color: var(--arcane-bg-surface);
+  color: var(--arcane-ink-primary);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.75);
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.22s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(0.95);
+  }
+}
+
+dialog.arcane-dialog.arcane-dialog-wide {
+  max-inline-size: min(96vw, 60rem);
+}
+
+dialog.arcane-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.arcane-dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgb(3 7 18 / 0);
+  transition-property: background-color, display, overlay;
+  transition-duration: 0.22s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+dialog.arcane-dialog[open]:where(:not([data-closing])) {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(1);
+
+    @starting-style {
+      transform: scale(0.95);
+    }
+  }
+}
+
+dialog.arcane-dialog[open]:where(:not([data-closing]))::backdrop {
+  background-color: rgb(3 7 18 / 0.76);
+  backdrop-filter: blur(4px);
+
+  @starting-style {
+    background-color: rgb(3 7 18 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.arcane-dialog,
+  dialog.arcane-dialog::backdrop {
+    transition-duration: 0.08s;
+  }
+}
+
+/* Interactive form controls: deferred :user-invalid / :user-valid feedback */
+.arcane-input {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgb(148 163 184 / 0.36);
+  background-color: var(--arcane-bg-recessed);
+  color: var(--arcane-ink-primary);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.arcane-input:is(:user-invalid, .user-invalid-fallback) {
+  border-color: var(--arcane-danger);
+  background-color: rgb(127 29 29 / 0.25);
+}
+
+.arcane-input:is(:user-valid, .user-valid-fallback) {
+  border-color: var(--arcane-success);
+}
+
+.arcane-error-msg {
+  display: none;
+  margin-block-start: 0.35rem;
+  font-size: 0.8125rem;
+  color: #fda4af;
+}
+
+.arcane-input:is(:user-invalid, .user-invalid-fallback) + .arcane-error-msg,
+.arcane-field:has(.arcane-input:is(:user-invalid, .user-invalid-fallback)) .arcane-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.arcane-rules-list {
+  color: var(--arcane-ink-muted);
+  font-size: 0.8125rem;
+}
+
+.arcane-field:has(.arcane-input:is(:user-invalid, .user-invalid-fallback)) .arcane-rules-list {
+  color: #fda4af;
+  font-weight: 600;
+}
+
+/* Minimum touch/click target comfort on game controls (44x44 CSS px under pointer: coarse) */
+.arcane-btn {
+  min-block-size: var(--arcane-target-size);
+  min-inline-size: var(--arcane-target-size);
+}
+
+.arcane-safe-top {
+  padding-block-start: env(safe-area-inset-top, 0px);
+}
+
+.arcane-safe-bottom {
+  padding-block-end: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-inline-start: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-inline-end: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+/* Opt-in ambient motion respecting prefers-reduced-motion */
+@keyframes arcane-pulse-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgb(217 164 65 / 0.38);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(217 164 65 / 0.08);
+  }
+}
+
+.arcane-ready-glow {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: arcane-pulse-ring 2.2s ease-in-out infinite;
+  }
+}
+
+/* Native SPA View Transitions (withViewTransitions) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Modernized Atmospheric Depth, Tactile Micro-Interactions & Zero-Scroll Arena Cockpit */
+@media (min-height: 35rem) {
+  .app-shell:has(app-arena-page) {
+    block-size: 100svh;
+    overflow: hidden;
+  }
+
+  .app-shell:has(app-arena-page) > app-arena-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-block-size: 0;
+  }
+}
+
+/* Collapse global navigation bar inside Arena below xl so portrait phones keep 100% of vertical HUD height */
+@media (max-width: 79.999rem) {
+  .app-shell:has(app-arena-page) > app-header {
+    display: none;
+  }
+}
+
+/* Subtle Obsidian Vignette & Atmospheric Craft */
+.arcane-panel {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.03) 0%, transparent 28%);
+  border-color: rgb(148 163 184 / 0.18);
+  box-shadow:
+    0 18px 42px -28px rgb(0 0 0 / 0.9),
+    inset 0 1px 0 0 rgb(244 239 230 / 0.06);
+}
+
+.arcane-panel-hero {
+  background-image:
+    radial-gradient(ellipse 68% 55% at 15% 0%, rgb(217 164 65 / 0.1), transparent 72%),
+    radial-gradient(ellipse 55% 45% at 88% 100%, rgb(99 102 241 / 0.08), transparent 70%),
+    linear-gradient(180deg, rgb(245 208 118 / 0.045) 0%, transparent 32%);
+  border-color: rgb(217 164 65 / 0.34);
+  box-shadow:
+    0 24px 52px -30px rgb(0 0 0 / 0.95),
+    inset 0 1px 0 0 rgb(245 208 118 / 0.16);
+}
+
+.arcane-well {
+  border: 1px solid rgb(148 163 184 / 0.14);
+  background-color: rgb(7 10 19 / 0.78);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.55);
+}
+
+/* Custom sleek SVG chevron for native selects (eliminates 1990s OS dropdown styling) */
+select.arcane-input {
+  appearance: none;
+  padding-inline-end: 2.35rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d9a441' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+}
+
+.arcane-btn {
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease-out,
+      border-color 160ms ease-out,
+      box-shadow 180ms ease-out,
+      filter 160ms ease-out;
+  }
+}
+
+.arcane-btn:active:not(:disabled) {
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(0.97);
+  }
+}
+
+/* Wider top-layer dialog container so 5 Mulligan cards remain clean and legible */
+.arcane-dialog-wide {
+  inline-size: min(74rem, calc(100vw - 1.5rem));
+}
+
+/* Crisp SVG status dot replacing legacy text bullets */
+.arcane-status-dot {
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.arcane-status-dot--online {
+  background-color: #34d399;
+  box-shadow: 0 0 0 2px rgb(52 211 153 / 0.22), 0 0 10px rgb(52 211 153 / 0.65);
+}
+
+.arcane-status-dot--loading {
+  background-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgb(251 191 36 / 0.22);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: arcane-beacon 1.6s ease-in-out infinite;
+  }
+}
+
+.arcane-status-dot--offline {
+  background-color: #fb7185;
+  box-shadow: 0 0 0 2px rgb(251 113 133 / 0.25);
+}
+
+@keyframes arcane-beacon {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.84);
+  }
+}
+
+/* Central Battlefield Clash Divider */
+.arcane-clash-line {
+  position: relative;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(217 164 65 / 0.35) 18%,
+    rgb(245 208 118 / 0.55) 50%,
+    rgb(217 164 65 / 0.35) 82%,
+    transparent 100%
+  );
+  block-size: 1px;
+}
+
+/* Horizontal Swipeable Hand & Chip Rail with Native Momentum & Snap */
+.arcane-hand-rail {
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(217 164 65 / 0.35) transparent;
+}
+
+.arcane-hand-rail::-webkit-scrollbar {
+  height: 4px;
+}
+
+.arcane-hand-rail::-webkit-scrollbar-thumb {
+  background-color: rgb(217 164 65 / 0.35);
+  border-radius: 9999px;
+}
+
+.arcane-hand-rail > * {
+  scroll-snap-align: center;
+}
+
+/* Smooth Mobile Slide-Over Drawer & Bottom Quick-Inspector Sheet */
+.arcane-mobile-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 1;
+  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1), display 220ms;
+  transition-behavior: allow-discrete;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.arcane-mobile-drawer-panel {
+  transform: translateX(0);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @starting-style {
+    transform: translateX(100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.arcane-quick-sheet {
+  transform: translateY(0);
+  opacity: 1;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease-out;
+
+  @starting-style {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* Mode Card Interactive Lift (Desktop Hero Modes) */
+.arcane-mode-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.22);
+  background-color: rgb(11 16 29 / 0.9);
+  transition: border-color 180ms ease-out, box-shadow 200ms ease-out, transform 150ms ease-out;
+}
+
+.arcane-mode-card:hover:not(:disabled) {
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(-2px);
+  }
+}
+
+.arcane-mode-card:active:not(:disabled) {
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(0.985);
+  }
+}
+
+/* Always expose hover-revealed card controls on touch screens (no hover) */
+@media (hover: none) {
+  .arcane-hover-reveal {
+    opacity: 1 !important;
+  }
+}
+
+/* Accessible segmented radio group (Difficulty selector, etc.) */
+.arcane-sr-radio {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.arcane-seg-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.375rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(212 168 83 / 0.24);
+  background-color: rgb(6 10 19 / 0.85);
+}
+
+.arcane-seg-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-block-size: var(--arcane-target-size);
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.55rem;
+  border: 1px solid transparent;
+  color: var(--color-arcane-ink-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.arcane-seg-option:hover {
+  color: var(--color-arcane-ink);
+  background-color: rgb(255 255 255 / 0.04);
+}
+
+.arcane-seg-option:has(input:checked) {
+  color: var(--color-arcane-ink);
+  font-weight: 700;
+  border-color: rgb(212 168 83 / 0.55);
+  background: linear-gradient(180deg, rgb(212 168 83 / 0.16), rgb(19 29 51 / 0.92));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 12px rgb(0 0 0 / 0.35);
+}
+
+.arcane-seg-option[data-tier='EASY']:has(input:checked) {
+  border-color: rgb(52 211 153 / 0.6);
+  background: linear-gradient(180deg, rgb(16 185 129 / 0.2), rgb(6 28 24 / 0.92));
+  color: #d1fae5;
+}
+
+.arcane-seg-option[data-tier='MEDIUM']:has(input:checked) {
+  border-color: rgb(56 189 248 / 0.6);
+  background: linear-gradient(180deg, rgb(14 165 233 / 0.2), rgb(10 24 44 / 0.92));
+  color: #e0f2fe;
+}
+
+.arcane-seg-option[data-tier='HARD']:has(input:checked) {
+  border-color: rgb(251 191 36 / 0.7);
+  background: linear-gradient(180deg, rgb(245 158 11 / 0.24), rgb(38 18 12 / 0.92));
+  color: #fef3c7;
+}
+
+.arcane-seg-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-arcane-gold-bright);
+  outline-offset: 2px;
+}
+
+/* Windows Forced Colors fallback */
+@media (forced-colors: active) {
+  dialog.arcane-dialog,
+  .arcane-panel,
+  .arcane-panel-hero,
+  .arcane-well,
+  .arcane-arena-north,
+  .arcane-arena-south,
+  .arcane-slot-empty,
+  .arcane-card-frame,
+  .arcane-input,
+  .arcane-btn,
+  .arcane-seg-group,
+  .arcane-seg-option {
+    border: 1px solid CanvasText;
+  }
+
+  .arcane-seg-option:has(input:checked) {
+    border: 2px solid Highlight;
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+
+  .arcane-card-selected,
+  .arcane-card-targetable,
+  :where(a:any-link, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid Highlight;
+  }
+}
+
+/* ==========================================================================
+   Procedural Thematic Artwork & Real-Time Arena Elemental VFX
+   GPU-composited only (transform / opacity), <= 3 flashes/s (WCAG 2.3.1),
+   opt-in animation via prefers-reduced-motion: no-preference.
+   ========================================================================== */
+
+:root {
+  --arcane-spring-easing: cubic-bezier(0.22, 1.25, 0.36, 1);
+  --arcane-bounce-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --arcane-spring-easing: linear(
+      0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+      1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
+      1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
+      0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1
+    );
+    --arcane-bounce-easing: linear(
+      0, 0.012 1.8%, 0.24 8.2%, 0.78 16.5%, 1.08 23.2%, 1.14 27%, 1.04 36%,
+      0.97 46%, 1.01 62%, 1
+    );
+  }
+}
+
+.arcane-art-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  background: radial-gradient(circle at 50% 42%, rgb(255 255 255 / 0.12), transparent 62%);
+}
+
+.arcane-art-rays[data-faction='FIRE'] {
+  background: radial-gradient(circle at 50% 45%, rgb(249 115 22 / 0.24), transparent 65%);
+}
+
+.arcane-art-rays[data-faction='ICE'] {
+  background: radial-gradient(circle at 50% 40%, rgb(56 189 248 / 0.24), transparent 65%);
+}
+
+.arcane-art-rays[data-faction='SHADOW'] {
+  background: radial-gradient(circle at 50% 44%, rgb(168 85 247 / 0.26), transparent 65%);
+}
+
+.arcane-art-rays[data-faction='LIGHT'] {
+  background: radial-gradient(circle at 50% 38%, rgb(250 204 21 / 0.24), transparent 65%);
+}
+
+.arcane-art-effect-chip {
+  position: absolute;
+  right: 0.375rem;
+  bottom: 0.3125rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  border: 1px solid rgb(212 169 78 / 0.42);
+  background: rgb(9 13 22 / 0.86);
+  padding: 0.1rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  color: #f3ebd8;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.arcane-vfx-slot {
+  --vfx-accent: #fbbf24;
+  --vfx-tint: rgb(251 191 36 / 0.24);
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.arcane-vfx-slot[data-faction='FIRE'] {
+  --vfx-accent: #fb923c;
+  --vfx-tint: rgb(249 115 22 / 0.28);
+}
+
+.arcane-vfx-slot[data-faction='ICE'] {
+  --vfx-accent: #38bdf8;
+  --vfx-tint: rgb(56 189 248 / 0.28);
+}
+
+.arcane-vfx-slot[data-faction='SHADOW'] {
+  --vfx-accent: #c084fc;
+  --vfx-tint: rgb(168 85 247 / 0.28);
+}
+
+.arcane-vfx-slot[data-faction='LIGHT'] {
+  --vfx-accent: #facc15;
+  --vfx-tint: rgb(250 204 21 / 0.28);
+}
+
+.arcane-vfx-slot[data-kind='SHIELD'] {
+  --vfx-accent: #60a5fa;
+  --vfx-tint: rgb(59 130 246 / 0.3);
+}
+
+.arcane-vfx-slot[data-kind='DEFENSE_BLOCK'] {
+  --vfx-accent: #60a5fa;
+  --vfx-tint: rgb(37 99 235 / 0.34);
+  --vfx-shield-stroke: #93c5fd;
+  --vfx-shield-fill: rgb(59 130 246 / 0.24);
+}
+
+.arcane-vfx-slot[data-kind='DEFENSE_BROKEN'] {
+  --vfx-accent: #fda4af;
+  --vfx-tint: rgb(244 63 94 / 0.32);
+  --vfx-shield-stroke: #fda4af;
+  --vfx-shield-fill: rgb(244 63 94 / 0.22);
+}
+
+.arcane-vfx-hex-shield {
+  position: absolute;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  pointer-events: none;
+}
+
+.arcane-vfx-deflect-rays {
+  position: absolute;
+  inset: -4%;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 15deg,
+    transparent 0 28deg,
+    rgb(147 197 253 / 0.55) 36deg,
+    transparent 48deg 145deg,
+    rgb(253 224 71 / 0.5) 155deg,
+    transparent 170deg 260deg,
+    rgb(147 197 253 / 0.5) 270deg,
+    transparent 290deg 360deg
+  );
+  mask: radial-gradient(circle, transparent 42%, #000 58%, transparent 74%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.arcane-vfx-slot[data-kind='HEAL'] {
+  --vfx-accent: #34d399;
+  --vfx-tint: rgb(52 211 153 / 0.3);
+}
+
+.arcane-vfx-slot[data-kind='DAMAGE'],
+.arcane-vfx-slot[data-kind='DESTROY'] {
+  --vfx-accent: #fb7185;
+  --vfx-tint: rgb(244 63 94 / 0.3);
+}
+
+.arcane-vfx-slot[data-kind='DAMAGE'][data-faction='FIRE'] {
+  --vfx-accent: #fb923c;
+  --vfx-tint: rgb(249 115 22 / 0.34);
+}
+
+.arcane-vfx-slot[data-kind='DAMAGE'][data-faction='ICE'] {
+  --vfx-accent: #38bdf8;
+  --vfx-tint: rgb(56 189 248 / 0.32);
+}
+
+.arcane-vfx-slot[data-kind='DAMAGE'][data-faction='SHADOW'] {
+  --vfx-accent: #c084fc;
+  --vfx-tint: rgb(168 85 247 / 0.32);
+}
+
+.arcane-vfx-ring {
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 2px solid var(--vfx-accent);
+  background: radial-gradient(circle, var(--vfx-tint) 0%, transparent 72%);
+  opacity: 0.85;
+}
+
+.arcane-vfx-cleave {
+  position: absolute;
+  width: 145%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent 0%, var(--vfx-accent) 45%, #fff 50%, var(--vfx-accent) 55%, transparent 100%);
+  transform: rotate(-28deg);
+  opacity: 0.9;
+}
+
+.arcane-vfx-dome {
+  position: absolute;
+  inset: 6%;
+  border-radius: 999px;
+  border: 2px solid var(--vfx-accent);
+  background: radial-gradient(circle, transparent 42%, var(--vfx-tint) 100%);
+  opacity: 0.85;
+}
+
+.arcane-vfx-frost-bars {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -35deg,
+    transparent,
+    transparent 10px,
+    rgb(125 211 252 / 0.24) 10px,
+    rgb(125 211 252 / 0.24) 14px
+  );
+  opacity: 0.8;
+}
+
+.arcane-vfx-badge {
+  position: relative;
+  z-index: 2;
+  border-radius: 0.375rem;
+  border: 1px solid var(--vfx-accent);
+  background: rgb(9 13 22 / 0.94);
+  padding: 0.125rem 0.45rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: #f8fafc;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.arcane-vfx-lp-badge {
+  position: absolute;
+  left: 50%;
+  bottom: -0.9rem;
+  z-index: 40;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgb(9 13 22 / 0.96);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.arcane-vfx-lp-badge[data-kind='DAMAGE'] {
+  color: #fda4af;
+}
+
+.arcane-vfx-lp-badge[data-kind='HEAL'] {
+  color: #6ee7b7;
+}
+
+.arcane-vfx-spell-wave {
+  position: absolute;
+  left: 50%;
+  top: 0.45rem;
+  z-index: 35;
+  transform: translateX(-50%);
+  max-width: min(92%, 22rem);
+  border-radius: 0.65rem;
+  border: 1px solid rgb(212 169 78 / 0.6);
+  background: rgb(11 15 26 / 0.94);
+  padding: 0.35rem 0.75rem;
+  pointer-events: none;
+}
+
+.arcane-vfx-spell-wave[data-faction='FIRE'] {
+  border-color: rgb(251 146 60 / 0.75);
+}
+
+.arcane-vfx-spell-wave[data-faction='ICE'] {
+  border-color: rgb(56 189 248 / 0.75);
+}
+
+.arcane-vfx-spell-wave[data-faction='SHADOW'] {
+  border-color: rgb(192 132 252 / 0.75);
+}
+
+.arcane-vfx-spell-wave[data-faction='LIGHT'] {
+  border-color: rgb(250 204 21 / 0.75);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arcane-art-float-slow {
+    animation: arcaneArtFloat 5.5s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .arcane-vfx-ring {
+    animation: arcaneVfxRingPulse 1.05s var(--arcane-spring-easing) forwards;
+  }
+
+  .arcane-vfx-cleave {
+    animation: arcaneVfxCleaveSweep 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .arcane-vfx-dome {
+    animation: arcaneVfxDomeFlare 1.05s var(--arcane-spring-easing) forwards;
+  }
+
+  .arcane-vfx-frost-bars {
+    animation: arcaneVfxFrostFade 1.15s ease-out forwards;
+  }
+
+  .arcane-vfx-badge {
+    animation: arcaneVfxBadgeRise 1.15s var(--arcane-bounce-easing) forwards;
+  }
+
+  .arcane-vfx-lp-badge {
+    animation: arcaneVfxLpRise 1.3s var(--arcane-bounce-easing) forwards;
+  }
+
+  .arcane-vfx-spell-wave {
+    animation: arcaneVfxWaveEnter 1.45s var(--arcane-spring-easing) forwards;
+  }
+
+  @keyframes arcaneArtFloat {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -2.5px, 0);
+    }
+  }
+
+  @keyframes arcaneVfxRingPulse {
+    0% {
+      opacity: 0;
+      transform: scale(0.84);
+    }
+    28% {
+      opacity: 0.95;
+      transform: scale(1.03);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.06);
+    }
+  }
+
+  @keyframes arcaneVfxCleaveSweep {
+    0% {
+      opacity: 0;
+      transform: rotate(-28deg) scaleX(0.15);
+    }
+    35% {
+      opacity: 1;
+      transform: rotate(-28deg) scaleX(1.05);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(-28deg) scaleX(1.15);
+    }
+  }
+
+  @keyframes arcaneVfxDomeFlare {
+    0% {
+      opacity: 0;
+      transform: scale(0.76);
+    }
+    32% {
+      opacity: 0.95;
+      transform: scale(1.02);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes arcaneVfxFrostFade {
+    0% {
+      opacity: 0;
+    }
+    30% {
+      opacity: 0.88;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes arcaneVfxBadgeRise {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 8px, 0) scale(0.86);
+    }
+    24% {
+      opacity: 1;
+      transform: translate3d(0, -2px, 0) scale(1);
+    }
+    76% {
+      opacity: 1;
+      transform: translate3d(0, -5px, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0) scale(0.96);
+    }
+  }
+
+  @keyframes arcaneVfxLpRise {
+    0% {
+      opacity: 0;
+      transform: translate3d(-50%, 6px, 0) scale(0.85);
+    }
+    24% {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0) scale(1.04);
+    }
+    75% {
+      opacity: 1;
+      transform: translate3d(-50%, -4px, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(-50%, -10px, 0) scale(0.95);
+    }
+  }
+
+  @keyframes arcaneVfxWaveEnter {
+    0% {
+      opacity: 0;
+      transform: translate3d(-50%, -10px, 0) scale(0.92);
+    }
+    18% {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0) scale(1);
+    }
+    80% {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(-50%, -6px, 0) scale(0.97);
+    }
+  }
+
+  .arcane-vfx-hex-shield {
+    animation: arcaneVfxShieldBastion 0.9s var(--arcane-spring-easing) forwards;
+  }
+
+  .arcane-vfx-deflect-rays {
+    animation: arcaneVfxDeflectSpin 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes arcaneVfxShieldBastion {
+    0% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    28% {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+    65% {
+      opacity: 0.94;
+      transform: scale(0.99);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes arcaneVfxDeflectSpin {
+    0% {
+      opacity: 0;
+      transform: rotate(-18deg) scale(0.65);
+    }
+    35% {
+      opacity: 1;
+      transform: rotate(12deg) scale(1.06);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(36deg) scale(1.22);
+    }
+  }
+
+  .arcane-proj-bolt {
+    animation: arcaneProjectileFlight 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .arcane-proj-arrival {
+    animation: arcaneProjectileArrival 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+  }
+
+  .arcane-avatar-shield-svg {
+    animation: arcaneVfxShieldBastion 0.85s var(--arcane-spring-easing) forwards;
+  }
+
+  .arcane-avatar-hit-ring {
+    animation: arcaneVfxDomeFlare 0.72s var(--arcane-spring-easing) forwards;
+  }
+
+  .arcane-avatar-impact-badge {
+    animation: arcaneVfxBadgeRise 1.15s var(--arcane-bounce-easing) forwards;
+  }
+
+  @keyframes arcaneProjectileFlight {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0) rotate(var(--proj-angle, 0deg)) scale(0.68);
+    }
+    16% {
+      opacity: 1;
+      transform: translate3d(calc(var(--proj-dx, 0px) * 0.16), calc(var(--proj-dy, 0px) * 0.16), 0)
+        rotate(var(--proj-angle, 0deg)) scale(1.1);
+    }
+    82% {
+      opacity: 1;
+      transform: translate3d(calc(var(--proj-dx, 0px) * 0.94), calc(var(--proj-dy, 0px) * 0.94), 0)
+        rotate(var(--proj-angle, 0deg)) scale(1.04);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) rotate(var(--proj-angle, 0deg)) scale(0.62);
+    }
+  }
+
+  @keyframes arcaneProjectileArrival {
+    0% {
+      opacity: 0;
+      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(0.45);
+    }
+    34% {
+      opacity: 1;
+      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.12);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.45);
+    }
+  }
+}
+
+/* ============================================================
+ * Player Avatar Slots & Elemental Deck Projectiles
+ * ============================================================ */
+.arcane-avatar-slot {
+  --av-accent: #d4a94e;
+  --av-tint: rgb(212 169 78 / 0.35);
+  --av-frame-border: #b88c38;
+  --av-size: 2.25rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--av-size);
+  block-size: var(--av-size);
+  border-radius: 999px;
+  color: var(--av-accent);
+  translate: 0 0;
+  scale: 1;
+  user-select: none;
+}
+
+.arcane-avatar-slot[data-size='xs'] {
+  --av-size: 1.75rem;
+}
+
+.arcane-avatar-slot[data-size='sm'] {
+  --av-size: 2.25rem;
+}
+
+.arcane-avatar-slot[data-size='md'] {
+  --av-size: 3.25rem;
+}
+
+.arcane-avatar-slot[data-size='lg'] {
+  --av-size: 4.75rem;
+}
+
+.arcane-avatar-slot[data-faction='FIRE'] {
+  --av-accent: #fb923c;
+  --av-tint: rgb(249 115 22 / 0.38);
+}
+
+.arcane-avatar-slot[data-faction='ICE'] {
+  --av-accent: #38bdf8;
+  --av-tint: rgb(56 189 248 / 0.38);
+}
+
+.arcane-avatar-slot[data-faction='SHADOW'] {
+  --av-accent: #c084fc;
+  --av-tint: rgb(168 85 247 / 0.38);
+}
+
+.arcane-avatar-slot[data-faction='LIGHT'] {
+  --av-accent: #facc15;
+  --av-tint: rgb(250 204 21 / 0.38);
+}
+
+.arcane-avatar-slot[data-frame='mage'] {
+  --av-frame-border: #60a5fa;
+}
+
+.arcane-avatar-slot[data-frame='archimage'] {
+  --av-frame-border: #c084fc;
+}
+
+.arcane-avatar-slot[data-frame='grand_maitre'] {
+  --av-frame-border: #fde047;
+}
+
+.arcane-avatar-aura {
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: radial-gradient(circle, var(--av-tint) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.arcane-avatar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--av-frame-border);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), 0 2px 8px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+}
+
+.arcane-avatar-core {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  border-radius: inherit;
+  overflow: hidden;
+  background: #0a0f1d;
+}
+
+.arcane-avatar-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.arcane-avatar-status {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  z-index: 3;
+  border-radius: 999px;
+  border: 1.5px solid #090d16;
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.arcane-avatar-status--offline {
+  width: 0.55rem;
+  height: 0.55rem;
+  background: #f43f5e;
+}
+
+.arcane-avatar-status--bot {
+  padding: 0.08rem 0.25rem;
+  background: #0f766e;
+  color: #ccfbf1;
+}
+
+.arcane-avatar-impact-fx {
+  position: absolute;
+  inset: -6px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.arcane-avatar-shield-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.arcane-avatar-hit-ring {
+  position: absolute;
+  inset: 1px;
+  border-radius: 999px;
+  border: 2.5px solid #fb7185;
+  background: radial-gradient(circle, rgb(244 63 94 / 0.32) 0%, transparent 72%);
+}
+
+.arcane-avatar-impact-badge {
+  position: relative;
+  z-index: 2;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgb(9 13 22 / 0.96);
+  padding: 0.08rem 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.arcane-avatar-impact-fx[data-kind='DEFENSE_BLOCK'] .arcane-avatar-impact-badge {
+  color: #93c5fd;
+}
+
+.arcane-avatar-impact-fx[data-kind='DAMAGE'] .arcane-avatar-impact-badge {
+  color: #fda4af;
+}
+
+.arcane-projectile-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 42;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.arcane-proj-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate3d(var(--proj-x, 0px), var(--proj-y, 0px), 0);
+  pointer-events: none;
+}
+
+.arcane-proj-bolt {
+  position: absolute;
+  left: -44px;
+  top: -20px;
+  width: 88px;
+  height: 40px;
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.arcane-proj-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.arcane-proj-anchor[data-faction='FIRE'] {
+  color: #fb923c;
+}
+
+.arcane-proj-anchor[data-faction='ICE'] {
+  color: #38bdf8;
+}
+
+.arcane-proj-anchor[data-faction='SHADOW'] {
+  color: #c084fc;
+}
+
+.arcane-proj-anchor[data-faction='LIGHT'] {
+  color: #facc15;
+}
+
+.arcane-proj-arrival {
+  position: absolute;
+  left: -34px;
+  top: -34px;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.arcane-proj-arrival-ring {
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  border: 2.5px solid currentColor;
+  background: radial-gradient(circle, currentColor 0%, transparent 65%);
+  opacity: 0.72;
+}
+
+.arcane-proj-arrival-core {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.arcane-proj-deflect-arc {
+  width: 56px;
+  height: 56px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcane-proj-arrival {
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================================
+   Arena UX Clarity: Faction Territories, Turn Ownership & Scannable Chronicle
+   ========================================================================== */
+
+.arcane-arena-north,
+.arcane-arena-south {
+  --territory-accent: #94a3b8;
+  --territory-tint: rgb(148 163 184 / 0.08);
+  transition: border-color 200ms ease-out, box-shadow 220ms ease-out;
+}
+
+.arcane-arena-north[data-faction='FIRE'],
+.arcane-arena-south[data-faction='FIRE'] {
+  --territory-accent: #f97316;
+  --territory-tint: rgb(249 115 22 / 0.13);
+}
+
+.arcane-arena-north[data-faction='ICE'],
+.arcane-arena-south[data-faction='ICE'] {
+  --territory-accent: #38bdf8;
+  --territory-tint: rgb(56 189 248 / 0.13);
+}
+
+.arcane-arena-north[data-faction='SHADOW'],
+.arcane-arena-south[data-faction='SHADOW'] {
+  --territory-accent: #a855f7;
+  --territory-tint: rgb(168 85 247 / 0.14);
+}
+
+.arcane-arena-north[data-faction='LIGHT'],
+.arcane-arena-south[data-faction='LIGHT'] {
+  --territory-accent: #facc15;
+  --territory-tint: rgb(250 204 21 / 0.13);
+}
+
+.arcane-arena-north[data-faction] {
+  background-image:
+    radial-gradient(ellipse 76% 58% at 50% 0%, var(--territory-tint), transparent 72%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.02) 0%, transparent 40%);
+  border-color: color-mix(in srgb, var(--territory-accent) 34%, rgb(30 41 59));
+}
+
+.arcane-arena-north[data-active-turn='true'] {
+  border-color: color-mix(in srgb, var(--territory-accent) 76%, #ffffff 10%);
+  box-shadow:
+    0 14px 30px -20px rgb(0 0 0 / 0.9),
+    inset 0 2px 0 0 color-mix(in srgb, var(--territory-accent) 55%, transparent);
+}
+
+.arcane-arena-south[data-faction] {
+  background-image:
+    radial-gradient(ellipse 84% 66% at 50% 100%, var(--territory-tint), transparent 74%),
+    linear-gradient(0deg, rgb(255 255 255 / 0.025) 0%, transparent 40%);
+  border-color: color-mix(in srgb, var(--territory-accent) 38%, rgb(30 41 59));
+}
+
+.arcane-arena-south[data-my-turn='true'] {
+  border-width: 1.5px;
+  border-color: color-mix(in srgb, var(--territory-accent) 82%, #fef3c7 18%);
+  box-shadow:
+    0 0 24px -10px color-mix(in srgb, var(--territory-accent) 48%, transparent),
+    0 14px 32px -20px rgb(0 0 0 / 0.92),
+    inset 0 -2px 0 0 color-mix(in srgb, var(--territory-accent) 45%, transparent);
+}
+
+.arcane-card-playable {
+  --playable-accent: #d9a441;
+}
+
+.arcane-card-playable[data-card-faction='FIRE'] {
+  --playable-accent: #fb923c;
+}
+
+.arcane-card-playable[data-card-faction='ICE'] {
+  --playable-accent: #38bdf8;
+}
+
+.arcane-card-playable[data-card-faction='SHADOW'] {
+  --playable-accent: #c084fc;
+}
+
+.arcane-card-playable[data-card-faction='LIGHT'] {
+  --playable-accent: #facc15;
+}
+
+.arcane-card-playable .arcane-card-frame {
+  border-color: color-mix(in srgb, var(--playable-accent) 78%, #ffffff 15%);
+  box-shadow:
+    0 0 18px -6px color-mix(in srgb, var(--playable-accent) 52%, transparent),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.16);
+}
+
+.arcane-card-ready-attacker .arcane-card-frame {
+  outline: 2px solid #34d399;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 20px -6px rgb(52 211 153 / 0.52),
+    inset 0 1px 0 0 rgb(209 250 229 / 0.18);
+}
+
+.arcane-tactical-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(148 163 184 / 0.24);
+  border-inline-start-width: 3px;
+  background-color: rgb(9 14 26 / 0.88);
+  padding: 0.3rem 0.6rem;
+}
+
+.arcane-tactical-bar[data-tone='MY_ACTION'] {
+  border-color: rgb(52 211 153 / 0.42);
+  border-inline-start-color: #34d399;
+  background-color: rgb(6 26 24 / 0.72);
+}
+
+.arcane-tactical-bar[data-tone='COMBAT'] {
+  border-color: rgb(249 115 22 / 0.48);
+  border-inline-start-color: #fb923c;
+  background-color: rgb(32 15 10 / 0.72);
+}
+
+.arcane-tactical-bar[data-tone='REACTION'] {
+  border-color: rgb(251 191 36 / 0.65);
+  border-inline-start-color: #fbbf24;
+  background-color: rgb(36 22 8 / 0.82);
+}
+
+@keyframes arcane-beacon-slide {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -10px) scale(0.96);
+  }
+  16%,
+  82% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -6px) scale(0.98);
+  }
+}
+
+.arcane-turn-beacon {
+  --beacon-accent: #34d399;
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 38;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  border: 1.5px solid var(--beacon-accent);
+  background: rgb(8 13 24 / 0.94);
+  padding: 0.35rem 0.95rem;
+  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.95), 0 0 24px -8px var(--beacon-accent);
+  white-space: nowrap;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: arcane-beacon-slide 2.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+.arcane-turn-beacon[data-faction='FIRE'] {
+  --beacon-accent: #fb923c;
+}
+
+.arcane-turn-beacon[data-faction='ICE'] {
+  --beacon-accent: #38bdf8;
+}
+
+.arcane-turn-beacon[data-faction='SHADOW'] {
+  --beacon-accent: #c084fc;
+}
+
+.arcane-turn-beacon[data-faction='LIGHT'] {
+  --beacon-accent: #facc15;
+}
+
+.arcane-tab-btn {
+  border-bottom: 2px solid transparent;
+  color: var(--color-arcane-ink-muted);
+  transition: color 150ms ease-out, border-color 150ms ease-out, background-color 150ms ease-out;
+}
+
+.arcane-tab-btn[aria-selected='true'] {
+  border-bottom-color: var(--arcane-accent-gold);
+  color: var(--color-arcane-gold-bright);
+  background-color: rgb(217 164 65 / 0.1);
+}
+
+.arcane-log-entry {
+  border-inline-start-width: 3px;
+}
+
+.arcane-log-entry[data-faction='FIRE'] {
+  border-inline-start-color: #f97316;
+}
+
+.arcane-log-entry[data-faction='ICE'] {
+  border-inline-start-color: #38bdf8;
+}
+
+.arcane-log-entry[data-faction='SHADOW'] {
+  border-inline-start-color: #a855f7;
+}
+
+.arcane-log-entry[data-faction='LIGHT'] {
+  border-inline-start-color: #facc15;
+}
+
+@media (forced-colors: active) {
+  .arcane-arena-south[data-my-turn='true'],
+  .arcane-arena-north[data-active-turn='true'] {
+    border: 2px solid Highlight;
+  }
+
+  .arcane-card-playable .arcane-card-frame,
+  .arcane-card-ready-attacker .arcane-card-frame {
+    outline: 2px solid Highlight;
+  }
+
+  .arcane-tab-btn[aria-selected='true'] {
+    border-bottom: 3px solid Highlight;
+    color: HighlightText;
+  }
+}
+

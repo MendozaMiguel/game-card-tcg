@@ -1,0 +1,17 @@
+package com.ordredesarcane.online.game.model;
+
+public enum GameActionType {
+    MULLIGAN_SWAP,
+    PLAY_CARD,
+    SET_REACTIVE_SPELL,
+    CHANGE_POSTURE,
+    ACTIVATE_EFFECT,
+    ENTER_COMBAT,
+    DECLARE_ATTACK,
+    TRIGGER_REACTION,
+    PASS_REACTION,
+    RESOLVE_CHOICE,
+    DISCARD_EXCESS,
+    END_TURN,
+    FORFEIT
+}

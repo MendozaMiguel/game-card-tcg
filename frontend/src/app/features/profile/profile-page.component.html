@@ -1,0 +1,453 @@
+<main id="main-content" tabindex="-1" class="mx-auto max-w-5xl space-y-6 px-3 py-4 sm:px-5 sm:py-6">
+  @let profile = auth.user();
+  @if (profile) {
+    <section class="arcane-panel-hero rounded-2xl p-4 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <app-arcane-avatar
+            [avatarId]="profile.equippedAvatar"
+            [frameId]="profile.equippedLeagueFrame"
+            size="lg"
+            [decorative]="false"
+            [label]="'Avatar équipé : ' + cosmeticInfo(profile.equippedAvatar).label" />
+          <div>
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-arcane-gold/45 bg-arcane-gold/15 px-3 py-0.5 text-xs font-bold text-arcane-gold-bright">
+              <ng-icon name="lucideSparkles" size="12px" aria-hidden="true" />
+              <span>{{ profile.equippedTitle }}</span>
+            </span>
+            <h1 class="arcane-display mt-2 text-2xl font-bold text-arcane-ink sm:text-3xl">{{ profile.username }}</h1>
+            <p class="text-sm text-arcane-ink-secondary">
+              Ligue actuelle : <strong class="text-arcane-gold-bright">{{ leagueLabels[profile.leagueTier] }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="grid w-full grid-cols-2 gap-2.5 sm:w-auto sm:grid-cols-4 sm:gap-3">
+          <div class="arcane-well rounded-xl px-4 py-3 text-center">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">MMR 1v1</span>
+            <strong class="arcane-num mt-0.5 block text-xl font-extrabold text-arcane-gold-bright">{{ profile.mmr1v1 }}</strong>
+          </div>
+          <div class="arcane-well rounded-xl px-4 py-3 text-center">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">MMR 2v2</span>
+            <strong class="arcane-num mt-0.5 block text-xl font-extrabold text-sky-300">{{ profile.mmr2v2 }}</strong>
+          </div>
+          <div class="arcane-well rounded-xl px-4 py-3 text-center">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Éclats Dorés</span>
+            <strong class="arcane-num mt-0.5 inline-flex items-center justify-center gap-1.5 text-xl font-extrabold text-arcane-gold">
+              <ng-icon name="lucideGem" size="16px" aria-hidden="true" />
+              <span>{{ profile.goldenShards }}</span>
+            </strong>
+          </div>
+          <div class="arcane-well rounded-xl px-4 py-3 text-center">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Couronnes</span>
+            <strong class="arcane-num mt-0.5 inline-flex items-center justify-center gap-1.5 text-xl font-extrabold text-purple-300">
+              <ng-icon name="lucideCrown" size="16px" aria-hidden="true" />
+              <span>{{ profile.arcaneCrowns }}</span>
+            </strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emplacements d'Avatar du Mage -->
+    <section aria-label="Emplacement d'Avatar du Mage" class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="arcane-display text-base font-bold text-arcane-ink">Emplacement d’Avatar du Mage</h2>
+          <p class="text-xs text-arcane-ink-muted">
+            Choisissez votre portrait de Mage visible dans la barre d’en-tête, votre profil et l’Arène des duels.
+          </p>
+        </div>
+        <span class="arcane-num text-xs text-arcane-gold-bright">
+          Équipé : {{ cosmeticInfo(profile.equippedAvatar).label }}
+        </span>
+      </div>
+
+      <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+        @for (avId of starterAvatarIds; track avId) {
+          @let avMeta = cosmeticInfo(avId);
+          @let selected = profile.equippedAvatar === avId;
+          <button
+            type="button"
+            (click)="!selected && !saving() && equipItem('MAGE_PROFILE', avId)"
+            [attr.aria-disabled]="saving() ? 'true' : null"
+            [attr.aria-pressed]="selected"
+            class="arcane-well flex min-h-14 items-center gap-3 rounded-xl border p-2.5 text-left transition"
+            [class]="selected ? 'border-emerald-400/70 bg-emerald-950/35 ring-1 ring-emerald-400/35 cursor-default' : 'border-slate-700/80 hover:border-arcane-gold/60 cursor-pointer'">
+            <app-arcane-avatar
+              [avatarId]="avId"
+              [frameId]="profile.equippedLeagueFrame"
+              size="md"
+              [decorative]="true" />
+            <div class="min-w-0 flex-1">
+              <strong class="block truncate text-xs font-bold text-arcane-ink">{{ avMeta.label }}</strong>
+              <span class="block truncate text-[11px] text-arcane-ink-muted">{{ avMeta.subtitle }}</span>
+              @if (selected) {
+                <span class="mt-0.5 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300">
+                  <ng-icon name="lucideCheck" size="11px" aria-hidden="true" />
+                  <span>Équipé</span>
+                </span>
+              }
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- Statistiques & Ratio -->
+    @if (stats(); as playerStats) {
+      <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="arcane-display text-base font-bold text-arcane-ink">Statistiques &amp; Ratio</h2>
+          <span class="arcane-num text-xs text-arcane-ink-muted">
+            {{ playerStats.totalMatches }} duel(s) enregistré(s) · ~{{ playerStats.averageTurnCount }} tours / match
+          </span>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="arcane-well rounded-xl p-3.5">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Ratio Global</span>
+            <strong class="arcane-num mt-1 block text-2xl font-extrabold text-emerald-300">
+              {{ playerStats.totalMatches > 0 ? playerStats.winRate + ' %' : '—' }}
+            </strong>
+            <span class="arcane-num mt-0.5 block text-xs text-arcane-ink-secondary">
+              {{ playerStats.wins }} V · {{ playerStats.losses }} D
+            </span>
+          </div>
+
+          <div class="arcane-well rounded-xl p-3.5">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Classé &amp; Tournois</span>
+            <strong class="arcane-num mt-1 block text-2xl font-extrabold text-purple-200">
+              {{ playerStats.rankedWins + playerStats.rankedLosses > 0 ? playerStats.rankedWinRate + ' %' : '—' }}
+            </strong>
+            <span class="arcane-num mt-0.5 block text-xs text-arcane-ink-secondary">
+              Classé : {{ playerStats.rankedWins }} V / {{ playerStats.rankedLosses }} D · Tournoi : {{ playerStats.tournamentWins }} V / {{ playerStats.tournamentLosses }} D
+            </span>
+          </div>
+
+          <div class="arcane-well rounded-xl p-3.5">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Série &amp; Forme récente</span>
+            <strong class="mt-1 block text-lg font-extrabold text-arcane-gold-bright">
+              @if (playerStats.currentWinStreak > 0) {
+                {{ playerStats.currentWinStreak }} victoire(s) de suite
+              } @else {
+                Aucune série en cours
+              }
+            </strong>
+            @if (playerStats.recentForm.length > 0) {
+              <div class="mt-1.5 flex flex-wrap gap-1">
+                @for (res of playerStats.recentForm; track $index) {
+                  <span
+                    class="inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-extrabold"
+                    [class]="res === 'W' ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-200 border border-rose-500/40'"
+                    [attr.aria-label]="res === 'W' ? 'Victoire' : 'Défaite'">
+                    {{ res === 'W' ? 'V' : 'D' }}
+                  </span>
+                }
+              </div>
+            } @else {
+              <span class="mt-0.5 block text-xs text-arcane-ink-muted">Jouez un duel pour initialiser votre forme.</span>
+            }
+          </div>
+
+          <div class="arcane-well rounded-xl p-3.5">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-arcane-ink-muted">Faction Favorite</span>
+            @if (playerStats.favoriteFaction; as fav) {
+              <strong class="mt-1 inline-flex items-center gap-1.5 text-lg font-extrabold text-arcane-ink">
+                <ng-icon [name]="factionIconName(fav)" size="16px" [style.color]="factionMeta[fav].accentHex" aria-hidden="true" />
+                <span>{{ factionMeta[fav].label }}</span>
+              </strong>
+            } @else {
+              <strong class="mt-1 block text-lg font-extrabold text-arcane-ink-muted">Non déterminée</strong>
+            }
+            <span class="arcane-num mt-0.5 block text-xs text-arcane-ink-secondary">
+              IA : {{ playerStats.aiWins }} V / {{ playerStats.aiLosses }} D · Salon/Amical : {{ playerStats.customCasualWins }} V / {{ playerStats.customCasualLosses }} D
+            </span>
+          </div>
+        </div>
+
+        @if (playerStats.breakdown.length > 0) {
+          <div class="arcane-hand-rail flex flex-nowrap gap-2 overflow-x-auto pb-1 sm:flex-wrap">
+            @for (row of playerStats.breakdown; track row.matchSource + '_' + row.mode) {
+              <span class="arcane-well inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs text-arcane-ink-secondary">
+                <span class="font-bold text-arcane-ink">{{ modeStatLabel(row.matchSource, row.mode) }}</span>
+                <span class="text-arcane-ink-muted">·</span>
+                <span class="arcane-num text-emerald-300 font-semibold">{{ row.wins }}V</span>
+                <span class="arcane-num text-rose-300 font-semibold">{{ row.losses }}D</span>
+                <span class="arcane-num text-arcane-ink-muted">({{ row.winRate }} %)</span>
+              </span>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Maîtrise des 4 Factions -->
+    <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-4">
+      <h2 class="arcane-display text-base font-bold text-arcane-ink">Victoires par Faction</h2>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        @for (f of factions; track f) {
+          @let wins = profile.factionWins[f] ?? 0;
+          <div class="arcane-well rounded-xl border p-3.5 space-y-2" [class]="factionMeta[f].borderClass">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="inline-flex items-center gap-1.5 text-arcane-ink">
+                <ng-icon [name]="factionIconName(f)" size="14px" [style.color]="factionMeta[f].accentHex" aria-hidden="true" />
+                <span>{{ factionMeta[f].label }}</span>
+              </span>
+              <span class="arcane-num text-arcane-gold-bright">{{ wins }} V</span>
+            </div>
+            <div aria-hidden="true" class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800/90">
+              <div
+                class="h-full rounded-full transition-all duration-300"
+                [style.background]="factionMeta[f].accentHex"
+                [style.width.%]="wins > 0 ? factionWinShare(profile.factionWins, f) : 0"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Historique des 20 derniers matchs -->
+    <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="arcane-display inline-flex items-center gap-2 text-base font-bold text-arcane-ink">
+            <ng-icon name="lucideHistory" size="16px" class="text-arcane-gold-bright" aria-hidden="true" />
+            <span>Historique des Duels (20 derniers)</span>
+          </h2>
+          <p class="mt-0.5 text-xs text-arcane-ink-muted">Touchez une partie pour afficher son aperçu (PV finaux, factions et issue).</p>
+        </div>
+
+        <div class="arcane-hand-rail flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 sm:flex-wrap">
+          @for (opt of sourceFilters; track opt.label) {
+            <button
+              type="button"
+              (click)="onSelectSourceFilter(opt.value)"
+              [attr.aria-pressed]="selectedSource() === opt.value"
+              class="arcane-btn shrink-0 rounded-lg border px-2.5 text-xs font-bold"
+              [class]="selectedSource() === opt.value ? 'border-arcane-gold/75 bg-arcane-gold/20 text-arcane-gold-bright' : 'border-slate-700 bg-arcane-recessed text-arcane-ink-secondary hover:border-slate-500'">
+              {{ opt.label }}
+            </button>
+          }
+          <button
+            type="button"
+            (click)="loadHistory()"
+            [disabled]="loadingHistory()"
+            class="arcane-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-700 bg-arcane-elevated px-3 text-xs font-bold text-arcane-ink-secondary hover:border-arcane-gold/60 hover:text-arcane-ink">
+            <ng-icon name="lucideRefreshCw" size="13px" aria-hidden="true" />
+            <span>{{ loadingHistory() ? 'Chargement...' : 'Actualiser' }}</span>
+          </button>
+        </div>
+      </div>
+
+      @if (historyError(); as errMsg) {
+        <div role="alert" class="flex items-start gap-2 rounded-xl border border-rose-500/50 bg-rose-950/40 px-4 py-3 text-xs text-rose-200">
+          <ng-icon name="lucideAlertTriangle" size="15px" class="mt-0.5 shrink-0 text-rose-300" aria-hidden="true" />
+          <span>{{ errMsg }}</span>
+        </div>
+      } @else if (loadingHistory() && matchHistory().length === 0) {
+        <p class="text-xs text-arcane-ink-muted">Chargement de l'historique des duels...</p>
+      } @else if (matchHistory().length === 0) {
+        <p class="arcane-well rounded-xl px-4 py-5 text-center text-xs text-arcane-ink-muted">
+          Aucune partie trouvée pour ce filtre. Lancez un duel depuis le Sanctuaire pour enregistrer vos prochains résultats.
+        </p>
+      } @else {
+        <ul class="space-y-2.5">
+          @for (item of matchHistory(); track item.matchId) {
+            @let src = matchSourceMeta[item.matchSource];
+            @let deltaText = formatMmrDelta(item.mmrDelta);
+            <li>
+              <details
+                class="match-disclosure overflow-hidden rounded-xl border bg-arcane-recessed/90"
+                [class]="item.won ? 'border-emerald-500/35' : item.winnerTeam ? 'border-rose-500/30' : 'border-slate-800'">
+                <summary class="match-disclosure-summary flex flex-wrap items-center justify-between gap-3 px-3.5 py-3">
+                  <div class="flex min-w-0 flex-wrap items-center gap-2">
+                    <span aria-hidden="true" class="match-chevron">
+                      <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L10.94 10 7.23 6.29a.75.75 0 1 1 1.06-1.06l4.24 4.24a.75.75 0 0 1 0 1.06l-4.24 4.24a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+
+                    <span
+                      class="rounded-md border px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide"
+                      [class]="item.won ? 'border-emerald-400/50 bg-emerald-500/20 text-emerald-200' : item.winnerTeam ? 'border-rose-400/50 bg-rose-500/15 text-rose-200' : 'border-slate-600 bg-slate-800 text-slate-300'">
+                      {{ item.won ? 'Victoire' : item.winnerTeam ? 'Défaite' : 'Terminé' }}
+                    </span>
+
+                    <span class="rounded border px-2 py-0.5 text-[11px] font-bold" [class]="src.badgeClass">
+                      {{ src.shortLabel }}
+                      @if (item.tournamentName) {
+                        · {{ item.tournamentName }}
+                      }
+                    </span>
+
+                    <span class="rounded border border-slate-700 bg-arcane-surface px-2 py-0.5 text-[11px] font-semibold text-arcane-ink-secondary">
+                      {{ item.mode === '1V1' ? '1v1' : '2v2' }}
+                    </span>
+
+                    @if (item.primaryFaction; as myFaction) {
+                      <span class="rounded border px-2 py-0.5 text-[11px] font-semibold" [class]="factionMeta[myFaction].badgeClass">
+                        {{ factionMeta[myFaction].shortLabel }}
+                      </span>
+                    }
+
+                    @if (deltaText) {
+                      <span
+                        class="arcane-num rounded px-1.5 py-0.5 text-[11px] font-extrabold"
+                        [class]="item.mmrDelta > 0 ? 'bg-emerald-950/80 text-emerald-300' : 'bg-rose-950/80 text-rose-300'">
+                        {{ deltaText }}
+                      </span>
+                    }
+
+                    <span class="truncate text-sm font-semibold text-arcane-ink">
+                      {{ formatMatchup(item) }}
+                    </span>
+                  </div>
+
+                  @let formattedDuration = formatDuration(item.durationSeconds);
+                  <div class="arcane-num flex flex-wrap items-center gap-2 text-xs text-arcane-ink-muted">
+                    <span>{{ item.turnCount }} tour(s)</span>
+                    @if (formattedDuration) {
+                      <span>· {{ formattedDuration }}</span>
+                    }
+                    <span>·</span>
+                    <time [attr.datetime]="item.createdAt">{{ formatMatchDate(item.createdAt) }}</time>
+                  </div>
+                </summary>
+
+                <div class="border-t border-slate-800/80 bg-arcane-surface/55 px-4 py-3.5 space-y-3 text-xs">
+                  <div class="grid gap-3 md:grid-cols-3">
+                    <!-- Score PV -->
+                    <div class="arcane-well rounded-lg p-3 space-y-2">
+                      <span class="block font-bold text-arcane-ink-secondary">Aperçu des Points de Vie</span>
+                      <div>
+                        <div class="flex justify-between text-[11px]">
+                          <span class="text-sky-200 font-semibold">Votre équipe</span>
+                          <span class="arcane-num font-bold text-arcane-ink">
+                            {{ item.myTeamFinalLp ?? '-' }} / {{ item.startingLp }} PV
+                          </span>
+                        </div>
+                        <div aria-hidden="true" class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                          <div
+                            class="h-full rounded-full bg-sky-400"
+                            [style.width.%]="lpPercent(item.myTeamFinalLp, item.startingLp)"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-[11px]">
+                          <span class="text-rose-200 font-semibold">Adversaires</span>
+                          <span class="arcane-num font-bold text-arcane-ink">
+                            {{ item.opponentTeamFinalLp ?? '-' }} / {{ item.startingLp }} PV
+                          </span>
+                        </div>
+                        <div aria-hidden="true" class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                          <div
+                            class="h-full rounded-full bg-rose-400"
+                            [style.width.%]="lpPercent(item.opponentTeamFinalLp, item.startingLp)"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Issue du duel -->
+                    <div class="arcane-well rounded-lg p-3 space-y-1.5">
+                      <span class="block font-bold text-arcane-ink-secondary">Issue du duel</span>
+                      <p class="text-arcane-ink-secondary">
+                        Type : <strong class="text-arcane-ink">{{ src.label }}</strong> ({{ item.mode === '1V1' ? '1v1' : '2v2' }})
+                      </p>
+                      <p class="text-arcane-ink-secondary">
+                        Fin : <strong class="text-arcane-ink">{{ item.endReason ? (endReasonLabels[item.endReason] ?? item.endReason) : 'Non précisée' }}</strong>
+                      </p>
+                      @if (item.endSummary) {
+                        <p class="text-arcane-ink-muted">{{ item.endSummary }}</p>
+                      }
+                      <p class="text-arcane-ink-muted">
+                        Impact classement :
+                        <strong [class]="item.mmrDelta > 0 ? 'text-emerald-300' : item.mmrDelta < 0 ? 'text-rose-300' : 'text-arcane-ink-secondary'">
+                          {{ deltaText || 'Non classé (aucun changement de MMR)' }}
+                        </strong>
+                      </p>
+                    </div>
+
+                    <!-- Compositions -->
+                    <div class="arcane-well rounded-lg p-3 space-y-2">
+                      <span class="block font-bold text-arcane-ink-secondary">Mage(s) engagé(s)</span>
+                      <div class="space-y-1">
+                        <span class="block text-[11px] font-semibold text-sky-300">Votre camp</span>
+                        <div class="flex flex-wrap gap-1.5">
+                          <span class="rounded border border-sky-500/40 bg-sky-950/50 px-2 py-0.5 text-[11px] font-semibold text-sky-100">
+                            {{ profile.username }} · {{ factionShortLabel(item.primaryFaction) }}
+                          </span>
+                          @for (ally of item.allies; track ally.seatIndex) {
+                            <span class="rounded border border-sky-500/40 bg-sky-950/40 px-2 py-0.5 text-[11px] text-sky-200">
+                              {{ participantBadgeText(ally) }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                      <div class="space-y-1">
+                        <span class="block text-[11px] font-semibold text-rose-300">Camp adverse</span>
+                        <div class="flex flex-wrap gap-1.5">
+                          @for (opp of item.opponents; track opp.seatIndex) {
+                            <span class="rounded border border-rose-500/40 bg-rose-950/40 px-2 py-0.5 text-[11px] text-rose-200">
+                              {{ participantBadgeText(opp) }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Cosmétiques débloqués -->
+    <section class="arcane-panel rounded-2xl p-4 sm:p-5 space-y-4">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="arcane-display text-base font-bold text-arcane-ink">Cosmétiques &amp; Personnalisation</h2>
+        <span class="arcane-num text-xs text-arcane-ink-muted">{{ profile.unlockedCosmetics.length }} objet(s) débloqué(s)</span>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        @for (item of profile.unlockedCosmetics; track item.cosmeticType + '_' + item.itemId) {
+          @let meta = cosmeticInfo(item.itemId);
+          @let equipped = isEquipped(profile, item.cosmeticType, item.itemId);
+          <div class="arcane-well flex flex-col justify-between rounded-xl p-3.5 gap-3">
+            <div class="flex items-start gap-3">
+              @if (item.itemId.startsWith('avatar_')) {
+                <app-arcane-avatar
+                  [avatarId]="item.itemId"
+                  [frameId]="profile.equippedLeagueFrame"
+                  size="md"
+                  [decorative]="true" />
+              } @else {
+                <div class="h-10 w-10 shrink-0 rounded-lg border border-white/15 bg-linear-to-br shadow-inner" [class]="meta.swatchClass"></div>
+              }
+              <div class="min-w-0">
+                <span class="block text-[10px] font-bold uppercase text-arcane-gold-bright">{{ item.cosmeticType }}</span>
+                <strong class="block truncate text-sm text-arcane-ink">{{ meta.label }}</strong>
+                <p class="text-xs text-arcane-ink-muted">{{ meta.subtitle }}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="equipItem(item.cosmeticType, item.itemId)"
+              [disabled]="equipped || saving()"
+              class="arcane-btn inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-bold"
+              [class]="equipped ? 'border-emerald-500/55 bg-emerald-950/60 text-emerald-200' : 'border-slate-700 bg-arcane-elevated text-arcane-ink-secondary hover:border-arcane-gold/60 hover:text-arcane-ink'">
+              @if (equipped) {
+                <ng-icon name="lucideCheck" size="13px" aria-hidden="true" />
+                <span>Équipé</span>
+              } @else {
+                <span>Équiper</span>
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</main>

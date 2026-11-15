@@ -1,0 +1,292 @@
+<main id="main-content" tabindex="-1" class="relative min-h-svh overflow-x-clip bg-linear-to-b from-arcane-void via-arcane-primary to-arcane-void px-3 py-6 sm:px-6 sm:py-12 text-arcane-ink">
+  <!-- Ambient atmospheric runic halo (decorative only) -->
+  <div
+    class="pointer-events-none absolute top-0 left-1/2 -z-0 h-[28rem] w-[min(64rem,100vw)] -translate-x-1/2 bg-radial from-arcane-gold/10 via-indigo-950/15 to-transparent blur-3xl"
+    aria-hidden="true"></div>
+
+  <div class="relative z-10 mx-auto grid max-w-5xl gap-8 lg:grid-cols-12 lg:items-center lg:gap-10">
+    <!-- Présentation Sanctuaire -->
+    <section class="min-w-0 lg:col-span-6 space-y-5">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-arcane-gold/45 bg-linear-to-br from-arcane-elevated to-arcane-void shadow-[0_0_24px_rgb(217_164_65/0.2)]">
+          <svg viewBox="0 0 32 32" class="h-6 w-6 text-arcane-gold-bright" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <polygon points="16,3 27,16 16,29 5,16" />
+            <circle cx="16" cy="16" r="4.5" />
+            <path d="M16 3v5M16 24v5M5 16h5M22 16h5" />
+          </svg>
+        </span>
+        <div class="inline-flex items-center gap-1.5 rounded-full border border-arcane-gold/40 bg-arcane-gold/10 px-3 py-1 text-xs font-semibold text-arcane-gold-bright">
+          <ng-icon name="lucideSparkles" size="13px" aria-hidden="true" />
+          <span>TCG Stratégique Temps Réel · V3.0</span>
+        </div>
+      </div>
+
+      <h1 class="arcane-display text-3xl leading-tight font-bold tracking-wide text-arcane-ink sm:text-5xl">
+        L'Ordre des Arcanes <span class="text-arcane-gold-bright">Online</span>
+      </h1>
+      <p class="text-sm leading-relaxed text-arcane-ink-secondary sm:text-base">
+        Affrontez des mages en <strong class="text-arcane-gold-bright">1v1 (25 PV)</strong> ou en équipe
+        <strong class="text-arcane-gold-bright">2v2 (40 PV communs)</strong>, forgez un deck unique parmi
+        120 cartes sous les 4 Lois Anti-Méta, et défiez l'arène autoritaire en temps réel.
+      </p>
+
+      <ul class="grid gap-2.5 text-sm text-arcane-ink-secondary">
+        <li class="arcane-well flex items-start gap-3 rounded-xl px-3.5 py-2.5">
+          <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-arcane-gold/35 bg-arcane-gold/12 text-arcane-gold-bright">
+            <ng-icon name="lucideSparkles" size="14px" aria-hidden="true" />
+          </span>
+          <span class="text-xs leading-relaxed sm:text-sm">120 cartes débloquées dès l'inscription (Feu, Glace, Ombres, Lumière) + 2 decks de départ prêts au combat.</span>
+        </li>
+        <li class="arcane-well flex items-start gap-3 rounded-xl px-3.5 py-2.5">
+          <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-sky-400/35 bg-sky-500/12 text-sky-300">
+            <ng-icon name="lucideSwords" size="14px" aria-hidden="true" />
+          </span>
+          <span class="text-xs leading-relaxed sm:text-sm">Serveur Java 21 autoritaire, Brouillard de Guerre strict et chronomètres en direct.</span>
+        </li>
+        <li class="arcane-well flex items-start gap-3 rounded-xl px-3.5 py-2.5">
+          <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-emerald-400/35 bg-emerald-500/12 text-emerald-300">
+            <ng-icon name="lucideShieldCheck" size="14px" aria-hidden="true" />
+          </span>
+          <span class="text-xs leading-relaxed sm:text-sm">Session JWT sécurisée par cookie HttpOnly Strict et protection anti-triche intégrée.</span>
+        </li>
+      </ul>
+
+      <div class="inline-flex items-center gap-2.5 rounded-full border border-slate-700/70 bg-arcane-surface/85 px-3.5 py-1.5 text-xs text-arcane-ink-secondary">
+        <span
+          class="arcane-status-dot"
+          [class.arcane-status-dot--online]="auth.healthState() === 'ONLINE'"
+          [class.arcane-status-dot--offline]="auth.healthState() === 'OFFLINE'"
+          [class.arcane-status-dot--loading]="auth.healthState() === 'LOADING'"
+          aria-hidden="true"></span>
+        <span>
+          @switch (auth.healthState()) {
+            @case ('ONLINE') { Serveur de jeu en ligne (Java {{ auth.health()?.javaVersion }}) }
+            @case ('OFFLINE') { Serveur back-end hors ligne — vérifiez le service Spring Boot }
+            @case ('LOADING') { Vérification du sanctuaire serveur… }
+          }
+        </span>
+      </div>
+    </section>
+
+    <!-- Portail Auth -->
+    <section class="arcane-panel-hero min-w-0 lg:col-span-6 rounded-2xl p-4 sm:p-6">
+      <div role="tablist" aria-label="Choix de connexion ou d'inscription" class="mb-6 grid grid-cols-2 gap-1.5 rounded-xl border border-slate-800/90 bg-arcane-recessed p-1">
+        <button
+          id="tab-login"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'LOGIN'"
+          aria-controls="panel-login"
+          (click)="switchTab('LOGIN')"
+          class="arcane-btn rounded-lg px-3 py-2 text-sm font-bold"
+          [class]="activeTab() === 'LOGIN' ? 'bg-linear-to-b from-arcane-gold-bright to-arcane-gold text-arcane-void shadow-md' : 'text-arcane-ink-secondary hover:text-arcane-ink'">
+          Connexion
+        </button>
+        <button
+          id="tab-register"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'REGISTER'"
+          aria-controls="panel-register"
+          (click)="switchTab('REGISTER')"
+          class="arcane-btn rounded-lg px-3 py-2 text-sm font-bold"
+          [class]="activeTab() === 'REGISTER' ? 'bg-linear-to-b from-arcane-gold-bright to-arcane-gold text-arcane-void shadow-md' : 'text-arcane-ink-secondary hover:text-arcane-ink'">
+          Inscription
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+        <div
+          role="alert"
+          class="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-500/50 bg-rose-950/60 p-3 text-xs sm:text-sm text-rose-100">
+          <ng-icon name="lucideAlertTriangle" size="17px" class="mt-0.5 shrink-0 text-rose-300" aria-hidden="true" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (activeTab() === 'LOGIN') {
+        <div id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+          <h2 class="arcane-display mb-4 text-lg font-bold text-arcane-ink sm:text-xl">Entrer dans le Sanctuaire</h2>
+          <form (submit)="onLoginSubmit($event)" class="space-y-4">
+            <div class="arcane-field">
+              <label for="login-identifier" class="mb-1 block text-xs font-semibold text-arcane-ink-secondary uppercase tracking-wide">
+                Pseudo ou adresse email
+              </label>
+              <span id="login-identifier-hint" class="mb-1.5 block text-xs text-arcane-ink-muted">
+                Votre nom de mage ou votre email d'inscription.
+              </span>
+              <input
+                id="login-identifier"
+                name="identifier"
+                type="text"
+                class="arcane-input"
+                autocomplete="username"
+                spellcheck="false"
+                autocapitalize="none"
+                enterkeyhint="next"
+                required
+                aria-describedby="login-identifier-hint"
+                [value]="loginIdentifier()"
+                (input)="onInputValue(loginIdentifier, $event)"
+                [appFormAriaSync]="'login-identifier-error'" />
+              <div id="login-identifier-error" class="arcane-error-msg">
+                <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+                <span>Veuillez saisir votre pseudo ou adresse email.</span>
+              </div>
+            </div>
+
+            <div class="arcane-field">
+              <label for="login-password" class="mb-1 block text-xs font-semibold text-arcane-ink-secondary uppercase tracking-wide">
+                Mot de passe
+              </label>
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <input
+                    id="login-password"
+                    name="password"
+                    [type]="showLoginPwd() ? 'text' : 'password'"
+                    class="arcane-input"
+                    autocomplete="current-password"
+                    enterkeyhint="done"
+                    required
+                    [value]="loginPassword()"
+                    (input)="onInputValue(loginPassword, $event)"
+                    [appFormAriaSync]="'login-password-error'" />
+                  <div id="login-password-error" class="arcane-error-msg">
+                    <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+                    <span>Veuillez saisir votre mot de passe.</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="showLoginPwd.set(!showLoginPwd())"
+                  [attr.aria-pressed]="showLoginPwd()"
+                  [attr.aria-label]="showLoginPwd() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                  class="arcane-btn inline-flex shrink-0 self-start items-center gap-1.5 rounded-lg border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/60 hover:text-arcane-ink">
+                  <ng-icon [name]="showLoginPwd() ? 'lucideEyeOff' : 'lucideEye'" size="15px" aria-hidden="true" />
+                  <span class="hidden sm:inline">{{ showLoginPwd() ? 'Masquer' : 'Afficher' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="submitting()"
+              class="arcane-btn w-full rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-4 py-2.5 text-sm font-extrabold text-arcane-void shadow-[0_8px_24px_-10px_rgb(217_164_65/0.8)] hover:brightness-105 disabled:opacity-50">
+              {{ submitting() ? 'Connexion en cours…' : 'Se connecter' }}
+            </button>
+          </form>
+        </div>
+      } @else {
+        <div id="panel-register" role="tabpanel" aria-labelledby="tab-register">
+          <h2 class="arcane-display mb-4 text-lg font-bold text-arcane-ink sm:text-xl">Rejoindre l'Ordre des Arcanes</h2>
+          <form (submit)="onRegisterSubmit($event)" class="space-y-4">
+            <div class="arcane-field">
+              <label for="reg-username" class="mb-1 block text-xs font-semibold text-arcane-ink-secondary uppercase tracking-wide">
+                Nom de Mage
+              </label>
+              <span id="reg-username-hint" class="mb-1.5 block text-xs text-arcane-ink-muted">
+                3 à 24 caractères : lettres, chiffres ou tiret bas (_).
+              </span>
+              <input
+                id="reg-username"
+                name="username"
+                type="text"
+                class="arcane-input"
+                autocomplete="username"
+                spellcheck="false"
+                autocapitalize="none"
+                enterkeyhint="next"
+                required
+                pattern="[A-Za-z0-9_]{3,24}"
+                minlength="3"
+                maxlength="24"
+                aria-describedby="reg-username-hint"
+                [value]="regUsername()"
+                (input)="onInputValue(regUsername, $event)"
+                [appFormAriaSync]="'reg-username-error'" />
+              <div id="reg-username-error" class="arcane-error-msg">
+                <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+                <span>Utilisez 3 à 24 lettres, chiffres ou « _ ».</span>
+              </div>
+            </div>
+
+            <div class="arcane-field">
+              <label for="reg-email" class="mb-1 block text-xs font-semibold text-arcane-ink-secondary uppercase tracking-wide">
+                Adresse email
+              </label>
+              <span id="reg-email-hint" class="mb-1.5 block text-xs text-arcane-ink-muted">
+                Format attendu : mage&#64;exemple.com
+              </span>
+              <input
+                id="reg-email"
+                name="email"
+                type="email"
+                class="arcane-input"
+                autocomplete="email"
+                spellcheck="false"
+                enterkeyhint="next"
+                required
+                maxlength="160"
+                aria-describedby="reg-email-hint"
+                [value]="regEmail()"
+                (input)="onInputValue(regEmail, $event)"
+                [appFormAriaSync]="'reg-email-error'" />
+              <div id="reg-email-error" class="arcane-error-msg">
+                <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+                <span>Saisissez une adresse email valide (ex : vous&#64;domaine.com).</span>
+              </div>
+            </div>
+
+            <div class="arcane-field">
+              <label for="reg-password" class="mb-1 block text-xs font-semibold text-arcane-ink-secondary uppercase tracking-wide">
+                Mot de passe
+              </label>
+              <ul id="reg-password-rules" class="arcane-rules-list mb-1.5 list-disc pl-5">
+                <li>Au moins 8 caractères</li>
+              </ul>
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <input
+                    id="reg-password"
+                    name="new-password"
+                    [type]="showRegPwd() ? 'text' : 'password'"
+                    class="arcane-input"
+                    autocomplete="new-password"
+                    enterkeyhint="done"
+                    required
+                    minlength="8"
+                    maxlength="128"
+                    aria-describedby="reg-password-rules"
+                    [value]="regPassword()"
+                    (input)="onInputValue(regPassword, $event)"
+                    [appFormAriaSync]="'reg-password-error'" />
+                  <div id="reg-password-error" class="arcane-error-msg">
+                    <ng-icon name="lucideAlertTriangle" size="14px" aria-hidden="true" />
+                    <span>Le mot de passe doit contenir au moins 8 caractères.</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="showRegPwd.set(!showRegPwd())"
+                  [attr.aria-pressed]="showRegPwd()"
+                  [attr.aria-label]="showRegPwd() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                  class="arcane-btn inline-flex shrink-0 self-start items-center gap-1.5 rounded-lg border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-arcane-gold/60 hover:text-arcane-ink">
+                  <ng-icon [name]="showRegPwd() ? 'lucideEyeOff' : 'lucideEye'" size="15px" aria-hidden="true" />
+                  <span class="hidden sm:inline">{{ showRegPwd() ? 'Masquer' : 'Afficher' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="submitting()"
+              class="arcane-btn w-full rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-4 py-2.5 text-sm font-extrabold text-arcane-void shadow-[0_8px_24px_-10px_rgb(217_164_65/0.8)] hover:brightness-105 disabled:opacity-50">
+              {{ submitting() ? 'Création du grimoire…' : 'Créer mon compte' }}
+            </button>
+          </form>
+        </div>
+      }
+    </section>
+  </div>
+</main>

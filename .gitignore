@@ -1,0 +1,33 @@
+# Variables d'environnement et secrets locaux (le template .env.example reste versionné)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Artefacts de build Back-End (Maven / Java)
+backend/target/
+*.jar
+*.war
+
+# Artefacts de build & dépendances Front-End (Node / Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+
+# Journaux, rapports de tests et fichiers système / IDE
+*.log
+coverage/
+.nyc_output/
+__screenshots__/
+playwright-report/
+test-results/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
