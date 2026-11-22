@@ -539,6 +539,136 @@ class GameEngineTests {
     }
 
     @Test
+    void expiredCamouflageStopsHidingKeywordAndSurvolBypassesFamiliarsButNotMonsters() {
+        UUID p1 = UUID.randomUUID();
+        UUID p2 = UUID.randomUUID();
+        List<CardDefinition> d1 = customDeck("SHADOW_M_03", "SHADOW_F_04", "FIRE_M_01", "FIRE_M_02", "ICE_M_01", "LIGHT_M_01");
+        List<CardDefinition> d2 = customDeck("SHADOW_M_02", "SHADOW_F_02", "FIRE_F_01", "ICE_F_02", "LIGHT_F_01", "SHADOW_F_01");
+
+        GameRoom room = engine.createMatch(GameMode.DUEL_1V1, false, false, false, false, List.of(
+                MatchParticipantSpec.simple(p1, "SurvolUser", false, TeamId.TEAM_A, d1),
+                MatchParticipantSpec.simple(p2, "StealthUser", false, TeamId.TEAM_B, d2)));
+        completeMulliganForAll(room);
+
+        room.getLock().lock();
+        try {
+            room.getPlayer(p1).addEnergy(25);
+            room.getPlayer(p2).addEnergy(25);
+        } finally {
+            room.getLock().unlock();
+        }
+
+        String harpieId = room.getPlayer(p1).getHand().stream().filter(c -> c.getDefinition().cardId().equals("SHADOW_M_03")).findFirst().orElseThrow().getInstanceId();
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.PLAY_CARD, harpieId, 0, Posture.ATTACK, null, null));
+        endTurnHandlingDiscard(room, p1);
+
+        // P2 Round 1: plays Ombre Rampante (MONSTER, ON_PLAY camouflage) & Lutin Sombre (FAMILIAR, activated camouflage)
+        String ombreId = room.getPlayer(p2).getHand().stream().filter(c -> c.getDefinition().cardId().equals("SHADOW_M_02")).findFirst().orElseThrow().getInstanceId();
+        String lutinId = room.getPlayer(p2).getHand().stream().filter(c -> c.getDefinition().cardId().equals("SHADOW_F_02")).findFirst().orElseThrow().getInstanceId();
+        engine.processAction(p2, cmd(room.getMatchId(), GameActionType.PLAY_CARD, ombreId, 0, Posture.ATTACK, null, null));
+        engine.processAction(p2, cmd(room.getMatchId(), GameActionType.PLAY_CARD, lutinId, 0, Posture.DEFENSE, null, null));
+        engine.processAction(p2, cmd(room.getMatchId(), GameActionType.ACTIVATE_EFFECT, lutinId, null, null, null, null));
+
+        CardInstance ombre = room.findCreatureOnAnyBoard(ombreId).orElseThrow();
+        CardInstance lutin = room.findCreatureOnAnyBoard(lutinId).orElseThrow();
+        assertThat(ombre.isCamouflaged()).isTrue();
+        assertThat(lutin.isCamouflaged()).isTrue();
+        assertThat(evaluator.hasKeyword(room, ombre, "CAMOUFLAGE")).isTrue();
+        assertThat(evaluator.evaluateKeywords(room, ombre)).contains("CAMOUFLAGE");
+        endTurnHandlingDiscard(room, p2);
+
+        // Round 2 P1: Ombre Rampante & Lutin Sombre are BOTH actively camouflaged -> Harpie (SURVOL) CAN attack LP directly
+        int lpRound2 = room.getTeam(TeamId.TEAM_B).getLp();
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.DECLARE_ATTACK, harpieId, null, null, CombatResolver.DIRECT_PLAYER_TARGET, null));
+        assertThat(room.getTeam(TeamId.TEAM_B).getLp()).isEqualTo(lpRound2 - 3);
+        endTurnHandlingDiscard(room, p1);
+
+        // Round 2 P2: onOwnerTurnStart clears camouflage -> neither Ombre Rampante nor un-reactivated Lutin Sombre stays CAMOUFLAGED
+        assertThat(ombre.isCamouflaged()).isFalse();
+        assertThat(lutin.isCamouflaged()).isFalse();
+        assertThat(evaluator.hasKeyword(room, ombre, "CAMOUFLAGE")).isFalse();
+        assertThat(evaluator.evaluateKeywords(room, ombre)).doesNotContain("CAMOUFLAGE");
+        assertThat(evaluator.hasKeyword(room, lutin, "CAMOUFLAGE")).isFalse();
+        assertThat(evaluator.evaluateKeywords(room, lutin)).doesNotContain("CAMOUFLAGE");
+        // Re-activate Lutin Sombre only -> Familiar has CAMOUFLAGE, Monster Ombre Rampante does NOT
+        engine.processAction(p2, cmd(room.getMatchId(), GameActionType.ACTIVATE_EFFECT, lutinId, null, null, null, null));
+        assertThat(evaluator.hasKeyword(room, lutin, "CAMOUFLAGE")).isTrue();
+        endTurnHandlingDiscard(room, p2);
+
+        // Round 3 P1: Summon Mini-Harpie (SURVOL), verify Harpie CANNOT direct-attack past exposed Monster Ombre Rampante, CAN destroy it, then Mini-Harpie (SURVOL) bypasses camouflaged Familiar Lutin Sombre
+        String miniHarpieId = room.getPlayer(p1).getHand().stream().filter(c -> c.getDefinition().cardId().equals("SHADOW_F_04")).findFirst().orElseThrow().getInstanceId();
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.PLAY_CARD, miniHarpieId, 0, Posture.ATTACK, null, null));
+
+        assertThatThrownBy(() -> engine.processAction(p1, cmd(room.getMatchId(), GameActionType.DECLARE_ATTACK, harpieId, null, null, CombatResolver.DIRECT_PLAYER_TARGET, null)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Monstre adverse");
+
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.DECLARE_ATTACK, harpieId, null, null, ombreId, null));
+        assertThat(room.findCreatureOnAnyBoard(ombreId)).isEmpty();
+
+        int lpRound3AfterClear = room.getTeam(TeamId.TEAM_B).getLp();
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.DECLARE_ATTACK, miniHarpieId, null, null, CombatResolver.DIRECT_PLAYER_TARGET, null));
+        assertThat(room.getTeam(TeamId.TEAM_B).getLp()).isEqualTo(lpRound3AfterClear - 1);
+
+        endTurnHandlingDiscard(room, p1);
+        endTurnHandlingDiscard(room, p2); // Lutin's stealth expired too, leaving only un-camouflaged Familiar
+
+        int lpRound4 = room.getTeam(TeamId.TEAM_B).getLp();
+        engine.processAction(p1, cmd(room.getMatchId(), GameActionType.DECLARE_ATTACK, harpieId, null, null, CombatResolver.DIRECT_PLAYER_TARGET, null));
+        assertThat(room.getTeam(TeamId.TEAM_B).getLp()).isEqualTo(lpRound4 - 3);
+    }
+
+    @Test
+    void instantMulliganReplaceSwapsCardInPlaceOncePerSlotBeforeConfirming() {
+        UUID p1 = UUID.randomUUID();
+        UUID bot = UUID.randomUUID();
+        GameRoom room = engine.createMatch(GameMode.DUEL_1V1, false, true, false, false, List.of(
+                MatchParticipantSpec.simple(p1, "MulliganMage", false, TeamId.TEAM_A, catalog.getStarterDeckCards(Faction.FIRE)),
+                MatchParticipantSpec.simple(bot, "Automate", true, TeamId.TEAM_B, catalog.getStarterDeckCards(Faction.ICE))));
+
+        assertThat(room.getPhase()).isEqualTo(GamePhase.MULLIGAN);
+        PlayerBoardViewDto initialOwnerBoard = projector.projectForPlayer(room, p1, false).players().stream()
+                .filter(p -> p.userId().equals(p1)).findFirst().orElseThrow();
+        assertThat(initialOwnerBoard.hand()).hasSize(5);
+        assertThat(initialOwnerBoard.mulliganReplacedSlots()).isEmpty();
+
+        String originalSlot1Id = initialOwnerBoard.hand().get(1).instanceId();
+        String slot0IdBefore = initialOwnerBoard.hand().get(0).instanceId();
+
+        PlayerGameView afterReplace = engine.processAction(
+                p1,
+                cmd(room.getMatchId(), GameActionType.MULLIGAN_REPLACE_CARD, originalSlot1Id, null, null, null, null));
+
+        assertThat(afterReplace.phase()).isEqualTo(GamePhase.MULLIGAN);
+        PlayerBoardViewDto updatedOwnerBoard = afterReplace.players().stream()
+                .filter(p -> p.userId().equals(p1)).findFirst().orElseThrow();
+        assertThat(updatedOwnerBoard.mulliganCompleted()).isFalse();
+        assertThat(updatedOwnerBoard.mulliganReplacedSlots()).containsExactly(1);
+        assertThat(updatedOwnerBoard.hand()).hasSize(5);
+        assertThat(updatedOwnerBoard.hand().get(0).instanceId()).isEqualTo(slot0IdBefore);
+        String newSlot1Id = updatedOwnerBoard.hand().get(1).instanceId();
+        assertThat(newSlot1Id).isNotEqualTo(originalSlot1Id);
+
+        // Fog of War: opponent/spectator must NOT see private mulliganReplacedSlots
+        PlayerBoardViewDto spectatedP1 = projector.projectForPlayer(room, bot, true).players().stream()
+                .filter(p -> p.userId().equals(p1)).findFirst().orElseThrow();
+        assertThat(spectatedP1.mulliganReplacedSlots()).isEmpty();
+
+        // Anti-exploit: cannot replace the exact same slot twice during Mulligan
+        assertThatThrownBy(() -> engine.processAction(
+                p1,
+                cmd(room.getMatchId(), GameActionType.MULLIGAN_REPLACE_CARD, newSlot1Id, null, null, null, null)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("déjà été remplacé");
+
+        // Confirm Mulligan enters Tour 1 (MAIN_PHASE) immediately against bot
+        PlayerGameView afterConfirm = engine.processAction(
+                p1,
+                cmd(room.getMatchId(), GameActionType.MULLIGAN_SWAP, null, null, null, null, List.of()));
+        assertThat(afterConfirm.phase()).isEqualTo(GamePhase.MAIN_PHASE);
+    }
+
+    @Test
     void mageAutomateBotsAtAllDifficultyTiersPlayAndExposeDifficultyInView() {
         UUID bEasy = UUID.randomUUID();
         UUID bHard = UUID.randomUUID();

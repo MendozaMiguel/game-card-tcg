@@ -2,7 +2,7 @@
 
 <!-- Flèche SVG de ciblage dynamique -->
 @if (arrowPoints(); as pts) {
-<svg class="arena-svg-overlay" aria-hidden="true">
+<svg class="pointer-events-none fixed inset-0 z-40 h-full w-full" aria-hidden="true">
   <defs>
     <marker id="arcane-arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#d9a441" />
@@ -32,168 +32,109 @@
   @let enemyTeam = myTeamId() === 'TEAM_A' ? view.teamB : view.teamA;
   @let allyTeam = myTeamId() === 'TEAM_A' ? view.teamA : view.teamB;
 
-  <!-- Bandeau HUD supérieur unifié (compact 1-ligne sur mobile, complet sur desktop) -->
+  <!-- Bandeau HUD utilitaire supérieur épuré (tour, chrono, guidage unifié) -->
   <header class="arcane-panel mb-1 shrink-0 rounded-xl px-2 py-1 sm:rounded-2xl sm:px-3 sm:py-1.5">
-    <div class="flex items-center justify-between gap-1.5 sm:gap-2">
-      <!-- Écus PV & Statut de Tour -->
-      <div class="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2.5">
-        <div #enemyLpBox
-          class="relative shrink-0 whitespace-nowrap rounded-lg border border-rose-500/45 bg-rose-950/60 px-2 py-0.5 text-center shadow-inner sm:rounded-xl sm:px-3 sm:py-1">
-          <span class="block text-[8px] font-bold tracking-wider text-rose-300 uppercase sm:text-[9px]">PV Adv</span>
-          <strong class="arcane-num text-sm font-extrabold text-rose-100 sm:text-base">
-            {{ enemyTeam.lp }}<span class="hidden text-rose-300/75 sm:inline"> / {{ enemyTeam.maxLp }}</span>
-          </strong>
-          @if (enemyLpBurst(); as lpVfx) {
-          <span class="arcane-vfx-lp-badge" [attr.data-kind]="lpVfx.kind" [attr.data-faction]="lpVfx.faction"
-            aria-hidden="true">
-            {{ lpVfx.label }}
-          </span>
-          }
-        </div>
-        <div #allyLpBox
-          class="relative shrink-0 whitespace-nowrap rounded-lg border border-sky-400/45 bg-sky-950/60 px-2 py-0.5 text-center shadow-inner sm:rounded-xl sm:px-3 sm:py-1">
-          <span class="block text-[8px] font-bold tracking-wider text-sky-300 uppercase sm:text-[9px]">Nos PV</span>
-          <strong class="arcane-num text-sm font-extrabold text-sky-100 sm:text-base">
-            {{ allyTeam.lp }}<span class="hidden text-sky-300/75 sm:inline"> / {{ allyTeam.maxLp }}</span>
-          </strong>
-          @if (allyLpBurst(); as lpVfx) {
-          <span class="arcane-vfx-lp-badge" [attr.data-kind]="lpVfx.kind" [attr.data-faction]="lpVfx.faction"
-            aria-hidden="true">
-            {{ lpVfx.label }}
-          </span>
-          }
-        </div>
-
-        <div class="min-w-0 flex-1 text-xs">
-          <div class="flex flex-nowrap items-center gap-1 overflow-hidden sm:gap-1.5">
-            <span class="arcane-display shrink-0 text-[11px] font-bold text-arcane-gold-bright sm:text-xs">
-              <span class="sm:hidden">T{{ view.turnNumber }}</span>
-              <span class="hidden sm:inline">Manche {{ view.roundNumber }} · Tour {{ view.turnNumber }}</span>
-            </span>
-            <span
-              class="shrink-0 rounded border border-slate-700/80 bg-arcane-elevated px-1.5 py-0 text-[10px] font-bold text-arcane-ink sm:px-2 sm:py-0.5 sm:text-[11px]">
-              <span class="sm:hidden">{{ shortPhaseLabel(view.phase) }}</span>
-              <span class="hidden sm:inline">{{ phaseLabel(view.phase) }}</span>
-            </span>
-            @if (view.turn1TruceActive) {
-            <span title="Trêve du Tour 1 active"
-              class="inline-flex shrink-0 items-center gap-1 rounded border border-emerald-400/50 bg-emerald-950/70 px-1 py-0 text-[10px] font-bold text-emerald-200 sm:px-2 sm:py-0.5">
-              <ng-icon name="lucideFeather" size="11px" aria-hidden="true" />
-              <span class="hidden sm:inline">Trêve du Tour 1</span>
-            </span>
-            }
-            @if (view.spectator) {
-            <span
-              class="inline-flex shrink-0 items-center gap-1 rounded border border-purple-400/50 bg-purple-950/70 px-1.5 py-0 text-[10px] font-bold text-purple-200 sm:px-2 sm:py-0.5">
-              <ng-icon name="lucideEye" size="11px" aria-hidden="true" />
-              <span class="hidden sm:inline">Spectateur</span>
-            </span>
-            }
-          </div>
-          <div class="mt-0.5 flex flex-nowrap items-center gap-1.5 overflow-hidden text-[10px] sm:text-[11px]">
-            @if (view.spectator) {
-              <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-sky-400/50 bg-sky-950/70 px-2 py-0 text-[10px] font-bold text-sky-200">
-                <ng-icon name="lucideEye" size="11px" aria-hidden="true" />
-                <span>Tour : {{ activeTurnPlayerName() }}</span>
-              </span>
-            } @else if (view.phase === 'FINISHED') {
-              <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-arcane-gold/55 bg-arcane-gold/15 px-2 py-0 text-[10px] font-bold text-arcane-gold-bright">
-                <ng-icon name="lucideTrophy" size="11px" aria-hidden="true" />
-                <span>Duel terminé</span>
-              </span>
-            } @else if (isMyTurn()) {
-              <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/75 bg-emerald-500/20 px-2 py-0 text-[10px] font-extrabold tracking-wide text-emerald-200 shadow-sm">
-                <ng-icon name="lucidePlay" size="10px" aria-hidden="true" />
-                <span class="sm:hidden">À VOUS</span>
-                <span class="hidden sm:inline">À VOUS DE JOUER</span>
-              </span>
-            } @else {
-              <span class="inline-flex min-w-0 items-center gap-1 rounded-full border border-slate-600/75 bg-slate-900/85 px-2 py-0 text-[10px] font-bold text-arcane-ink-secondary">
-                <ng-icon name="lucideClock" size="10px" class="shrink-0" aria-hidden="true" />
-                <span class="truncate sm:hidden">{{ activeTurnPlayerName() }}</span>
-                <span class="hidden sm:inline">Tour de {{ activeTurnPlayerName() }}</span>
-              </span>
-            }
-            @if (activeControlledBoard()?.primaryFaction; as myFaction) {
-              <span
-                class="hidden shrink-0 items-center gap-1 rounded-full border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
-                [class]="factionMeta[myFaction].badgeClass">
-                <ng-icon [name]="factionIconName(myFaction)" size="10px" aria-hidden="true" />
-                <span>{{ factionMeta[myFaction].shortLabel }}</span>
-              </span>
-            }
-          </div>
-        </div>
+    <div class="flex items-center justify-between gap-1.5 sm:gap-2.5">
+      <div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-hidden text-xs">
+        <span class="arcane-display shrink-0 text-[11px] font-bold text-arcane-gold-bright sm:text-xs">
+          <span class="sm:hidden">T{{ view.turnNumber }}</span>
+          <span class="hidden sm:inline">Manche {{ view.roundNumber }} · Tour {{ view.turnNumber }}</span>
+        </span>
+        <span
+          class="shrink-0 rounded border border-slate-700/80 bg-arcane-elevated px-1.5 py-0 text-[10px] font-bold text-arcane-ink sm:px-2 sm:py-0.5 sm:text-[11px]">
+          <span class="sm:hidden">{{ shortPhaseLabel(view.phase) }}</span>
+          <span class="hidden sm:inline">{{ phaseLabel(view.phase) }}</span>
+        </span>
+        @if (view.turn1TruceActive) {
+        <span title="Trêve du Tour 1 active"
+          class="inline-flex shrink-0 items-center gap-1 rounded border border-emerald-400/50 bg-emerald-950/70 px-1.5 py-0 text-[10px] font-bold text-emerald-200 sm:px-2 sm:py-0.5">
+          <ng-icon name="lucideFeather" size="11px" aria-hidden="true" />
+          <span class="hidden sm:inline">Trêve du Tour 1</span>
+        </span>
+        }
+        @if (view.spectator) {
+        <span
+          class="inline-flex shrink-0 items-center gap-1 rounded border border-purple-400/50 bg-purple-950/70 px-1.5 py-0 text-[10px] font-bold text-purple-200 sm:px-2 sm:py-0.5">
+          <ng-icon name="lucideEye" size="11px" aria-hidden="true" />
+          <span>Spectateur · {{ activeTurnPlayerName() }}</span>
+        </span>
+        } @else if (view.phase === 'FINISHED') {
+        <span
+          class="inline-flex shrink-0 items-center gap-1 rounded-full border border-arcane-gold/55 bg-arcane-gold/15 px-2 py-0 text-[10px] font-bold text-arcane-gold-bright">
+          <ng-icon name="lucideTrophy" size="11px" aria-hidden="true" />
+          <span>Duel terminé</span>
+        </span>
+        } @else if (isMyTurn()) {
+        <span
+          class="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/75 bg-emerald-500/20 px-2 py-0 text-[10px] font-extrabold tracking-wide text-emerald-200 shadow-sm">
+          <ng-icon name="lucidePlay" size="10px" aria-hidden="true" />
+          <span class="sm:hidden">À VOUS</span>
+          <span class="hidden sm:inline">À VOUS DE JOUER</span>
+        </span>
+        } @else {
+        <span
+          class="inline-flex min-w-0 items-center gap-1 rounded-full border border-slate-600/75 bg-slate-900/85 px-2 py-0 text-[10px] font-bold text-arcane-ink-secondary">
+          <ng-icon name="lucideClock" size="10px" class="shrink-0" aria-hidden="true" />
+          <span class="truncate sm:hidden">{{ activeTurnPlayerName() }}</span>
+          <span class="hidden sm:inline">Tour de {{ activeTurnPlayerName() }}</span>
+        </span>
+        }
       </div>
 
       <!-- La Corde (Desktop progress bar) -->
-      <div class="hidden xl:flex xl:min-w-44 xl:max-w-xs xl:flex-1 xl:flex-col xl:gap-1">
-        <div class="flex items-center justify-between text-[11px] font-bold">
-          <span class="text-arcane-ink-secondary">Chrono de Phase</span>
-          <span class="arcane-num" [class]="remainingSeconds() <= 10 ? 'text-rose-300' : 'text-arcane-gold-bright'">
-            {{ remainingSeconds() }}s
-          </span>
-        </div>
-        <div class="h-2 w-full overflow-hidden rounded-full border border-slate-700/60 bg-arcane-recessed"
+      <div class="hidden xl:flex xl:min-w-48 xl:max-w-sm xl:flex-1 xl:items-center xl:gap-2.5">
+        <span class="shrink-0 text-[11px] font-bold text-arcane-ink-secondary">Chrono</span>
+        <div class="h-2 flex-1 overflow-hidden rounded-full border border-slate-700/60 bg-arcane-recessed"
           role="progressbar" [attr.aria-valuenow]="remainingSeconds()" aria-valuemin="0" aria-valuemax="75"
           aria-label="Temps restant dans la phase">
           <div class="arena-rope-bar h-full rounded-full"
             [class]="remainingSeconds() <= 10 ? 'bg-linear-to-r from-rose-600 to-rose-400' : 'bg-linear-to-r from-arcane-gold to-arcane-gold-bright'"
             [style.inline-size.%]="ropePercent()"></div>
         </div>
-      </div>
-
-      <!-- Actions droite Mobile (< xl) : Chrono, Drawer Log/Chat, Menu -->
-      <div class="flex shrink-0 items-center gap-1 xl:hidden">
-        <span
-          class="arcane-num inline-flex h-9 items-center rounded-lg border border-slate-700/80 bg-arcane-recessed px-2 text-xs font-extrabold"
-          [class]="remainingSeconds() <= 10 ? 'border-rose-500/60 text-rose-300' : 'text-arcane-gold-bright'"
-          aria-label="Secondes restantes">
+        <span class="arcane-num shrink-0 text-[11px] font-extrabold"
+          [class]="remainingSeconds() <= 10 ? 'text-rose-300' : 'text-arcane-gold-bright'">
           {{ remainingSeconds() }}s
         </span>
-        <button type="button" (click)="openMobileDrawer()"
-          [attr.aria-label]="'Ouvrir le journal et chat (' + unreadChatCount() + ' non lu)'"
-          class="arcane-btn relative inline-flex min-h-9! items-center gap-1 rounded-lg border border-slate-700 bg-arcane-elevated px-2.5 text-xs font-bold text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
-          <ng-icon name="lucideMessageSquare" size="15px" aria-hidden="true" />
-          <span class="hidden sm:inline">Journal</span>
-          @if (unreadChatCount() > 0) {
-          <span
-            class="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-arcane-gold px-1 text-[9px] font-extrabold text-arcane-void">
-            {{ unreadChatCount() }}
-          </span>
-          }
-        </button>
-        <button type="button"
-          (click)="!view.spectator && view.phase !== 'FINISHED' ? openMobileDrawer('LOG') : returnToLobby()"
-          [attr.aria-label]="!view.spectator && view.phase !== 'FINISHED' ? 'Options de partie' : 'Retour au Sanctuaire'"
-          class="arcane-btn inline-flex min-h-9! items-center justify-center rounded-lg border border-slate-700 bg-arcane-surface px-2.5 text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
-          <ng-icon [name]="!view.spectator && view.phase !== 'FINISHED' ? 'lucideMenu' : 'lucideChevronLeft'"
-            size="16px" aria-hidden="true" />
-        </button>
       </div>
 
-      <!-- Contrôles de Tour Desktop (xl+) -->
-      @if (!view.spectator && view.phase !== 'FINISHED') {
-      <div class="hidden xl:flex xl:items-center xl:gap-2">
-        @if (isMyTurn() && view.phase === 'MAIN_PHASE' && !view.turn1TruceActive) {
-        <button type="button" (click)="sendSimpleAction('ENTER_COMBAT')"
-          class="arcane-btn inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-400/60 bg-rose-500/20 px-3 text-xs font-bold text-rose-100 hover:bg-rose-500/35">
-          <ng-icon name="lucideSwords" size="14px" aria-hidden="true" />
-          <span>Phase Combat</span>
-        </button>
-        }
-        @if (isMyTurn() && (view.phase === 'MAIN_PHASE' || view.phase === 'COMBAT_PHASE')) {
-        <button type="button" (click)="sendSimpleAction('END_TURN')"
-          class="arcane-btn inline-flex items-center justify-center gap-1.5 rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-4 text-xs font-extrabold text-arcane-void shadow-md hover:brightness-105">
-          <span>Fin du Tour</span>
-          <ng-icon name="lucideRotateCw" size="14px" aria-hidden="true" />
-        </button>
-        }
-        <button type="button" (click)="openForfeitDialog()"
-          class="arcane-btn rounded-xl border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-rose-500/60 hover:text-rose-200">
-          Abandonner
-        </button>
+      <!-- Contrôles audio & Actions droite Mobile (< xl) : Chrono, Drawer Log/Chat, Menu -->
+      <div class="flex shrink-0 items-center gap-1.5">
+        <app-arena-audio-control />
+        <div class="flex shrink-0 items-center gap-1 xl:hidden">
+          <span
+            class="arcane-num inline-flex h-8 items-center rounded-lg border border-slate-700/80 bg-arcane-recessed px-2 text-xs font-extrabold"
+            [class]="remainingSeconds() <= 10 ? 'border-rose-500/60 text-rose-300' : 'text-arcane-gold-bright'"
+            aria-label="Secondes restantes">
+            {{ remainingSeconds() }}s
+          </span>
+          <button type="button" (click)="openMobileDrawer()"
+            [attr.aria-label]="'Ouvrir le journal et chat (' + unreadChatCount() + ' non lu)'"
+            class="arcane-btn relative inline-flex min-h-8! items-center gap-1 rounded-lg border border-slate-700 bg-arcane-elevated px-2.5 text-xs font-bold text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
+            <ng-icon name="lucideMessageSquare" size="15px" aria-hidden="true" />
+            <span class="hidden sm:inline">Journal</span>
+            @if (unreadChatCount() > 0) {
+            <span
+              class="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-arcane-gold px-1 text-[9px] font-extrabold text-arcane-void">
+              {{ unreadChatCount() }}
+            </span>
+            }
+          </button>
+          <button type="button"
+            (click)="!view.spectator && view.phase !== 'FINISHED' ? openMobileDrawer('LOG') : returnToLobby()"
+            [attr.aria-label]="!view.spectator && view.phase !== 'FINISHED' ? 'Options de partie' : 'Retour au Sanctuaire'"
+            class="arcane-btn inline-flex min-h-8! items-center justify-center rounded-lg border border-slate-700 bg-arcane-surface px-2 text-arcane-ink-secondary hover:border-arcane-gold/55 hover:text-arcane-ink">
+            <ng-icon [name]="!view.spectator && view.phase !== 'FINISHED' ? 'lucideMenu' : 'lucideChevronLeft'"
+              size="16px" aria-hidden="true" />
+          </button>
+        </div>
       </div>
+
+      <!-- Sortie / Abandon Desktop (xl+) -->
+      @if (!view.spectator && view.phase !== 'FINISHED') {
+      <button type="button" (click)="openForfeitDialog()"
+        class="arcane-btn hidden xl:inline-flex items-center rounded-xl border border-slate-700 bg-arcane-elevated px-3 text-xs font-semibold text-arcane-ink-secondary hover:border-rose-500/60 hover:text-rose-200">
+        Abandonner
+      </button>
       } @else {
       <button type="button" (click)="returnToLobby()"
         class="arcane-btn hidden xl:inline-flex items-center rounded-xl border border-slate-700 bg-arcane-elevated px-4 text-xs font-bold text-arcane-ink-secondary hover:border-arcane-gold/50 hover:text-arcane-ink">
@@ -209,7 +150,7 @@
         [style.inline-size.%]="ropePercent()"></div>
     </div>
 
-    <!-- Bannière d'aide contextuelle pendant une sélection -->
+    <!-- Bannière d'aide contextuelle pendant une sélection / guidage instantané -->
     @if (interactionPrompt(); as prompt) {
     <div role="status"
       class="mt-1 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-arcane-gold/65 bg-arcane-gold/15 px-2.5 py-1 text-xs text-amber-100">
@@ -237,245 +178,326 @@
       </div>
     </div>
     } @else {
-      @let guide = tacticalGuidance();
-      <div class="arcane-tactical-bar mt-1 text-[11px]" [attr.data-tone]="guide.tone">
-        <div class="flex min-w-0 items-center gap-1.5">
-          <ng-icon
-            [name]="guide.iconName"
-            size="13px"
-            [class]="guide.tone === 'COMBAT' ? 'shrink-0 text-orange-300' : guide.tone === 'REACTION' ? 'shrink-0 text-amber-300' : guide.tone === 'MY_ACTION' ? 'shrink-0 text-emerald-300' : 'shrink-0 text-slate-400'"
-            aria-hidden="true" />
-          <span class="min-w-0 truncate">
-            <strong class="font-bold text-arcane-ink">{{ guide.headline }}</strong>
-            <span class="hidden text-arcane-ink-secondary sm:inline"> — {{ guide.subline }}</span>
-          </span>
-        </div>
-        @if (!view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE' && guide.playableCardCount > 0) {
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/50 bg-emerald-950/75 px-2 py-0 text-[10px] font-bold text-emerald-200">
-            <span>{{ guide.playableCardCount }} jouable(s)</span>
-          </span>
-        } @else if (!view.spectator && isMyTurn() && guide.readyAttackerCount > 0) {
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-orange-400/55 bg-orange-950/75 px-2 py-0 text-[10px] font-bold text-orange-200">
-            <ng-icon name="lucideSwords" size="10px" aria-hidden="true" />
-            <span>{{ guide.readyAttackerCount }} prêt(s)</span>
-          </span>
-        }
+    @let guide = tacticalGuidance();
+    <div class="arcane-tactical-bar mt-1 text-[11px]" [attr.data-tone]="guide.tone">
+      <div class="flex min-w-0 items-center gap-1.5">
+        <ng-icon [name]="guide.iconName" size="13px"
+          [class]="guide.tone === 'COMBAT' ? 'shrink-0 text-orange-300' : guide.tone === 'REACTION' ? 'shrink-0 text-amber-300' : guide.tone === 'MY_ACTION' ? 'shrink-0 text-emerald-300' : 'shrink-0 text-slate-400'"
+          aria-hidden="true" />
+        <span class="min-w-0 truncate">
+          <strong class="font-bold text-arcane-ink">{{ guide.headline }}</strong>
+          <span class="hidden text-arcane-ink-secondary sm:inline"> — {{ guide.subline }}</span>
+        </span>
       </div>
+      @if (!view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE' && guide.playableCardCount > 0) {
+      <span
+        class="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/50 bg-emerald-950/75 px-2 py-0 text-[10px] font-bold text-emerald-200">
+        <span>{{ guide.playableCardCount }} jouable(s)</span>
+      </span>
+      } @else if (!view.spectator && isMyTurn() && guide.readyAttackerCount > 0) {
+      <span
+        class="inline-flex shrink-0 items-center gap-1 rounded-full border border-orange-400/55 bg-orange-950/75 px-2 py-0 text-[10px] font-bold text-orange-200">
+        <ng-icon name="lucideSwords" size="10px" aria-hidden="true" />
+        <span>{{ guide.readyAttackerCount }} prêt(s)</span>
+      </span>
+      }
+    </div>
     }
   </header>
 
   <!-- GRILLE PRINCIPALE : Plateau Central (9 cols desktop / full mobile) + Barre Latérale Desktop (3 cols) -->
   <div #arenaGrid class="arena-grid grid gap-1.5 xl:grid-cols-12 xl:gap-2">
-    <!-- Colonne de Jeu : Rive Nord + Front + Rive Sud + Main -->
-    <div #arenaPlayCol class="arena-play-col relative xl:col-span-9">
-      @if (turnAnnouncement(); as turnBanner) {
-        <div
-          class="arcane-turn-beacon"
-          [attr.data-faction]="turnBanner.faction"
-          aria-hidden="true">
-          <ng-icon name="lucidePlay" size="13px" class="shrink-0" />
-          <span class="arcane-display text-[11px] font-extrabold tracking-wider text-arcane-ink uppercase">
-            {{ turnBanner.label }} · Tour {{ turnBanner.turnNumber }}
-          </span>
-        </div>
-      }
+    <!-- Colonne de Jeu Scénique : Décors Montagnes + Camp Nord Miroir + Front + Camp Sud + Main + Hub Joueur -->
+    <div #arenaPlayCol class="arena-play-col arena-scenic-play-col relative min-w-0 p-1.5 sm:p-2 xl:col-span-9"
+      [attr.data-faction]="activeControlledBoard()?.primaryFaction ?? null">
+
+      <!-- Arrière-plan panoramique Dark-Fantasy (montagnes d'obsidienne & brume astrale, sans impact tactile) -->
+      <svg class="pointer-events-none absolute inset-0 z-0 h-full w-full rounded-2xl opacity-45" viewBox="0 0 1200 720"
+        preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <ellipse cx="600" cy="310" rx="460" ry="180" fill="rgb(56 189 248 / 0.08)" />
+        <!-- Massif gauche (sommets jumeaux en arrière-plan) -->
+        <polygon points="-30,430 125,155 245,275 340,120 510,430" fill="#131c31" />
+        <polygon points="125,155 182,250 112,265 65,330 -30,430" fill="#23314f" opacity="0.55" />
+        <polygon points="340,120 398,255 318,270 282,215" fill="#2b3c5e" opacity="0.65" />
+        <!-- Massif droit -->
+        <polygon points="645,425 795,165 910,275 1030,130 1230,425" fill="#131c31" />
+        <polygon points="795,165 850,260 765,285 715,245" fill="#243352" opacity="0.55" />
+        <polygon points="1030,130 1105,275 995,295 965,210" fill="#2d4066" opacity="0.65" />
+        <!-- Contreforts inférieurs gauche et droite -->
+        <polygon points="-20,720 115,495 255,610 385,525 535,720" fill="#0d1526" />
+        <polygon points="115,495 162,565 72,585 20,645" fill="#1d2b45" opacity="0.55" />
+        <polygon points="670,720 825,485 965,585 1095,465 1230,720" fill="#0d1526" />
+        <polygon points="1095,465 1145,565 1045,585 1015,520" fill="#1f2e4b" opacity="0.55" />
+        <!-- Brumes de vallée & crêtes herbeuses basses -->
+        <ellipse cx="320" cy="435" rx="340" ry="38" fill="rgb(15 23 42 / 0.65)" />
+        <ellipse cx="890" cy="430" rx="340" ry="38" fill="rgb(15 23 42 / 0.65)" />
+        <polygon points="0,720 45,675 90,710 140,668 195,705 250,672 310,720" fill="#09101f" />
+        <polygon points="880,720 940,674 995,708 1060,670 1120,706 1175,672 1210,720" fill="#09101f" />
+      </svg>
+
+      <!-- Toile de fond 3D WebGL (Three.js chargé en différé : reliefs & particules élémentaires réactives) -->
+      <app-arena-three-backdrop [faction]="activeControlledBoard()?.primaryFaction ?? null"
+        [pulseTrigger]="turnAnnouncement()?.key ?? spellWave()?.id ?? enemyLpBurst()?.id ?? allyLpBurst()?.id ?? null"
+        [combatPulse]="threeCombatPulse()" />
+
+      <app-arena-turn-popup [announcement]="turnAnnouncement()" />
+      <app-arena-summon-showcase [showcase]="mythicShowcase()" />
       <app-arena-projectile-overlay [projectiles]="activeProjectiles()" />
-        @if (spellWave(); as wave) {
+      <app-arena-impact-canvas [bursts]="canvasBursts()" [vignetteTint]="boardImpactTint()" />
+      <app-arena-combat-popups [popups]="floatingPopups()" />
+      @if (spellWave(); as wave) {
+      <div class="arcane-vfx-spell-wave shadow-xl" [attr.data-faction]="wave.faction" [attr.data-effect]="wave.effect"
+        aria-hidden="true">
+        <div class="flex items-center gap-2 text-xs">
+          <ng-icon [name]="waveEffectIconName(wave.effect)" size="15px" class="shrink-0 text-arcane-gold-bright" />
+          <div class="min-w-0 truncate">
+            <strong class="font-bold text-arcane-ink">{{ wave.cardName }}</strong>
+            <span
+              class="ml-1.5 rounded bg-arcane-void/80 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-arcane-gold uppercase">
+              {{ wave.effectTag }}
+            </span>
+          </div>
+        </div>
+      </div>
+      }
+
+      <div class="arena-battlefield relative z-10 min-w-0 gap-1 sm:gap-1.5">
+        <!-- RIVE NORD : CAMP ADVERSE MIROIR -->
+        <section aria-label="Terrains adverses" class="min-w-0">
+          @if (opponentBoards().length > 1) {
           <div
-            class="arcane-vfx-spell-wave shadow-xl"
-            [attr.data-faction]="wave.faction"
-            [attr.data-effect]="wave.effect"
-            aria-hidden="true">
-            <div class="flex items-center gap-2 text-xs">
-              <ng-icon [name]="waveEffectIconName(wave.effect)" size="15px" class="shrink-0 text-arcane-gold-bright" />
-              <div class="min-w-0 truncate">
-                <strong class="font-bold text-arcane-ink">{{ wave.cardName }}</strong>
-                <span class="ml-1.5 rounded bg-arcane-void/80 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-arcane-gold uppercase">
-                  {{ wave.effectTag }}
-                </span>
-              </div>
+            class="mx-auto mb-1 flex w-fit items-center gap-2 rounded-full border border-rose-500/45 bg-rose-950/90 px-3 py-0.5 text-xs">
+            <div #enemyLpBox class="relative flex items-center gap-1.5">
+              <span class="text-[10px] font-bold tracking-wider text-rose-300 uppercase">PV Adverses</span>
+              <strong class="arcane-num text-sm font-extrabold text-rose-100">{{ enemyTeam.lp }} / {{ enemyTeam.maxLp
+                }}</strong>
+              @if (enemyLpBurst(); as lpVfx) {
+              <span class="arcane-vfx-lp-badge" [attr.data-kind]="lpVfx.kind" [attr.data-faction]="lpVfx.faction"
+                aria-hidden="true">
+                {{ lpVfx.label }}
+              </span>
+              }
+              @if (pickingTarget()?.actionType === 'DECLARE_ATTACK' && directAttackStatus().allowed) {
+              <button type="button" (click)="onSelectDirectAttack()" aria-label="Attaquer directement les PV adverses"
+                title="Attaque Directe (PV adverses)"
+                class="arcane-ready-glow absolute inset-0 z-20 cursor-pointer rounded-full border-2 border-rose-400/90 bg-rose-500/20 hover:bg-rose-500/35"></button>
+              }
             </div>
           </div>
-        }
-        <div class="arena-battlefield">
-          <!-- RIVE NORD : PLATEAU ADVERSE -->
-          <section aria-label="Terrains adverses">
-            <div class="grid gap-1.5" [class]="opponentBoards().length > 1 ? 'md:grid-cols-2' : 'grid-cols-1'">
-              @for (opp of opponentBoards(); track opp.userId) {
+          }
+
+          <div class="grid gap-1.5" [class]="opponentBoards().length > 1 ? 'md:grid-cols-2' : 'grid-cols-1'">
+            @for (opp of opponentBoards(); track opp.userId) {
+            <div
+              class="arcane-arena-north arena-w-board mx-auto w-full rounded-2xl border border-slate-700/45 bg-arcane-void/70 px-1.5 py-1 space-y-1 sm:px-2.5 sm:py-1 sm:space-y-1"
+              [attr.data-faction]="opp.primaryFaction ?? null"
+              [attr.data-active-turn]="view.activeTurnPlayerId === opp.userId && view.phase !== 'FINISHED' ? 'true' : 'false'">
+
+              <!-- Médaillon Supérieur Adversaire (Cercle PV + Avatar + Statut + Main cachée + Deck) -->
+              <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs xl:flex-nowrap">
+                <div class="flex min-w-0 items-center gap-1.5">
+                  <div [attr.data-player-avatar]="opp.userId" class="shrink-0">
+                    <app-arcane-avatar [avatarId]="opp.avatar" [frameId]="opp.leagueFrame"
+                      [faction]="opp.primaryFaction ?? null" size="sm" [bot]="opp.bot" [connected]="opp.connected"
+                      [impactKind]="avatarBurstFor(opp.userId)?.kind ?? null"
+                      [impactBadgeText]="avatarBurstFor(opp.userId)?.label ?? null" [decorative]="false"
+                      [label]="'Avatar de ' + opp.username" />
+                  </div>
+                  @if (opponentBoards().length === 1) {
+                  <div #enemyLpBox class="arena-lp-orb arena-lp-orb--enemy relative shrink-0"
+                    aria-label="Points de vie adverses">
+                    <strong class="arcane-num text-sm leading-none font-extrabold text-rose-100">{{ enemyTeam.lp
+                      }}</strong>
+                    <span class="text-[8px] font-bold tracking-wider text-rose-300 uppercase">PV</span>
+                    @if (enemyLpBurst(); as lpVfx) {
+                    <span class="arcane-vfx-lp-badge" [attr.data-kind]="lpVfx.kind" [attr.data-faction]="lpVfx.faction"
+                      aria-hidden="true">
+                      {{ lpVfx.label }}
+                    </span>
+                    }
+                    @if (pickingTarget()?.actionType === 'DECLARE_ATTACK' && directAttackStatus().allowed) {
+                    <button type="button" (click)="onSelectDirectAttack()"
+                      aria-label="Attaquer directement les PV adverses" title="Attaque Directe (PV adverses)"
+                      class="arcane-ready-glow absolute inset-0 z-20 cursor-pointer rounded-full border-2 border-rose-400/90 bg-rose-500/20 hover:bg-rose-500/35"></button>
+                    }
+                  </div>
+                  }
+                  <span class="inline-block h-2 w-2 shrink-0 rounded-full"
+                    [class]="opp.connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-rose-500'"
+                    [attr.aria-label]="opp.connected ? 'Connecté' : 'Déconnecté'" role="img"></span>
+                  <strong class="truncate text-xs font-bold text-rose-200 sm:text-sm">{{ opp.username }}</strong>
+                  @if (opp.primaryFaction; as oppFaction) {
+                  <span
+                    class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
+                    [class]="factionMeta[oppFaction].badgeClass" [title]="'Deck ' + factionMeta[oppFaction].label">
+                    <ng-icon [name]="factionIconName(oppFaction)" size="10px" aria-hidden="true" />
+                    <span>{{ factionMeta[oppFaction].shortLabel }}</span>
+                  </span>
+                  }
+                  @if (view.activeTurnPlayerId === opp.userId && view.phase !== 'FINISHED') {
+                  <span
+                    class="inline-flex shrink-0 items-center gap-0.5 rounded border border-amber-400/55 bg-amber-950/75 px-1.5 py-0 text-[9px] font-bold text-amber-200">
+                    <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
+                    <span>Joue</span>
+                  </span>
+                  }
+                  @if (opp.bot) {
+                  @let oppDiff = opp.aiDifficulty ?? 'MEDIUM';
+                  <span class="shrink-0 rounded border px-1.5 py-0 text-[9px] font-semibold sm:text-[10px]"
+                    [class]="aiDifficultyMeta[oppDiff].badgeClass">
+                    IA · {{ aiDifficultyMeta[oppDiff].label }}
+                  </span>
+                  }
+                  @if (opp.spellsLockedThisTurn) {
+                  <span
+                    class="hidden sm:inline-block shrink-0 rounded border border-purple-400/40 bg-purple-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-purple-200">Sorts
+                    verrouillés</span>
+                  }
+                  @if (opp.directAttacksBlockedThisTurn) {
+                  <span
+                    class="hidden sm:inline-block shrink-0 rounded border border-sky-400/40 bg-sky-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-sky-200">Attaques
+                    directes bloquées</span>
+                  }
+                </div>
+
                 <div
-                  class="arcane-arena-north rounded-xl px-2 py-1.5 space-y-1 sm:p-2 sm:space-y-1.5"
-                  [attr.data-faction]="opp.primaryFaction ?? null"
-                  [attr.data-active-turn]="view.activeTurnPlayerId === opp.userId && view.phase !== 'FINISHED' ? 'true' : 'false'">
-                  <div class="flex flex-nowrap items-center justify-between gap-1.5 text-xs">
-                    <div class="flex min-w-0 items-center gap-1.5">
-                      <div [attr.data-player-avatar]="opp.userId" class="shrink-0">
-                        <app-arcane-avatar
-                          [avatarId]="opp.avatar"
-                          [frameId]="opp.leagueFrame"
-                          [faction]="opp.primaryFaction ?? null"
-                          size="sm"
-                          [bot]="opp.bot"
-                          [connected]="opp.connected"
-                          [impactKind]="avatarBurstFor(opp.userId)?.kind ?? null"
-                          [impactBadgeText]="avatarBurstFor(opp.userId)?.label ?? null"
-                          [decorative]="false"
-                          [label]="'Avatar de ' + opp.username" />
-                      </div>
-                      <span
-                        class="inline-block h-2 w-2 shrink-0 rounded-full"
-                        [class]="opp.connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-rose-500'"
-                        [attr.aria-label]="opp.connected ? 'Connecté' : 'Déconnecté'"
-                        role="img"></span>
-                      <strong class="truncate text-xs font-bold text-rose-200 sm:text-sm">{{ opp.username }}</strong>
-                      @if (opp.primaryFaction; as oppFaction) {
-                        <span
-                          class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
-                          [class]="factionMeta[oppFaction].badgeClass"
-                          [title]="'Deck ' + factionMeta[oppFaction].label">
-                          <ng-icon [name]="factionIconName(oppFaction)" size="10px" aria-hidden="true" />
-                          <span>{{ factionMeta[oppFaction].shortLabel }}</span>
-                        </span>
-                      }
-                      @if (view.activeTurnPlayerId === opp.userId && view.phase !== 'FINISHED') {
-                        <span class="inline-flex shrink-0 items-center gap-0.5 rounded border border-amber-400/55 bg-amber-950/75 px-1.5 py-0 text-[9px] font-bold text-amber-200">
-                          <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
-                          <span>Joue</span>
-                        </span>
-                      }
-                      @if (opp.bot) {
-                        @let oppDiff = opp.aiDifficulty ?? 'MEDIUM';
-                        <span
-                          class="shrink-0 rounded border px-1.5 py-0 text-[9px] font-semibold sm:text-[10px]"
-                          [class]="aiDifficultyMeta[oppDiff].badgeClass">
-                          IA · {{ aiDifficultyMeta[oppDiff].label }}
-                        </span>
-                      }
-                      @if (opp.spellsLockedThisTurn) {
-                        <span class="hidden sm:inline-block shrink-0 rounded border border-purple-400/40 bg-purple-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-purple-200">Sorts verrouillés</span>
-                      }
-                      @if (opp.directAttacksBlockedThisTurn) {
-                        <span class="hidden sm:inline-block shrink-0 rounded border border-sky-400/40 bg-sky-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-sky-200">Attaques directes bloquées</span>
-                      }
-                    </div>
-                    <div class="flex shrink-0 items-center gap-2 text-[10px] text-arcane-ink-secondary sm:gap-2.5 sm:text-[11px]">
-                      <span class="arcane-num inline-flex items-center gap-0.5" title="Énergie">
-                        <ng-icon name="lucideZap" size="11px" class="text-arcane-gold-bright" aria-hidden="true" />
-                        <span>{{ opp.energyTokens }}</span>
-                      </span>
-                      <span class="arcane-num inline-flex items-center gap-0.5" title="Main adverse">
-                        <ng-icon name="lucideLayers" size="11px" class="text-slate-400" aria-hidden="true" />
-                        <span class="sm:hidden">{{ opp.handCount }}</span>
-                        <span class="hidden sm:inline">Main : {{ opp.handCount }}</span>
-                      </span>
-                      <span class="arcane-num inline-flex items-center gap-0.5" title="Deck restant">
-                        <ng-icon name="lucideBookOpen" size="11px" class="text-slate-400" aria-hidden="true" />
-                        <span class="sm:hidden">{{ opp.deckCount }}</span>
-                        <span class="hidden sm:inline">Deck : {{ opp.deckCount }}</span>
-                      </span>
-                      <button
-                        type="button"
-                        (click)="openDiscardViewer(opp)"
-                        [attr.aria-label]="'Défausse de ' + opp.username + ' (' + opp.discard.length + ')'"
-                        class="arcane-num inline-flex min-h-7 items-center gap-1 rounded-lg border border-slate-700 bg-arcane-surface px-1.5 py-0.5 hover:border-arcane-gold/55 hover:text-arcane-ink sm:px-2">
-                        <ng-icon name="lucideTrash2" size="11px" class="text-slate-400" aria-hidden="true" />
-                        <span>{{ opp.discard.length }}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Ligne de Soutien Adverse : 2 Sorts/Artefacts + 3 Familiers (5 cols partout) -->
-                  <div class="grid grid-cols-5 gap-1 sm:gap-1.5">
-                    @for (slotIdx of spellSlots; track slotIdx) {
-                      @let s = slotAt(opp.spellArtifacts, slotIdx);
-                      <div [attr.data-board-slot]="opp.userId + ':spell:' + slotIdx" class="arcane-slot-empty relative min-h-12 rounded-lg p-0.5 sm:min-h-18">
-                        <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'spell', slotIdx)" />
-                        @if (s) {
-                          <button
-                            type="button"
-                            (click)="inspectBoardCard(s)"
-                            (mouseenter)="previewCard(s)"
-                            (mouseleave)="previewCard(null)"
-                            (focus)="previewCard(s)"
-                            (blur)="previewCard(null)"
-                            class="h-full w-full text-left">
-                            <app-arcane-card [card]="s" [compact]="true" />
-                          </button>
-                        } @else {
-                          <span class="flex h-full min-h-11 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-16 sm:text-[10px]">
-                            <span class="sm:hidden">S{{ slotIdx + 1 }}</span>
-                            <span class="hidden sm:inline">Sort {{ slotIdx + 1 }}</span>
-                          </span>
-                        }
-                      </div>
+                  class="flex shrink-0 items-center gap-2 text-[10px] text-arcane-ink-secondary sm:gap-2.5 sm:text-[11px]">
+                  <span class="arcane-num inline-flex items-center gap-0.5" title="Énergie adverse">
+                    <ng-icon name="lucideZap" size="11px" class="text-arcane-gold-bright" aria-hidden="true" />
+                    <span>{{ opp.energyTokens }}</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1" title="Cartes en main adverse"
+                    [attr.aria-label]="'Main adverse : ' + opp.handCount + ' cartes'">
+                    <span class="hidden items-center gap-0.5 sm:inline-flex" aria-hidden="true">
+                      @for (idx of handSlotIndices; track idx) {
+                      @if (idx < opp.handCount) { <span
+                        class="inline-block h-3.5 w-2.5 rounded-[2px] border border-arcane-gold/55 bg-linear-to-b from-slate-800 to-slate-950">
+                    </span>
                     }
-                    @for (slotIdx of familiarSlots; track slotIdx) {
-                      @let f = slotAt(opp.familiars, slotIdx);
-                      <div [attr.data-board-slot]="opp.userId + ':familiar:' + slotIdx" class="arcane-slot-empty relative min-h-12 rounded-lg p-0.5 sm:min-h-18">
-                        <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'familiar', slotIdx)" />
-                        @if (f) {
-                          @let canPick = isCreatureClickableTarget(f);
-                          <button
-                            type="button"
-                            (click)="onOpponentCreatureClick(f)"
-                            (mouseenter)="previewCard(f)"
-                            (mouseleave)="previewCard(null)"
-                            (focus)="previewCard(f)"
-                            (blur)="previewCard(null)"
-                            class="h-full w-full text-left">
-                            <app-arcane-card
-                              [card]="f"
-                              [compact]="true"
-                              [highlightedTarget]="canPick"
-                              [selected]="selectedTargetIds().includes(f.instanceId)" />
-                          </button>
-                        } @else {
-                          <span class="flex h-full min-h-11 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-16 sm:text-[10px]">
-                            <span class="sm:hidden">F{{ slotIdx + 1 }}</span>
-                            <span class="hidden sm:inline">Familier {{ slotIdx + 1 }}</span>
-                          </span>
-                        }
-                      </div>
                     }
-                  </div>
+                  </span>
+                  <ng-icon name="lucideLayers" size="11px" class="text-slate-400 sm:hidden" aria-hidden="true" />
+                  <span class="arcane-num font-bold">{{ opp.handCount }}</span>
+                  </span>
+                  <span class="arcane-num inline-flex items-center gap-0.5" title="Deck restant">
+                    <ng-icon name="lucideBookOpen" size="11px" class="text-slate-400" aria-hidden="true" />
+                    <span class="sm:hidden">{{ opp.deckCount }}</span>
+                    <span class="hidden sm:inline">Deck : {{ opp.deckCount }}</span>
+                  </span>
+                  <button type="button" (click)="openDiscardViewer(opp)"
+                    [attr.aria-label]="'Défausse de ' + opp.username + ' (' + opp.discard.length + ')'"
+                    class="arcane-num inline-flex min-h-7 items-center gap-1 rounded-lg border border-slate-700 bg-arcane-surface px-1.5 py-0.5 hover:border-arcane-gold/55 hover:text-arcane-ink sm:px-2">
+                    <ng-icon name="lucideTrash2" size="11px" class="text-slate-400" aria-hidden="true" />
+                    <span>{{ opp.discard.length }}</span>
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Ligne de Front Adverse : 4 Monstres (4 cols partout) -->
-                  <div class="grid grid-cols-4 gap-1 sm:gap-1.5">
-                    @for (slotIdx of monsterSlots; track slotIdx) {
-                      @let m = slotAt(opp.monsters, slotIdx);
-                      <div [attr.data-board-slot]="opp.userId + ':monster:' + slotIdx" class="arcane-slot-empty relative min-h-13 rounded-lg border-rose-900/45 p-0.5 sm:min-h-20">
-                        <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'monster', slotIdx)" />
-                        @if (m) {
-                          @let canPick = isCreatureClickableTarget(m);
-                          <button
-                            type="button"
-                            (click)="onOpponentCreatureClick(m)"
-                            (mouseenter)="previewCard(m)"
-                            (mouseleave)="previewCard(null)"
-                            (focus)="previewCard(m)"
-                            (blur)="previewCard(null)"
-                            class="h-full w-full text-left">
-                            <app-arcane-card
-                              [card]="m"
-                              [compact]="true"
-                              [highlightedTarget]="canPick"
-                              [selected]="selectedTargetIds().includes(m.instanceId)" />
-                          </button>
-                        } @else {
-                          <span class="flex h-full min-h-12 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-18 sm:text-[10px]">
-                            <span class="sm:hidden">M{{ slotIdx + 1 }}</span>
-                            <span class="hidden sm:inline">Monstre {{ slotIdx + 1 }}</span>
-                          </span>
-                        }
-                      </div>
+              <!-- Arrière-Garde Adverse Miroir : [Sort 1] · [Familiers F1-F3] · [Sort 2] -->
+              <div class="arena-support-row arena-w-support mx-auto w-full">
+                <div class="arena-zone-spell rounded-xl p-1">
+                  @let oppSpellLeft = slotAt(opp.spellArtifacts, 0);
+                  <div [attr.data-board-slot]="opp.userId + ':spell:0'"
+                    class="arcane-slot-empty arena-slot-support relative h-full rounded-lg p-0.5">
+                    <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'spell', 0)" />
+                    @if (oppSpellLeft) {
+                    <button type="button" (click)="inspectBoardCard(oppSpellLeft)"
+                      (mouseenter)="previewCard(oppSpellLeft)" (mouseleave)="previewCard(null)"
+                      (focus)="previewCard(oppSpellLeft)" (blur)="previewCard(null)"
+                      class="w-full flex-1 min-h-0 text-left">
+                      <app-arcane-card [card]="oppSpellLeft" [compact]="true" [tabletop]="true" />
+                    </button>
+                    } @else {
+                    <span
+                      class="flex h-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/50 uppercase sm:text-[10px]">
+                      <span class="sm:hidden">S1</span>
+                      <span class="hidden sm:inline">Sort 1</span>
+                    </span>
                     }
                   </div>
                 </div>
-              }
+
+                <div class="arena-zone-familiars grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5">
+                  @for (slotIdx of familiarSlots; track slotIdx) {
+                  @let f = slotAt(opp.familiars, slotIdx);
+                  <div [attr.data-board-slot]="opp.userId + ':familiar:' + slotIdx"
+                    class="arcane-slot-empty arena-slot-support relative rounded-lg p-0.5">
+                    <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'familiar', slotIdx)" />
+                    @if (f) {
+                    @let canPick = isCreatureClickableTarget(f);
+                    <button type="button" (click)="onOpponentCreatureClick(f)" (mouseenter)="previewCard(f)"
+                      (mouseleave)="previewCard(null)" (focus)="previewCard(f)" (blur)="previewCard(null)"
+                      class="w-full flex-1 min-h-0 text-left">
+                      <app-arcane-card [card]="f" [compact]="true" [tabletop]="true" [highlightedTarget]="canPick"
+                        [selected]="selectedTargetIds().includes(f.instanceId)" />
+                    </button>
+                    } @else {
+                    <span
+                      class="flex h-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-emerald-200/45 uppercase sm:text-[10px]">
+                      <span class="sm:hidden">F{{ slotIdx + 1 }}</span>
+                      <span class="hidden sm:inline">Familier {{ slotIdx + 1 }}</span>
+                    </span>
+                    }
+                  </div>
+                  }
+                </div>
+
+                <div class="arena-zone-spell rounded-xl p-1">
+                  @let oppSpellRight = slotAt(opp.spellArtifacts, 1);
+                  <div [attr.data-board-slot]="opp.userId + ':spell:1'"
+                    class="arcane-slot-empty arena-slot-support relative h-full rounded-lg p-0.5">
+                    <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'spell', 1)" />
+                    @if (oppSpellRight) {
+                    <button type="button" (click)="inspectBoardCard(oppSpellRight)"
+                      (mouseenter)="previewCard(oppSpellRight)" (mouseleave)="previewCard(null)"
+                      (focus)="previewCard(oppSpellRight)" (blur)="previewCard(null)"
+                      class="w-full flex-1 min-h-0 text-left">
+                      <app-arcane-card [card]="oppSpellRight" [compact]="true" [tabletop]="true" />
+                    </button>
+                    } @else {
+                    <span
+                      class="flex h-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/50 uppercase sm:text-[10px]">
+                      <span class="sm:hidden">S2</span>
+                      <span class="hidden sm:inline">Sort 2</span>
+                    </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ligne de Front Adverse : Zone Monstres (4 slots centrés) -->
+              <div
+                class="arena-zone-monsters arena-w-front mx-auto grid w-full grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5">
+                @for (slotIdx of monsterSlots; track slotIdx) {
+                @let m = slotAt(opp.monsters, slotIdx);
+                <div [attr.data-board-slot]="opp.userId + ':monster:' + slotIdx"
+                  class="arcane-slot-empty arena-slot-front relative rounded-lg p-0.5">
+                  <app-arena-slot-vfx [event]="slotBurstFor(opp.userId, 'monster', slotIdx)" />
+                  @if (m) {
+                  @let canPick = isCreatureClickableTarget(m);
+                  <button type="button" (click)="onOpponentCreatureClick(m)" (mouseenter)="previewCard(m)"
+                    (mouseleave)="previewCard(null)" (focus)="previewCard(m)" (blur)="previewCard(null)"
+                    class="w-full flex-1 min-h-0 text-left">
+                    <app-arcane-card [card]="m" [compact]="true" [tabletop]="true" [highlightedTarget]="canPick"
+                      [selected]="selectedTargetIds().includes(m.instanceId)" />
+                  </button>
+                  } @else {
+                  <span
+                    class="flex h-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/45 uppercase sm:text-[10px]">
+                    <span class="sm:hidden">M{{ slotIdx + 1 }}</span>
+                    <span class="hidden sm:inline">Monstre {{ slotIdx + 1 }}</span>
+                  </span>
+                  }
+                </div>
+                }
+              </div>
             </div>
-          </section>
+            }
+          </div>
+        </section>
 
         <!-- LIGNE MÉDIANE DE FRONT + ATTAQUE DIRECTE + ACTIONS RAPIDES MOBILE -->
-        <div class="flex items-center justify-center gap-2 px-1 py-0.5">
+        <div class="my-auto flex items-center justify-center gap-2 px-1">
           <div class="arcane-clash-line flex-1" aria-hidden="true"></div>
           @if (pickingTarget()?.actionType === 'DECLARE_ATTACK') {
           @if (directAttackStatus().allowed) {
@@ -545,9 +567,8 @@
 
         <!-- ALLIÉ 2v2 (si non contrôlé en tant que panneau principal) -->
         @if (partnerBoard(); as ally) {
-        <section
-          aria-label="Terrain de votre coéquipier"
-          class="arcane-panel arcane-arena-south rounded-xl border-sky-500/35 px-2 py-1.5 space-y-1"
+        <section aria-label="Terrain de votre coéquipier"
+          class="arcane-panel arcane-arena-south arena-w-board mx-auto w-full rounded-xl border-sky-500/35 px-2 py-1 space-y-1"
           [attr.data-faction]="ally.primaryFaction ?? null"
           [attr.data-my-turn]="view.activeTurnPlayerId === ally.userId && view.phase !== 'FINISHED' ? 'true' : 'false'">
           <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -557,12 +578,12 @@
                 [attr.aria-label]="ally.connected ? 'Connecté' : 'Déconnecté'" role="img"></span>
               <strong class="text-sky-200">Coéquipier : {{ ally.username }}</strong>
               @if (ally.primaryFaction; as allyFac) {
-                <span
-                  class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
-                  [class]="factionMeta[allyFac].badgeClass">
-                  <ng-icon [name]="factionIconName(allyFac)" size="10px" aria-hidden="true" />
-                  <span>{{ factionMeta[allyFac].shortLabel }}</span>
-                </span>
+              <span
+                class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
+                [class]="factionMeta[allyFac].badgeClass">
+                <ng-icon [name]="factionIconName(allyFac)" size="10px" aria-hidden="true" />
+                <span>{{ factionMeta[allyFac].shortLabel }}</span>
+              </span>
               }
               @if (ally.bot) {
               @let allyDiff = ally.aiDifficulty ?? 'MEDIUM';
@@ -591,36 +612,36 @@
           <div class="grid grid-cols-4 gap-1 sm:gap-1.5 lg:grid-cols-7">
             @for (slotIdx of monsterSlots; track slotIdx) {
             @let m = slotAt(ally.monsters, slotIdx);
-            <div class="arcane-slot-empty relative min-h-13 rounded-lg border-sky-900/40 p-0.5 sm:min-h-18">
+            <div [attr.data-board-slot]="ally.userId + ':monster:' + slotIdx"
+              class="arcane-slot-empty arena-slot-support relative rounded-lg border-sky-900/40 p-0.5">
               <app-arena-slot-vfx [event]="slotBurstFor(ally.userId, 'monster', slotIdx)" />
               @if (m) {
               @let canBuff = isAllyCreatureClickableTarget(m);
               <button type="button" (click)="onAllyCreatureTargetClick(m)" (mouseenter)="previewCard(m)"
                 (mouseleave)="previewCard(null)" (focus)="previewCard(m)" (blur)="previewCard(null)"
-                class="h-full w-full text-left">
-                <app-arcane-card [card]="m" [compact]="true" [highlightedTarget]="canBuff" />
+                class="w-full flex-1 min-h-0 text-left">
+                <app-arcane-card [card]="m" [compact]="true" [tabletop]="true" [highlightedTarget]="canBuff" />
               </button>
               } @else {
-              <span
-                class="flex h-full min-h-12 items-center justify-center text-[9px] text-slate-600 uppercase sm:min-h-16">M{{
+              <span class="flex h-full flex-1 items-center justify-center text-[9px] text-slate-600 uppercase">M{{
                 slotIdx + 1 }}</span>
               }
             </div>
             }
             @for (slotIdx of familiarSlots; track slotIdx) {
             @let f = slotAt(ally.familiars, slotIdx);
-            <div class="arcane-slot-empty relative min-h-13 rounded-lg p-0.5 sm:min-h-18">
+            <div [attr.data-board-slot]="ally.userId + ':familiar:' + slotIdx"
+              class="arcane-slot-empty arena-slot-support relative rounded-lg p-0.5">
               <app-arena-slot-vfx [event]="slotBurstFor(ally.userId, 'familiar', slotIdx)" />
               @if (f) {
               @let canBuffF = isAllyCreatureClickableTarget(f);
               <button type="button" (click)="canBuffF ? onAllyCreatureTargetClick(f) : inspectBoardCard(f)"
                 (mouseenter)="previewCard(f)" (mouseleave)="previewCard(null)" (focus)="previewCard(f)"
-                (blur)="previewCard(null)" class="h-full w-full text-left">
-                <app-arcane-card [card]="f" [compact]="true" [highlightedTarget]="canBuffF" />
+                (blur)="previewCard(null)" class="w-full flex-1 min-h-0 text-left">
+                <app-arcane-card [card]="f" [compact]="true" [tabletop]="true" [highlightedTarget]="canBuffF" />
               </button>
               } @else {
-              <span
-                class="flex h-full min-h-12 items-center justify-center text-[9px] text-slate-600 uppercase sm:min-h-16">F{{
+              <span class="flex h-full flex-1 items-center justify-center text-[9px] text-slate-600 uppercase">F{{
                 slotIdx + 1 }}</span>
               }
             </div>
@@ -629,120 +650,36 @@
         </section>
         }
 
-        <!-- RIVE SUD : MON TERRAIN ACTIF -->
+        <!-- RIVE SUD : MON PLATEAU DE JEU (Zone Rouge Monstres + Soutien Rose/Vert/Rose) -->
         @if (activeControlledBoard(); as me) {
-        <section
-          aria-label="Votre terrain"
-          class="arcane-arena-south rounded-xl px-2 py-1.5 space-y-1 sm:p-2 sm:space-y-1.5"
+        <section aria-label="Votre terrain"
+          class="arcane-arena-south arena-w-board mx-auto w-full min-w-0 rounded-2xl border border-slate-700/45 bg-arcane-void/65 p-1 space-y-1 sm:px-2 sm:py-1 sm:space-y-1"
           [attr.data-faction]="me.primaryFaction ?? null"
           [attr.data-my-turn]="!view.spectator && isMyTurn() && view.phase !== 'FINISHED' ? 'true' : 'false'">
-          <div class="flex flex-nowrap items-center justify-between gap-1.5 text-xs">
-            <div class="flex min-w-0 items-center gap-1.5">
-              <div [attr.data-player-avatar]="me.userId" class="shrink-0">
-                <app-arcane-avatar
-                  [avatarId]="me.avatar"
-                  [frameId]="me.leagueFrame"
-                  [faction]="me.primaryFaction ?? null"
-                  size="sm"
-                  [bot]="me.bot"
-                  [connected]="me.connected"
-                  [impactKind]="avatarBurstFor(me.userId)?.kind ?? null"
-                  [impactBadgeText]="avatarBurstFor(me.userId)?.label ?? null"
-                  [decorative]="false"
-                  [label]="'Avatar de ' + me.username" />
-              </div>
-              <strong class="truncate text-xs font-bold text-arcane-gold-bright sm:text-sm">{{ me.username }}</strong>
-              @if (me.primaryFaction; as myFac) {
-                <span
-                  class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
-                  [class]="factionMeta[myFac].badgeClass"
-                  [title]="'Deck ' + factionMeta[myFac].label">
-                  <ng-icon [name]="factionIconName(myFac)" size="10px" aria-hidden="true" />
-                  <span>{{ factionMeta[myFac].label }}</span>
-                </span>
-              }
-              @if (!view.spectator && isMyTurn() && view.phase !== 'FINISHED') {
-                <span class="inline-flex shrink-0 items-center gap-0.5 rounded border border-emerald-400/65 bg-emerald-950/75 px-1.5 py-0 text-[9px] font-extrabold text-emerald-200">
-                  <ng-icon name="lucidePlay" size="9px" aria-hidden="true" />
-                  <span>Votre tour</span>
-                </span>
-              }
-              @if (me.bot) {
-              @let meDiff = me.aiDifficulty ?? 'MEDIUM';
-              <span class="shrink-0 rounded border px-1.5 py-0 text-[9px] font-semibold sm:text-[10px]"
-                [class]="aiDifficultyMeta[meDiff].badgeClass">
-                IA · {{ aiDifficultyMeta[meDiff].label }}
-              </span>
-              }
-              @if (me.userId !== view.viewerUserId) {
-              <span
-                class="shrink-0 rounded border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0 text-[9px] font-bold text-arcane-gold-bright sm:text-[10px]">
-                Relais
-              </span>
-              <button type="button" (click)="switchRelayControl(view.viewerUserId)"
-                class="inline-flex min-h-7 shrink-0 items-center rounded-lg border border-slate-700 bg-arcane-elevated px-2 py-0.5 text-[10px] font-semibold text-arcane-ink-secondary hover:text-arcane-ink">
-                Mon plateau
-              </button>
-              } @else if (view.controlledRelays.length > 0) {
-              @for (rid of view.controlledRelays; track rid) {
-              <button type="button" (click)="switchRelayControl(rid)"
-                class="inline-flex min-h-7 shrink-0 items-center rounded-lg border border-arcane-gold/60 bg-arcane-gold/15 px-2 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/25">
-                Relais
-              </button>
-              }
-              }
-              <span
-                class="arcane-num inline-flex shrink-0 items-center gap-0.5 rounded-full border border-arcane-gold/55 bg-arcane-gold/15 px-2 py-0.5 text-[10px] font-extrabold text-arcane-gold-bright shadow-inner sm:text-xs">
-                <ng-icon name="lucideZap" size="11px" aria-hidden="true" />
-                <span>{{ me.energyTokens }}<span class="hidden sm:inline"> Énergie(s)</span></span>
-              </span>
-            </div>
 
-            <div
-              class="flex shrink-0 items-center gap-2 text-[10px] text-arcane-ink-secondary sm:gap-2.5 sm:text-[11px]">
-              @if (me.peekedOpponentTopCard; as peek) {
-              <button type="button" (click)="inspectBoardCard(peek)" (mouseenter)="previewCard(peek)"
-                (mouseleave)="previewCard(null)" (focus)="previewCard(peek)" (blur)="previewCard(null)"
-                class="inline-flex min-h-7 items-center gap-1 rounded-lg border border-sky-400/60 bg-sky-950/60 px-2 py-0.5 font-bold text-sky-200 hover:bg-sky-900/70">
-                <ng-icon name="lucideEye" size="11px" aria-hidden="true" />
-                <span class="max-w-20 truncate sm:max-w-none">{{ peek.name }}</span>
-              </button>
-              }
-              <span class="arcane-num inline-flex items-center gap-0.5" title="Deck restant">
-                <ng-icon name="lucideBookOpen" size="11px" class="text-slate-400" aria-hidden="true" />
-                <span class="sm:hidden">{{ me.deckCount }}</span>
-                <span class="hidden sm:inline">Deck : {{ me.deckCount }}</span>
-              </span>
-              <button type="button" (click)="openDiscardViewer(me)"
-                [attr.aria-label]="'Défausse : ' + me.discard.length"
-                class="arcane-num inline-flex min-h-7 items-center gap-1 rounded-lg border border-slate-700 bg-arcane-surface px-1.5 py-0.5 hover:border-arcane-gold/55 hover:text-arcane-ink sm:px-2">
-                <ng-icon name="lucideTrash2" size="11px" class="text-slate-400" aria-hidden="true" />
-                <span class="sm:hidden">{{ me.discard.length }}</span>
-                <span class="hidden sm:inline">Défausse : {{ me.discard.length }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- MA LIGNE DE FRONT : 4 Monstres (4 cols partout) -->
-          <div class="grid grid-cols-4 gap-1 sm:gap-1.5">
+          <!-- ZONE ROUGE : LIGNE DE FRONT (4 Monstres centrés) -->
+          <div
+            class="arena-zone-monsters arena-w-front mx-auto grid w-full grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5">
             @for (slotIdx of monsterSlots; track slotIdx) {
             @let m = slotAt(me.monsters, slotIdx);
-            <div
-              class="arcane-slot-empty relative flex min-h-13 flex-col justify-between gap-1 rounded-lg p-0.5 sm:min-h-20 sm:p-1"
+            <div [attr.data-board-slot]="me.userId + ':monster:' + slotIdx"
+              class="arcane-slot-empty arena-slot-front relative gap-0.5 rounded-lg p-0.5 sm:p-1"
+              [attr.data-selected]="m && (activeSourceInstanceId() === m.instanceId || inspectedCard()?.instanceId === m.instanceId) ? 'true' : null"
               [class.arcane-slot-empty--active]="!m && canPickBoardSlot('MONSTER')">
               <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'monster', slotIdx)" />
               @if (m) {
               @let canTargetAlly = isAllyCreatureClickableTarget(m);
-              @let monsterReady = !view.spectator && isMyTurn() && view.phase === 'COMBAT_PHASE' && m.canAttackNow && !view.turn1TruceActive;
-              <button type="button" (click)="onOwnBoardCreatureClick(m, $event)"
-                (mouseenter)="previewCard(m)" (mouseleave)="previewCard(null)" (focus)="previewCard(m)"
-                (blur)="previewCard(null)" class="w-full flex-1 text-left">
-                <app-arcane-card [card]="m" [compact]="true" [highlightedTarget]="canTargetAlly"
+              @let monsterReady = !view.spectator && isMyTurn() && view.phase === 'COMBAT_PHASE' && m.canAttackNow &&
+              !view.turn1TruceActive;
+              <button type="button" (click)="onOwnBoardCreatureClick(m, $event)" (mouseenter)="previewCard(m)"
+                (mouseleave)="previewCard(null)" (focus)="previewCard(m)" (blur)="previewCard(null)"
+                class="w-full flex-1 min-h-0 text-left">
+                <app-arcane-card [card]="m" [compact]="true" [tabletop]="true" [highlightedTarget]="canTargetAlly"
                   [attackerReady]="monsterReady"
                   [selected]="activeSourceInstanceId() === m.instanceId || inspectedCard()?.instanceId === m.instanceId" />
               </button>
               @if (!view.spectator && isMyTurn() && !canTargetAlly) {
-              <div class="hidden xl:flex xl:flex-wrap xl:gap-1">
+              <div class="arena-slot-actions hidden xl:flex items-center justify-center gap-0.5">
                 @if (m.canAttackNow && !view.turn1TruceActive) {
                 <button type="button" (click)="startAttackSelection(m, $event)"
                   class="arena-action-mini inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-rose-400/60 bg-rose-600/80 px-1.5 py-0.5 text-[10px] font-extrabold text-white hover:bg-rose-500">
@@ -768,13 +705,13 @@
               }
               } @else if (canPickBoardSlot('MONSTER')) {
               <button type="button" (click)="onSelectOwnSlot('MONSTER', slotIdx)"
-                class="arcane-ready-glow flex h-full min-h-12 w-full items-center justify-center rounded-lg border border-arcane-gold bg-arcane-gold/18 text-[11px] font-extrabold text-arcane-gold-bright hover:bg-arcane-gold/25 sm:min-h-18 sm:text-xs">
+                class="arcane-ready-glow flex h-full w-full flex-1 items-center justify-center rounded-lg border border-arcane-gold bg-arcane-gold/18 text-[11px] font-extrabold text-arcane-gold-bright hover:bg-arcane-gold/25 sm:text-xs">
                 <span class="sm:hidden">+ M{{ slotIdx + 1 }}</span>
-                <span class="hidden sm:inline">+ Poser ici (Slot {{ slotIdx + 1 }})</span>
+                <span class="hidden sm:inline">+ Poser ici (M{{ slotIdx + 1 }})</span>
               </button>
               } @else {
               <span
-                class="flex h-full min-h-12 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-18 sm:text-[10px]">
+                class="flex h-full w-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/50 uppercase sm:text-[10px]">
                 <span class="sm:hidden">M{{ slotIdx + 1 }}</span>
                 <span class="hidden sm:inline">Monstre {{ slotIdx + 1 }}</span>
               </span>
@@ -783,192 +720,384 @@
             }
           </div>
 
-          <!-- MA LIGNE DE SOUTIEN : 3 Familiers + 2 Sorts/Artefacts (5 cols partout) -->
-          <div class="grid grid-cols-5 gap-1 sm:gap-1.5">
-            @for (slotIdx of familiarSlots; track slotIdx) {
-            @let f = slotAt(me.familiars, slotIdx);
-            <div
-              class="arcane-slot-empty relative flex min-h-12 flex-col justify-between gap-1 rounded-lg p-0.5 sm:min-h-18 sm:p-1"
-              [class.arcane-slot-empty--active]="!f && canPickBoardSlot('FAMILIAR')">
-              <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'familiar', slotIdx)" />
-              @if (f) {
-              @let canTargetAllyF = isAllyCreatureClickableTarget(f);
-              @let familiarReady = !view.spectator && isMyTurn() && view.phase === 'COMBAT_PHASE' && f.canAttackNow && !view.turn1TruceActive;
-              <button type="button" (click)="onOwnBoardCreatureClick(f, $event)"
-                (mouseenter)="previewCard(f)" (mouseleave)="previewCard(null)" (focus)="previewCard(f)"
-                (blur)="previewCard(null)" class="w-full flex-1 text-left">
-                <app-arcane-card [card]="f" [compact]="true" [highlightedTarget]="canTargetAllyF"
-                  [attackerReady]="familiarReady"
-                  [selected]="activeSourceInstanceId() === f.instanceId || inspectedCard()?.instanceId === f.instanceId" />
-              </button>
-              @if (!view.spectator && isMyTurn() && !canTargetAllyF) {
-              <div class="hidden xl:flex xl:flex-wrap xl:gap-1">
-                @if (f.canAttackNow && !view.turn1TruceActive) {
-                <button type="button" (click)="startAttackSelection(f, $event)"
-                  [attr.aria-label]="'Attaquer avec ' + f.name"
-                  class="arena-action-mini inline-flex flex-1 items-center justify-center rounded-md border border-rose-400/60 bg-rose-600/80 px-1.5 py-0.5 text-[10px] font-extrabold text-white hover:bg-rose-500">
-                  <ng-icon name="lucideSwords" size="12px" aria-hidden="true" />
+          <!-- LIGNE DE SOUTIEN : [ROSE Sort 1] · [VERT Familiers F1-F3] · [ROSE Sort 2] -->
+          <div class="arena-support-row arena-w-support mx-auto w-full">
+            @let mySpellLeft = slotAt(me.spellArtifacts, 0);
+            <div class="arena-zone-spell rounded-xl p-1">
+              <div [attr.data-board-slot]="me.userId + ':spell:0'"
+                class="arcane-slot-empty arena-slot-support relative h-full gap-0.5 rounded-lg p-0.5 sm:p-1"
+                [attr.data-selected]="mySpellLeft && (activeSourceInstanceId() === mySpellLeft.instanceId || inspectedCard()?.instanceId === mySpellLeft.instanceId) ? 'true' : null"
+                [class.arcane-slot-empty--active]="!mySpellLeft && canPickBoardSlot('SPELL')">
+                <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'spell', 0)" />
+                @if (mySpellLeft) {
+                <button type="button" (click)="inspectBoardCard(mySpellLeft)" (mouseenter)="previewCard(mySpellLeft)"
+                  (mouseleave)="previewCard(null)" (focus)="previewCard(mySpellLeft)" (blur)="previewCard(null)"
+                  class="w-full flex-1 min-h-0 text-left">
+                  <app-arcane-card [card]="mySpellLeft" [compact]="true" [tabletop]="true"
+                    [selected]="activeSourceInstanceId() === mySpellLeft.instanceId || inspectedCard()?.instanceId === mySpellLeft.instanceId" />
                 </button>
+                @if (!view.spectator && isMyTurn() && mySpellLeft.cardType === 'ARTIFACT' &&
+                hasActivatedAbility(mySpellLeft) &&
+                !mySpellLeft.activatedThisTurn && view.phase === 'MAIN_PHASE') {
+                <div class="arena-slot-actions hidden xl:flex items-center justify-center gap-0.5">
+                  <button type="button" (click)="onActivateBoardEffect(mySpellLeft, $event)"
+                    class="arena-action-mini inline-flex items-center justify-center gap-1 rounded-md border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/30">
+                    <ng-icon name="lucideSparkles" size="11px" aria-hidden="true" />
+                    <span>Activer <span class="visually-hidden">({{ mySpellLeft.name }})</span></span>
+                  </button>
+                </div>
                 }
-                @if (!f.changedPostureThisTurn && view.phase === 'MAIN_PHASE') {
-                <button type="button" (click)="onChangePosture(f)"
-                  [attr.aria-label]="'Changer posture (' + f.name + ')'"
-                  class="arena-action-mini inline-flex items-center justify-center rounded-md border border-sky-400/50 bg-sky-950/65 px-2 py-0.5 text-[10px] font-bold text-sky-200 hover:bg-sky-900/75">
-                  <ng-icon name="lucideRotateCw" size="12px" aria-hidden="true" />
+                } @else if (canPickBoardSlot('SPELL')) {
+                <button type="button" (click)="onSelectOwnSlot('SPELL', 0)"
+                  class="arcane-ready-glow flex h-full w-full flex-1 items-center justify-center rounded-lg border border-pink-400 bg-pink-500/18 text-[10px] font-extrabold text-pink-100 hover:bg-pink-500/25 sm:text-[11px]">
+                  <span class="sm:hidden">+ S1</span>
+                  <span class="hidden sm:inline">+ Sort 1</span>
                 </button>
+                } @else {
+                <span
+                  class="flex h-full w-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/50 uppercase sm:text-[10px]">
+                  <span class="sm:hidden">S1</span>
+                  <span class="hidden sm:inline">Sort/Art 1</span>
+                </span>
                 }
-                @if (hasActivatedAbility(f) && !f.activatedThisTurn && view.phase === 'MAIN_PHASE') {
-                <button type="button" (click)="onActivateBoardEffect(f, $event)"
-                  class="arena-action-mini inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/30">
-                  <ng-icon name="lucideSparkles" size="11px" aria-hidden="true" />
-                  <span>Effet <span class="visually-hidden">({{ f.name }})</span></span>
+              </div>
+            </div>
+
+            <div class="arena-zone-familiars grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5">
+              @for (slotIdx of familiarSlots; track slotIdx) {
+              @let f = slotAt(me.familiars, slotIdx);
+              <div [attr.data-board-slot]="me.userId + ':familiar:' + slotIdx"
+                class="arcane-slot-empty arena-slot-support relative gap-0.5 rounded-lg p-0.5 sm:p-1"
+                [attr.data-selected]="f && (activeSourceInstanceId() === f.instanceId || inspectedCard()?.instanceId === f.instanceId) ? 'true' : null"
+                [class.arcane-slot-empty--active]="!f && canPickBoardSlot('FAMILIAR')">
+                <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'familiar', slotIdx)" />
+                @if (f) {
+                @let canTargetAllyF = isAllyCreatureClickableTarget(f);
+                @let familiarReady = !view.spectator && isMyTurn() && view.phase === 'COMBAT_PHASE' && f.canAttackNow &&
+                !view.turn1TruceActive;
+                <button type="button" (click)="onOwnBoardCreatureClick(f, $event)" (mouseenter)="previewCard(f)"
+                  (mouseleave)="previewCard(null)" (focus)="previewCard(f)" (blur)="previewCard(null)"
+                  class="w-full flex-1 min-h-0 text-left">
+                  <app-arcane-card [card]="f" [compact]="true" [tabletop]="true" [highlightedTarget]="canTargetAllyF"
+                    [attackerReady]="familiarReady"
+                    [selected]="activeSourceInstanceId() === f.instanceId || inspectedCard()?.instanceId === f.instanceId" />
                 </button>
+                @if (!view.spectator && isMyTurn() && !canTargetAllyF) {
+                <div class="arena-slot-actions hidden xl:flex items-center justify-center gap-0.5">
+                  @if (f.canAttackNow && !view.turn1TruceActive) {
+                  <button type="button" (click)="startAttackSelection(f, $event)"
+                    [attr.aria-label]="'Attaquer avec ' + f.name"
+                    class="arena-action-mini inline-flex flex-1 items-center justify-center rounded-md border border-rose-400/60 bg-rose-600/80 px-1.5 py-0.5 text-[10px] font-extrabold text-white hover:bg-rose-500">
+                    <ng-icon name="lucideSwords" size="12px" aria-hidden="true" />
+                  </button>
+                  }
+                  @if (!f.changedPostureThisTurn && view.phase === 'MAIN_PHASE') {
+                  <button type="button" (click)="onChangePosture(f)"
+                    [attr.aria-label]="'Changer posture (' + f.name + ')'"
+                    class="arena-action-mini inline-flex items-center justify-center rounded-md border border-sky-400/50 bg-sky-950/65 px-2 py-0.5 text-[10px] font-bold text-sky-200 hover:bg-sky-900/75">
+                    <ng-icon name="lucideRotateCw" size="12px" aria-hidden="true" />
+                  </button>
+                  }
+                  @if (hasActivatedAbility(f) && !f.activatedThisTurn && view.phase === 'MAIN_PHASE') {
+                  <button type="button" (click)="onActivateBoardEffect(f, $event)"
+                    class="arena-action-mini inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/30">
+                    <ng-icon name="lucideSparkles" size="11px" aria-hidden="true" />
+                    <span>Effet <span class="visually-hidden">({{ f.name }})</span></span>
+                  </button>
+                  }
+                </div>
+                }
+                } @else if (canPickBoardSlot('FAMILIAR')) {
+                <button type="button" (click)="onSelectOwnSlot('FAMILIAR', slotIdx)"
+                  class="arcane-ready-glow flex h-full w-full flex-1 items-center justify-center rounded-lg border border-emerald-400 bg-emerald-500/18 text-[10px] font-extrabold text-emerald-100 hover:bg-emerald-500/25 sm:text-[11px]">
+                  <span class="sm:hidden">+ F{{ slotIdx + 1 }}</span>
+                  <span class="hidden sm:inline">+ Familier {{ slotIdx + 1 }}</span>
+                </button>
+                } @else {
+                <span
+                  class="flex h-full w-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-emerald-200/45 uppercase sm:text-[10px]">
+                  <span class="sm:hidden">F{{ slotIdx + 1 }}</span>
+                  <span class="hidden sm:inline">Familier {{ slotIdx + 1 }}</span>
+                </span>
                 }
               </div>
               }
-              } @else if (canPickBoardSlot('FAMILIAR')) {
-              <button type="button" (click)="onSelectOwnSlot('FAMILIAR', slotIdx)"
-                class="arcane-ready-glow flex h-full min-h-11 w-full items-center justify-center rounded-lg border border-arcane-gold bg-arcane-gold/18 text-[10px] font-extrabold text-arcane-gold-bright hover:bg-arcane-gold/25 sm:min-h-16 sm:text-[11px]">
-                <span class="sm:hidden">+ F{{ slotIdx + 1 }}</span>
-                <span class="hidden sm:inline">+ Familier {{ slotIdx + 1 }}</span>
-              </button>
-              } @else {
-              <span
-                class="flex h-full min-h-11 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-16 sm:text-[10px]">
-                <span class="sm:hidden">F{{ slotIdx + 1 }}</span>
-                <span class="hidden sm:inline">Familier {{ slotIdx + 1 }}</span>
-              </span>
-              }
             </div>
-            }
 
-            @for (slotIdx of spellSlots; track slotIdx) {
-            @let s = slotAt(me.spellArtifacts, slotIdx);
-            <div
-              class="arcane-slot-empty relative flex min-h-12 flex-col justify-between gap-1 rounded-lg border-purple-900/45 p-0.5 sm:min-h-18 sm:p-1"
-              [class.arcane-slot-empty--active]="!s && canPickBoardSlot('SPELL')">
-              <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'spell', slotIdx)" />
-              @if (s) {
-              <button type="button" (click)="inspectBoardCard(s)" (mouseenter)="previewCard(s)"
-                (mouseleave)="previewCard(null)" (focus)="previewCard(s)" (blur)="previewCard(null)"
-                class="w-full flex-1 text-left">
-                <app-arcane-card [card]="s" [compact]="true"
-                  [selected]="activeSourceInstanceId() === s.instanceId || inspectedCard()?.instanceId === s.instanceId" />
-              </button>
-              @if (!view.spectator && isMyTurn() && s.cardType === 'ARTIFACT' && hasActivatedAbility(s) &&
-              !s.activatedThisTurn && view.phase === 'MAIN_PHASE') {
-              <button type="button" (click)="onActivateBoardEffect(s, $event)"
-                class="arena-action-mini hidden xl:inline-flex items-center justify-center gap-1 rounded-md border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/30">
-                <ng-icon name="lucideSparkles" size="11px" aria-hidden="true" />
-                <span>Activer <span class="visually-hidden">({{ s.name }})</span></span>
-              </button>
-              }
-              } @else if (canPickBoardSlot('SPELL')) {
-              <button type="button" (click)="onSelectOwnSlot('SPELL', slotIdx)"
-                class="arcane-ready-glow flex h-full min-h-11 w-full items-center justify-center rounded-lg border border-purple-400 bg-purple-500/18 text-[10px] font-extrabold text-purple-200 hover:bg-purple-500/25 sm:min-h-16 sm:text-[11px]">
-                <span class="sm:hidden">+ S{{ slotIdx + 1 }}</span>
-                <span class="hidden sm:inline">+ Sort {{ slotIdx + 1 }}</span>
-              </button>
-              } @else {
-              <span
-                class="flex h-full min-h-11 items-center justify-center text-[9px] font-medium tracking-wider text-slate-600 uppercase sm:min-h-16 sm:text-[10px]">
-                <span class="sm:hidden">S{{ slotIdx + 1 }}</span>
-                <span class="hidden sm:inline">Sort/Art {{ slotIdx + 1 }}</span>
-              </span>
-              }
+            @let mySpellRight = slotAt(me.spellArtifacts, 1);
+            <div class="arena-zone-spell rounded-xl p-1">
+              <div [attr.data-board-slot]="me.userId + ':spell:1'"
+                class="arcane-slot-empty arena-slot-support relative h-full gap-0.5 rounded-lg p-0.5 sm:p-1"
+                [attr.data-selected]="mySpellRight && (activeSourceInstanceId() === mySpellRight.instanceId || inspectedCard()?.instanceId === mySpellRight.instanceId) ? 'true' : null"
+                [class.arcane-slot-empty--active]="!mySpellRight && canPickBoardSlot('SPELL')">
+                <app-arena-slot-vfx [event]="slotBurstFor(me.userId, 'spell', 1)" />
+                @if (mySpellRight) {
+                <button type="button" (click)="inspectBoardCard(mySpellRight)" (mouseenter)="previewCard(mySpellRight)"
+                  (mouseleave)="previewCard(null)" (focus)="previewCard(mySpellRight)" (blur)="previewCard(null)"
+                  class="w-full flex-1 min-h-0 text-left">
+                  <app-arcane-card [card]="mySpellRight" [compact]="true" [tabletop]="true"
+                    [selected]="activeSourceInstanceId() === mySpellRight.instanceId || inspectedCard()?.instanceId === mySpellRight.instanceId" />
+                </button>
+                @if (!view.spectator && isMyTurn() && mySpellRight.cardType === 'ARTIFACT' &&
+                hasActivatedAbility(mySpellRight) &&
+                !mySpellRight.activatedThisTurn && view.phase === 'MAIN_PHASE') {
+                <div class="arena-slot-actions hidden xl:flex items-center justify-center gap-0.5">
+                  <button type="button" (click)="onActivateBoardEffect(mySpellRight, $event)"
+                    class="arena-action-mini inline-flex items-center justify-center gap-1 rounded-md border border-arcane-gold/60 bg-arcane-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/30">
+                    <ng-icon name="lucideSparkles" size="11px" aria-hidden="true" />
+                    <span>Activer <span class="visually-hidden">({{ mySpellRight.name }})</span></span>
+                  </button>
+                </div>
+                }
+                } @else if (canPickBoardSlot('SPELL')) {
+                <button type="button" (click)="onSelectOwnSlot('SPELL', 1)"
+                  class="arcane-ready-glow flex h-full w-full flex-1 items-center justify-center rounded-lg border border-pink-400 bg-pink-500/18 text-[10px] font-extrabold text-pink-100 hover:bg-pink-500/25 sm:text-[11px]">
+                  <span class="sm:hidden">+ S2</span>
+                  <span class="hidden sm:inline">+ Sort 2</span>
+                </button>
+                } @else {
+                <span
+                  class="flex h-full w-full flex-1 items-center justify-center text-[9px] font-medium tracking-wider text-rose-200/50 uppercase sm:text-[10px]">
+                  <span class="sm:hidden">S2</span>
+                  <span class="hidden sm:inline">Sort/Art 2</span>
+                </span>
+                }
+              </div>
             </div>
-            }
           </div>
         </section>
         }
       </div>
 
-      <!-- MA MAIN + THUMB DOCK MOBILE (ancrés en bas sans scroll page) -->
+      <!-- DOCK SUD : ZONE VIOLETTE (MAIN) + ZONE ORANGE (DECK/DÉFAUSSE) + ZONE BLEUE (PV / À VOUS / ÉNERGIE / POSTURE / TOUR) -->
       @if (activeControlledBoard(); as me) {
-      <section aria-label="Votre main"
-        class="arcane-panel-hero arena-hand-band shrink-0 rounded-xl px-2 py-1.5 space-y-1 sm:px-2.5">
-        <div class="flex flex-nowrap items-center justify-between gap-1 overflow-x-auto">
-          <div class="flex shrink-0 items-center gap-1.5">
-            <h2
-              class="arcane-display shrink-0 text-[10px] font-bold tracking-wide text-arcane-gold-bright uppercase sm:text-xs">
-              Main ({{ me.hand.length }}/6)
-            </h2>
-            <span class="arcane-num inline-flex shrink-0 items-center gap-0.5 rounded-full border border-arcane-gold/50 bg-arcane-gold/15 px-1.5 py-0 text-[10px] font-extrabold text-arcane-gold-bright sm:hidden">
-              <ng-icon name="lucideZap" size="10px" aria-hidden="true" />
-              <span>{{ me.energyTokens }}</span>
-            </span>
+      <div class="arena-hand-band relative z-20 mt-1 shrink-0 space-y-1">
+        <div class="arena-hand-deck arena-w-board mx-auto grid w-full grid-cols-1 items-end gap-2">
+          <!-- ZONE VIOLETTE : MAIN DU JOUEUR (Zoom survol/sélection) -->
+          <section aria-label="Votre main" class="arena-zone-hand rounded-xl px-2 py-1 sm:px-2.5">
+            <div class="flex items-center justify-between gap-2 text-[10px]">
+              <h2 class="arcane-display font-bold tracking-wide text-purple-200 uppercase sm:text-[11px]">
+                Main ({{ me.hand.length }}/6)
+              </h2>
+              @if (me.peekedOpponentTopCard; as peekMob) {
+              <button type="button" (click)="inspectBoardCard(peekMob)" (mouseenter)="previewCard(peekMob)"
+                (mouseleave)="previewCard(null)" (focus)="previewCard(peekMob)" (blur)="previewCard(null)"
+                class="inline-flex items-center gap-1 rounded-md border border-sky-400/55 bg-sky-950/70 px-1.5 py-0 text-[9px] font-bold text-sky-200 xl:hidden">
+                <ng-icon name="lucideEye" size="10px" aria-hidden="true" />
+                <span class="max-w-24 truncate">{{ peekMob.name }}</span>
+              </button>
+              }
+            </div>
+            <div
+              [class]="me.hand.length > 6 ? 'arcane-hand-rail flex flex-nowrap gap-1.5 overflow-x-auto pt-2.5 pb-0.5 xl:grid xl:grid-flow-col xl:auto-cols-[minmax(0,1fr)] xl:gap-1.5 xl:overflow-visible xl:pt-2.5 xl:pb-0.5' : 'arcane-hand-rail flex flex-nowrap gap-1.5 overflow-x-auto pt-2.5 pb-0.5 xl:grid xl:grid-cols-6 xl:gap-1.5 xl:overflow-visible xl:pt-2.5 xl:pb-0.5'">
+              @for (card of me.hand; track card.instanceId) {
+              @let play = handCardPlayability(card);
+              @let cardSelected = activeSourceInstanceId() === card.instanceId;
+              <button type="button" (click)="onHandCardClick(card, $event)" (mouseenter)="previewCard(card)"
+                (mouseleave)="previewCard(null)" (focus)="previewCard(card)" (blur)="previewCard(null)"
+                [attr.data-selected]="cardSelected ? 'true' : null"
+                [attr.title]="play.reason ?? (play.playable ? 'Cliquer pour jouer cette carte' : null)"
+                class="arena-hand-fan-card w-[8.25rem] shrink-0 snap-start rounded-xl text-left sm:w-[9.25rem] xl:w-auto"
+                [class.opacity-55]="!play.playable && !view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE'">
+                <app-arcane-card [card]="card" [compact]="true" [tabletop]="true" [showPosture]="false"
+                  [playable]="play.playable" [selected]="cardSelected" />
+                @if (!view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE' && play.shortBadge) {
+                <span
+                  class="pointer-events-none absolute -top-2 right-1.5 z-20 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0 text-[9px] leading-[15px] font-extrabold shadow-sm"
+                  [class]="play.playable ? 'border-emerald-400/75 bg-emerald-950/95 text-emerald-200' : 'border-slate-600/80 bg-slate-950/95 text-slate-300'">
+                  {{ play.shortBadge }}
+                </span>
+                }
+              </button>
+              }
+            </div>
+          </section>
+
+          <!-- ZONE ORANGE : PILE DE DECK & DÉFAUSSE (En bas à droite sur Desktop xl+) -->
+          <aside aria-label="Deck et Défausse"
+            class="arena-zone-deck hidden w-[6.5rem] shrink-0 flex-col items-center justify-between gap-1 rounded-xl px-2 py-2.5 xl:flex">
+            <div class="flex flex-col items-center gap-0.5 text-center" title="Cartes restantes dans votre deck">
+              <svg class="h-10 w-10 text-orange-300" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M24 4 L27 16 L39 19 L27 22 L24 34 L21 22 L9 19 L21 16 Z" fill="currentColor" opacity="0.92" />
+                <path d="M12 31 L13.5 36 L18 37.5 L13.5 39 L12 44 L10.5 39 L6 37.5 L10.5 36 Z" fill="#f0c96e"
+                  opacity="0.85" />
+                <path d="M36 31 L37.5 36 L42 37.5 L37.5 39 L36 44 L34.5 39 L30 37.5 L34.5 36 Z" fill="#f0c96e"
+                  opacity="0.85" />
+              </svg>
+              <strong class="arcane-num text-sm leading-none font-extrabold text-orange-100">{{ me.deckCount }}</strong>
+              <span class="text-[9px] font-bold tracking-wider text-orange-200/80 uppercase">Deck</span>
+            </div>
+            @if (me.peekedOpponentTopCard; as peek) {
+            <button type="button" (click)="inspectBoardCard(peek)" (mouseenter)="previewCard(peek)"
+              (mouseleave)="previewCard(null)" (focus)="previewCard(peek)" (blur)="previewCard(null)"
+              class="inline-flex w-full items-center justify-center gap-1 rounded-md border border-sky-400/60 bg-sky-950/80 px-1.5 py-0.5 text-[9px] font-bold text-sky-200 hover:bg-sky-900">
+              <ng-icon name="lucideEye" size="10px" aria-hidden="true" />
+              <span class="truncate">{{ peek.name }}</span>
+            </button>
+            }
+            <button type="button" (click)="openDiscardViewer(me)" [attr.aria-label]="'Défausse : ' + me.discard.length"
+              class="arcane-num inline-flex min-h-7 w-full items-center justify-center gap-1 rounded-lg border border-orange-400/40 bg-arcane-void/80 px-1.5 py-0.5 text-[10px] font-bold text-orange-100 hover:border-arcane-gold">
+              <ng-icon name="lucideTrash2" size="11px" class="text-orange-300" aria-hidden="true" />
+              <span>Déf : {{ me.discard.length }}</span>
+            </button>
+          </aside>
+        </div>
+
+        <!-- ZONE BLEUE : HUB STATUT JOUEUR ((25 PV) · Avatar · À VOUS · Énergie · Posture ATQ/DÉF · Fin du Tour) -->
+        <section aria-label="Statut du joueur et contrôles du tour"
+          class="arena-hero-dock arena-w-dock mx-auto flex w-full flex-wrap items-center justify-between gap-1.5 rounded-2xl px-2.5 py-1 xl:flex-nowrap"
+          [attr.data-my-turn]="!view.spectator && isMyTurn() && view.phase !== 'FINISHED' ? 'true' : 'false'">
+
+          <div class="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2 xl:flex-nowrap">
+            <!-- Cercle PV Joueur -->
+            <div #allyLpBox class="arena-lp-orb relative shrink-0" aria-label="Vos points de vie">
+              <strong class="arcane-num text-sm leading-none font-extrabold text-sky-100 sm:text-base">{{ allyTeam.lp
+                }}</strong>
+              <span class="text-[8px] font-bold tracking-wider text-sky-300 uppercase">PV</span>
+              @if (allyLpBurst(); as lpVfx) {
+              <span class="arcane-vfx-lp-badge" [attr.data-kind]="lpVfx.kind" [attr.data-faction]="lpVfx.faction"
+                aria-hidden="true">
+                {{ lpVfx.label }}
+              </span>
+              }
+            </div>
+
+            <!-- Avatar & Identité Joueur -->
+            <div [attr.data-player-avatar]="me.userId" class="shrink-0">
+              <app-arcane-avatar [avatarId]="me.avatar" [frameId]="me.leagueFrame" [faction]="me.primaryFaction ?? null"
+                size="sm" [bot]="me.bot" [connected]="me.connected"
+                [impactKind]="avatarBurstFor(me.userId)?.kind ?? null"
+                [impactBadgeText]="avatarBurstFor(me.userId)?.label ?? null" [decorative]="false"
+                [label]="'Avatar de ' + me.username" />
+            </div>
+
+            <div class="flex min-w-0 flex-wrap items-center gap-1.5 text-xs xl:flex-nowrap">
+              <strong class="hidden truncate font-bold text-arcane-gold-bright sm:inline sm:text-sm">{{ me.username
+                }}</strong>
+              @if (me.primaryFaction; as myFac) {
+              <span
+                class="hidden shrink-0 items-center gap-0.5 rounded border px-1.5 py-0 text-[9px] font-bold sm:inline-flex"
+                [class]="factionMeta[myFac].badgeClass" [title]="'Deck ' + factionMeta[myFac].label">
+                <ng-icon [name]="factionIconName(myFac)" size="10px" aria-hidden="true" />
+                <span>{{ factionMeta[myFac].label }}</span>
+              </span>
+              }
+              @if (!view.spectator && isMyTurn() && view.phase !== 'FINISHED') {
+              <span
+                class="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/75 bg-emerald-950/85 px-2 py-0.5 text-[10px] font-extrabold tracking-wide text-emerald-200">
+                <ng-icon name="lucidePlay" size="10px" aria-hidden="true" />
+                <span>À VOUS</span>
+              </span>
+              } @else if (view.phase !== 'FINISHED') {
+              <span
+                class="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-600/70 bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-arcane-ink-muted">
+                <ng-icon name="lucideClock" size="10px" aria-hidden="true" />
+                <span class="hidden sm:inline">En attente</span>
+              </span>
+              }
+              <span
+                class="arcane-num inline-flex shrink-0 items-center gap-1 rounded-full border border-arcane-gold/65 bg-arcane-gold/20 px-2 py-0.5 text-[11px] font-extrabold text-arcane-gold-bright shadow-inner">
+                <ng-icon name="lucideZap" size="12px" aria-hidden="true" />
+                <span>{{ me.energyTokens }}<span class="hidden sm:inline"> Énergie</span></span>
+              </span>
+              @if (me.bot) {
+              @let meDiff = me.aiDifficulty ?? 'MEDIUM';
+              <span class="shrink-0 rounded border px-1.5 py-0 text-[9px] font-semibold"
+                [class]="aiDifficultyMeta[meDiff].badgeClass">
+                IA · {{ aiDifficultyMeta[meDiff].label }}
+              </span>
+              }
+              @if (me.spellsLockedThisTurn) {
+              <span
+                class="rounded border border-purple-400/45 bg-purple-950/75 px-1.5 py-0 text-[9px] font-semibold text-purple-200">Sorts
+                verrouillés</span>
+              }
+              @if (me.directAttacksBlockedThisTurn) {
+              <span
+                class="rounded border border-sky-400/45 bg-sky-950/75 px-1.5 py-0 text-[9px] font-semibold text-sky-200">Attaques
+                bloquées</span>
+              }
+              @if (me.userId !== view.viewerUserId) {
+              <button type="button" (click)="switchRelayControl(view.viewerUserId)"
+                class="inline-flex min-h-7 shrink-0 items-center rounded-lg border border-slate-700 bg-arcane-elevated px-2 py-0.5 text-[10px] font-semibold text-arcane-ink-secondary hover:text-arcane-ink">
+                Mon plateau
+              </button>
+              } @else if (view.controlledRelays.length > 0) {
+              @for (rid of view.controlledRelays; track rid) {
+              <button type="button" (click)="switchRelayControl(rid)"
+                class="inline-flex min-h-7 shrink-0 items-center rounded-lg border border-arcane-gold/60 bg-arcane-gold/15 px-2 py-0.5 text-[10px] font-bold text-arcane-gold-bright hover:bg-arcane-gold/25">
+                Relais
+              </button>
+              }
+              }
+            </div>
+          </div>
+
+          <!-- Posture ATQ/DÉF + Deck/Défausse Mobile + Contrôles de Phase/Tour -->
+          <div class="flex flex-wrap items-center gap-1.5 xl:flex-nowrap">
             @if (!view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE') {
             <div class="arcane-well inline-flex shrink-0 items-center gap-0.5 rounded-lg p-0.5">
-              <span class="hidden px-1.5 text-[10px] font-semibold text-arcane-ink-muted sm:inline">Posture :</span>
-              <button type="button" (click)="summonPosture.set('ATTACK')"
+              <span class="hidden px-1 text-[10px] font-semibold text-arcane-ink-muted md:inline">Posture :</span>
+              <button type="button" (click)="setSummonPosture('ATTACK')"
                 [attr.aria-pressed]="summonPosture() === 'ATTACK'" aria-label="Invoquer en Attaque"
                 [class]="summonPosture() === 'ATTACK' ? 'inline-flex h-7 items-center gap-0.5 rounded-md border border-rose-400/70 bg-rose-500/25 px-1.5 text-[10px] font-bold text-rose-100 sm:h-8 sm:px-2' : 'inline-flex h-7 items-center gap-0.5 rounded-md border border-transparent px-1.5 text-[10px] font-bold text-arcane-ink-secondary hover:text-arcane-ink sm:h-8 sm:px-2'">
                 <ng-icon name="lucideArrowUp" size="10px" aria-hidden="true" />
                 <span class="sm:hidden">ATQ</span>
                 <span class="hidden sm:inline">Attaque</span>
               </button>
-              <button type="button" (click)="summonPosture.set('DEFENSE')"
+              <button type="button" (click)="setSummonPosture('DEFENSE')"
                 [attr.aria-pressed]="summonPosture() === 'DEFENSE'" aria-label="Invoquer en Défense"
                 [class]="summonPosture() === 'DEFENSE' ? 'inline-flex h-7 items-center gap-0.5 rounded-md border border-sky-400/70 bg-sky-500/25 px-1.5 text-[10px] font-bold text-sky-100 sm:h-8 sm:px-2' : 'inline-flex h-7 items-center gap-0.5 rounded-md border border-transparent px-1.5 text-[10px] font-bold text-arcane-ink-secondary hover:text-arcane-ink sm:h-8 sm:px-2'">
                 <ng-icon name="lucideRotateCw" size="10px" aria-hidden="true" />
                 <span class="sm:hidden">DÉF</span>
-                <span class="hidden sm:inline">Défense (90°)</span>
+                <span class="hidden sm:inline">Déf. 90°</span>
               </button>
             </div>
             }
-          </div>
 
-          <!-- Thumb-Reach Turn Controls on Mobile/Tablet (< xl) -->
-          @if (!view.spectator && view.phase !== 'FINISHED' && isMyTurn()) {
-          <div class="flex shrink-0 items-center gap-1 xl:hidden">
-            @if (view.phase === 'MAIN_PHASE' && !view.turn1TruceActive) {
-            <button type="button" (click)="sendSimpleAction('ENTER_COMBAT')"
-              class="arcane-btn inline-flex min-h-8! items-center gap-1 rounded-lg border border-rose-400/60 bg-rose-500/20 px-2 text-[10px] font-bold text-rose-100 sm:min-h-9! sm:px-2.5 sm:text-[11px]">
-              <ng-icon name="lucideSwords" size="12px" aria-hidden="true" />
-              <span>Combat</span>
-            </button>
-            }
-            @if (view.phase === 'MAIN_PHASE' || view.phase === 'COMBAT_PHASE') {
-            <button type="button" (click)="sendSimpleAction('END_TURN')"
-              class="arcane-btn inline-flex min-h-8! items-center gap-1 rounded-lg bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-2.5 text-[10px] font-extrabold text-arcane-void shadow-md sm:min-h-9! sm:px-3 sm:text-[11px]">
-              <span>Fin Tour</span>
-              <ng-icon name="lucideRotateCw" size="11px" aria-hidden="true" />
-            </button>
-            }
-          </div>
-          }
-        </div>
-
-        <div
-          [class]="me.hand.length > 6 ? 'arcane-hand-rail flex flex-nowrap gap-1.5 overflow-x-auto pt-2.5 pb-0.5 xl:grid xl:grid-flow-col xl:auto-cols-[minmax(7.5rem,1fr)] xl:gap-1.5 xl:pt-2.5 xl:pb-0.5' : 'arcane-hand-rail flex flex-nowrap gap-1.5 overflow-x-auto pt-2.5 pb-0.5 xl:grid xl:grid-cols-6 xl:gap-1.5 xl:overflow-visible xl:pt-2.5 xl:pb-0'">
-          @for (card of me.hand; track card.instanceId) {
-          @let play = handCardPlayability(card);
-          <button type="button" (click)="onHandCardClick(card, $event)"
-            (mouseenter)="previewCard(card)" (mouseleave)="previewCard(null)" (focus)="previewCard(card)"
-            (blur)="previewCard(null)"
-            [attr.title]="play.reason ?? (play.playable ? 'Cliquer pour jouer cette carte' : null)"
-            class="relative w-[8.25rem] shrink-0 snap-start rounded-xl text-left transition sm:w-[9.5rem] xl:w-auto"
-            [class.hover:-translate-y-1]="play.playable"
-            [class.opacity-55]="!play.playable && !view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE'">
-            <app-arcane-card [card]="card" [compact]="true" [showCompactText]="true" [showPosture]="false"
-              [playable]="play.playable"
-              [selected]="activeSourceInstanceId() === card.instanceId" />
-            @if (!view.spectator && isMyTurn() && view.phase === 'MAIN_PHASE' && play.shortBadge) {
+            <div class="flex items-center gap-1 text-[10px] xl:hidden">
               <span
-                class="pointer-events-none absolute -top-2 right-1.5 z-20 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0 text-[9px] leading-[15px] font-extrabold shadow-sm"
-                [class]="play.playable ? 'border-emerald-400/75 bg-emerald-950/95 text-emerald-200' : 'border-slate-600/80 bg-slate-950/95 text-slate-300'">
-                {{ play.shortBadge }}
+                class="arcane-num inline-flex h-7 items-center gap-0.5 rounded-lg border border-orange-400/40 bg-arcane-void/70 px-1.5 font-bold text-orange-200"
+                title="Deck restant">
+                <ng-icon name="lucideBookOpen" size="10px" aria-hidden="true" />
+                <span>{{ me.deckCount }}</span>
               </span>
+              <button type="button" (click)="openDiscardViewer(me)"
+                [attr.aria-label]="'Défausse : ' + me.discard.length"
+                class="arcane-num inline-flex h-7 items-center gap-0.5 rounded-lg border border-orange-400/40 bg-arcane-void/70 px-1.5 font-bold text-orange-200">
+                <ng-icon name="lucideTrash2" size="10px" aria-hidden="true" />
+                <span>{{ me.discard.length }}</span>
+              </button>
+            </div>
+
+            @if (!view.spectator && view.phase !== 'FINISHED' && isMyTurn()) {
+            <div class="flex shrink-0 items-center gap-1">
+              @if (view.phase === 'MAIN_PHASE' && !view.turn1TruceActive) {
+              <button type="button" (click)="sendSimpleAction('ENTER_COMBAT')"
+                class="arcane-btn inline-flex min-h-8! items-center gap-1 rounded-lg border border-rose-400/65 bg-rose-500/22 px-2.5 text-[10px] font-bold text-rose-100 hover:bg-rose-500/35 sm:min-h-9! sm:text-[11px]">
+                <ng-icon name="lucideSwords" size="12px" aria-hidden="true" />
+                <span class="sm:hidden">Combat</span>
+                <span class="hidden sm:inline">Phase Combat</span>
+              </button>
+              }
+              @if (view.phase === 'MAIN_PHASE' || view.phase === 'COMBAT_PHASE') {
+              <button type="button" (click)="sendSimpleAction('END_TURN')"
+                class="arcane-btn inline-flex min-h-8! items-center gap-1 rounded-lg bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-2.5 text-[10px] font-extrabold text-arcane-void shadow-md hover:brightness-105 sm:min-h-9! sm:px-3.5 sm:text-[11px]">
+                <span class="sm:hidden">Fin Tour</span>
+                <span class="hidden sm:inline">Fin du Tour</span>
+                <ng-icon name="lucideRotateCw" size="12px" aria-hidden="true" />
+              </button>
+              }
+            </div>
             }
-            </button>
-            }
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
       }
     </div>
 
     <!-- Colonne Latérale Desktop : Inspecteur + Onglets Journal / Chat (3 cols) -->
-    <aside class="arena-side-col hidden gap-2 xl:flex xl:col-span-3">
+    <aside class="arena-side-col hidden min-w-0 gap-2 xl:flex xl:col-span-3">
       <section aria-label="Détail de la carte" class="arcane-panel-hero shrink-0 rounded-xl p-2.5 space-y-1.5">
         <div class="flex items-center justify-between gap-2">
           <h2 class="arcane-display text-xs font-bold tracking-wider text-arcane-gold-bright uppercase">
@@ -1035,8 +1164,7 @@
                 [class]="logFilterMode() === 'HIGHLIGHTS' ? 'rounded-md bg-arcane-gold/25 px-2 py-0.5 font-bold text-arcane-gold-bright' : 'rounded-md px-2 py-0.5 font-semibold text-arcane-ink-muted hover:text-arcane-ink'">
                 Temps forts
               </button>
-              <button type="button" (click)="setLogFilterMode('ALL')"
-                [attr.aria-pressed]="logFilterMode() === 'ALL'"
+              <button type="button" (click)="setLogFilterMode('ALL')" [attr.aria-pressed]="logFilterMode() === 'ALL'"
                 [class]="logFilterMode() === 'ALL' ? 'rounded-md bg-arcane-gold/25 px-2 py-0.5 font-bold text-arcane-gold-bright' : 'rounded-md px-2 py-0.5 font-semibold text-arcane-ink-muted hover:text-arcane-ink'">
                 Tout ({{ presentedLogs().length }})
               </button>
@@ -1044,9 +1172,7 @@
           </div>
           <ol class="arena-tab-list-scroll arena-scroll-region space-y-1.5 pr-1 text-[11px]">
             @for (entry of visibleLogs(); track entry.sequence) {
-            <li
-              class="arcane-log-entry rounded-lg border px-2.5 py-1.5 leading-snug"
-              [class]="entry.rowClass"
+            <li class="arcane-log-entry rounded-lg border px-2.5 py-1.5 leading-snug" [class]="entry.rowClass"
               [attr.data-faction]="entry.faction">
               <div class="mb-0.5 flex flex-wrap items-center justify-between gap-1">
                 <span class="inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[9px] font-bold"
@@ -1056,10 +1182,10 @@
                 </span>
                 <div class="flex items-center gap-1.5 text-[10px]">
                   @if (entry.perspective !== 'SYSTEM') {
-                    <span class="font-semibold"
-                      [class]="entry.perspective === 'ME' ? 'text-emerald-300' : entry.perspective === 'ALLY' ? 'text-sky-300' : 'text-rose-300'">
-                      {{ entry.actorLabel }}
-                    </span>
+                  <span class="font-semibold"
+                    [class]="entry.perspective === 'ME' ? 'text-emerald-300' : entry.perspective === 'ALLY' ? 'text-sky-300' : 'text-rose-300'">
+                    {{ entry.actorLabel }}
+                  </span>
                   }
                   <span class="arcane-num font-bold text-arcane-gold-bright">T{{ entry.turnNumber }}</span>
                 </div>
@@ -1067,7 +1193,8 @@
               <p class="text-arcane-ink">{{ entry.text }}</p>
             </li>
             } @empty {
-            <li class="rounded-lg border border-slate-800 bg-arcane-recessed p-3 text-center text-[11px] text-arcane-ink-muted">
+            <li
+              class="rounded-lg border border-slate-800 bg-arcane-recessed p-3 text-center text-[11px] text-arcane-ink-muted">
               Aucune action majeure pour l’instant.
             </li>
             }
@@ -1152,7 +1279,7 @@
   <!-- Lecteur Grand Format Mobile (déclenché par "Lire" ou icône 👁) -->
   @if (mobileReaderOpen() && inspectedCard(); as fullCard) {
   <div role="dialog" aria-modal="true" aria-label="Détail complet de la carte"
-    class="fixed inset-0 z-55 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs xl:hidden">
+    class="fixed inset-0 z-55 flex items-center justify-center bg-black/85 p-4 xl:hidden">
     <button type="button" tabindex="-1" aria-label="Fermer le lecteur de carte" (click)="closeMobileReader()"
       class="absolute inset-0 h-full w-full cursor-default"></button>
     <div class="arcane-quick-sheet relative z-10 w-full max-w-[21rem] space-y-3">
@@ -1173,7 +1300,7 @@
   <div role="dialog" aria-modal="true" aria-label="Journal, Chat et Options du Duel"
     class="arcane-mobile-drawer flex justify-end xl:hidden">
     <button type="button" tabindex="-1" aria-label="Fermer le panneau" (click)="closeMobileDrawer()"
-      class="absolute inset-0 bg-black/70 backdrop-blur-xs"></button>
+      class="absolute inset-0 bg-black/80"></button>
 
     <div
       class="arcane-mobile-drawer-panel relative z-10 flex h-full w-[min(23rem,90vw)] flex-col gap-3 border-l border-arcane-gold/30 bg-arcane-primary p-3.5 shadow-2xl arcane-safe-top arcane-safe-bottom">
@@ -1185,13 +1312,15 @@
         </button>
       </div>
 
-      <div role="tablist" aria-label="Journal et chat" class="arcane-well grid shrink-0 grid-cols-2 gap-1 rounded-xl p-1">
+      <div role="tablist" aria-label="Journal et chat"
+        class="arcane-well grid shrink-0 grid-cols-2 gap-1 rounded-xl p-1">
         <button type="button" role="tab" [attr.aria-selected]="sidebarTab() === 'LOG'" (click)="selectSidebarTab('LOG')"
           class="arcane-tab-btn inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-bold">
           <ng-icon name="lucideScrollText" size="13px" aria-hidden="true" />
           <span>Chronique ({{ visibleLogs().length }})</span>
         </button>
-        <button type="button" role="tab" [attr.aria-selected]="sidebarTab() === 'CHAT'" (click)="selectSidebarTab('CHAT')"
+        <button type="button" role="tab" [attr.aria-selected]="sidebarTab() === 'CHAT'"
+          (click)="selectSidebarTab('CHAT')"
           class="arcane-tab-btn inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-bold">
           <ng-icon name="lucideMessageSquare" size="13px" aria-hidden="true" />
           <span>Chat</span>
@@ -1211,8 +1340,7 @@
             [class]="logFilterMode() === 'HIGHLIGHTS' ? 'rounded-md bg-arcane-gold/25 px-2 py-0.5 font-bold text-arcane-gold-bright' : 'rounded-md px-2 py-0.5 font-semibold text-arcane-ink-muted'">
             Temps forts
           </button>
-          <button type="button" (click)="setLogFilterMode('ALL')"
-            [attr.aria-pressed]="logFilterMode() === 'ALL'"
+          <button type="button" (click)="setLogFilterMode('ALL')" [attr.aria-pressed]="logFilterMode() === 'ALL'"
             [class]="logFilterMode() === 'ALL' ? 'rounded-md bg-arcane-gold/25 px-2 py-0.5 font-bold text-arcane-gold-bright' : 'rounded-md px-2 py-0.5 font-semibold text-arcane-ink-muted'">
             Tout ({{ presentedLogs().length }})
           </button>
@@ -1220,9 +1348,7 @@
       </div>
       <ol class="arcane-well min-h-0 flex-1 space-y-1.5 overflow-y-auto rounded-xl p-2.5 text-xs">
         @for (entry of visibleLogs(); track entry.sequence) {
-        <li
-          class="arcane-log-entry rounded-lg border px-2.5 py-1.5 leading-snug"
-          [class]="entry.rowClass"
+        <li class="arcane-log-entry rounded-lg border px-2.5 py-1.5 leading-snug" [class]="entry.rowClass"
           [attr.data-faction]="entry.faction">
           <div class="mb-0.5 flex flex-wrap items-center justify-between gap-1">
             <span class="inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[9px] font-bold"
@@ -1232,10 +1358,10 @@
             </span>
             <div class="flex items-center gap-1.5 text-[10px]">
               @if (entry.perspective !== 'SYSTEM') {
-                <span class="font-semibold"
-                  [class]="entry.perspective === 'ME' ? 'text-emerald-300' : entry.perspective === 'ALLY' ? 'text-sky-300' : 'text-rose-300'">
-                  {{ entry.actorLabel }}
-                </span>
+              <span class="font-semibold"
+                [class]="entry.perspective === 'ME' ? 'text-emerald-300' : entry.perspective === 'ALLY' ? 'text-sky-300' : 'text-rose-300'">
+                {{ entry.actorLabel }}
+              </span>
               }
               <span class="arcane-num font-bold text-arcane-gold-bright">T{{ entry.turnNumber }}</span>
             </div>
@@ -1305,10 +1431,21 @@
   }
 </main>
 
+<app-arena-tutorial-coach
+  [active]="tutorialActive()"
+  [gameView]="gameView()"
+  [myBoard]="activeControlledBoard()"
+  [isMyTurn]="isMyTurn()"
+  [saving]="tutorialSaving()"
+  (completed)="onCompleteTutorial()"
+  (dismissed)="onDismissTutorial()"
+/>
+
 <!-- 1. MODALE MULLIGAN (20s) -->
 <dialog #mulliganDialog closedby="none" class="arcane-dialog arcane-dialog-wide" aria-labelledby="mulligan-title">
   @if (gameView(); as v) {
   @if (activeControlledBoard(); as me) {
+  @let replacedList = me.mulliganReplacedSlots ?? [];
   <div class="max-h-[90svh] overflow-y-auto p-4 sm:p-6 space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div>
@@ -1316,39 +1453,75 @@
           Phase de Mulligan (<span class="arcane-num">{{ remainingSeconds() }}s</span>)
         </h2>
         <p class="text-xs text-arcane-ink-secondary">
-          Cochez les cartes à renvoyer dans votre deck pour en piocher autant de nouvelles, puis validez.
+          Cliquez sur « Remplacer » sous une carte pour l’échanger immédiatement contre une nouvelle du deck, puis
+          validez pour jouer.
         </p>
       </div>
       <span
         class="arcane-num rounded-full border border-arcane-gold/45 bg-arcane-gold/15 px-3 py-1 text-xs font-bold text-arcane-gold-bright">
-        {{ mulliganSelectedIds().length }} remplacée(s)
+        {{ replacedList.length }} / {{ me.hand.length }} remplacée(s)
       </span>
     </div>
 
+    @if (tutorialActive()) {
+    <div role="note"
+      class="arcane-well rounded-xl border border-arcane-gold/45 p-3 text-xs text-arcane-ink-secondary space-y-1">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="inline-flex items-center gap-1.5 font-extrabold text-arcane-gold-bright uppercase">
+          <ng-icon name="lucideSparkles" size="13px" aria-hidden="true" />
+          <span>Didacticiel · Étape 1 / 6 — Phase de Mulligan</span>
+        </span>
+        <button type="button" (click)="onDismissTutorial()"
+          class="text-xs font-bold text-arcane-ink-muted hover:text-arcane-ink">
+          Passer le didacticiel
+        </button>
+      </div>
+      <p>
+        Vous piochez 5 cartes. Remplacez celles de coût élevé (4-5 Énergie) pour démarrer avec des créatures
+        jouables rapidement (1-2 Énergie), puis cliquez sur
+        <strong class="text-arcane-gold-bright">Valider et commencer</strong>.
+      </p>
+    </div>
+    }
+
     <div
       class="arcane-hand-rail flex flex-nowrap gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0">
-      @for (card of me.hand; track card.instanceId) {
-      @let checked = mulliganSelectedIds().includes(card.instanceId);
-      <button type="button" (click)="toggleMulliganCard(card.instanceId)" [attr.aria-pressed]="checked"
-        class="flex w-[14.25rem] shrink-0 snap-start flex-col rounded-xl text-left transition lg:w-auto">
-        <app-arcane-card class="block w-full flex-1" [card]="card" [showPosture]="false" [selected]="checked" />
-        <span
-          [class]="checked ? 'arcane-btn mt-1.5 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-arcane-gold bg-arcane-gold/20 text-center text-xs font-bold text-arcane-gold-bright' : 'arcane-btn mt-1.5 inline-flex w-full items-center justify-center rounded-lg border border-slate-700 bg-arcane-elevated text-center text-xs font-bold text-arcane-ink-muted'">
-          @if (checked) {
-          <ng-icon name="lucideRotateCw" size="12px" aria-hidden="true" />
-          <span>Remplacer</span>
-          } @else {
-          <span>Garder</span>
+      @for (card of me.hand; track $index) {
+      @let isReplaced = isMulliganSlotReplaced($index);
+      @let isSwapping = mulliganSwappingSlots().has($index);
+      <div class="flex w-[14.25rem] shrink-0 snap-start flex-col rounded-xl lg:w-auto">
+        <div #mulliganCardSlot class="relative flex-1 rounded-xl">
+          <app-arcane-card class="block h-full w-full" [card]="card" [showPosture]="false" [selected]="isReplaced" />
+          @if (isReplaced) {
+          <span
+            class="pointer-events-none absolute -top-2 right-2 z-30 inline-flex items-center gap-0.5 rounded-full border border-emerald-400/75 bg-emerald-950/95 px-2 py-0.5 text-[10px] font-extrabold tracking-wide text-emerald-200 shadow-sm">
+            <ng-icon name="lucideSparkles" size="10px" aria-hidden="true" />
+            <span>Nouvelle</span>
+          </span>
           }
-        </span>
-      </button>
+        </div>
+        @if (isReplaced) {
+        <button type="button" disabled [attr.aria-label]="(card.name ?? 'Carte') + ' déjà remplacée'"
+          class="arcane-btn mt-1.5 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-950/45 text-center text-xs font-bold text-emerald-200/90 opacity-85">
+          <ng-icon name="lucideCheckCircle" size="13px" aria-hidden="true" />
+          <span>Remplacée</span>
+        </button>
+        } @else {
+        <button type="button" (click)="replaceMulliganCard($index, card)" [disabled]="isSwapping"
+          [attr.aria-label]="'Remplacer ' + (card.name ?? 'cette carte') + ' par une carte du deck'"
+          [class]="isSwapping ? 'arcane-btn mt-1.5 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-arcane-gold/50 bg-arcane-gold/15 text-center text-xs font-bold text-arcane-gold-bright opacity-75' : 'arcane-btn mt-1.5 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-arcane-gold bg-arcane-gold/20 text-center text-xs font-bold text-arcane-gold-bright hover:bg-arcane-gold/30'">
+          <ng-icon name="lucideRotateCw" size="12px" aria-hidden="true" />
+          <span>{{ isSwapping ? 'Échange…' : 'Remplacer' }}</span>
+        </button>
+        }
+      </div>
       }
     </div>
 
     <div class="sticky bottom-0 flex justify-end bg-arcane-surface/95 py-2 sm:static sm:bg-transparent sm:py-0">
-      <button type="button" autofocus (click)="confirmMulligan()"
-        class="arcane-btn w-full rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-6 text-sm font-extrabold text-arcane-void shadow-md hover:brightness-105 sm:w-auto">
-        Valider mon Mulligan
+      <button type="button" autofocus (click)="confirmMulligan()" [disabled]="mulliganSwappingSlots().size > 0"
+        class="arcane-btn w-full rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-6 text-sm font-extrabold text-arcane-void shadow-md hover:brightness-105 disabled:opacity-60 sm:w-auto">
+        Valider et commencer
       </button>
     </div>
   </div>
@@ -1524,11 +1697,18 @@
       Raison : <strong class="text-arcane-ink">{{ v.endReason }}</strong> · Tours joués :
       <span class="arcane-num font-semibold text-arcane-ink">{{ v.turnNumber }}</span>
     </p>
-    <div class="flex justify-center gap-3 pt-2">
+    <div class="flex flex-wrap justify-center gap-3 pt-2">
+      @if (tutorialActive()) {
+      <button type="button" autofocus (click)="onFinishTutorialAndReturn()" [disabled]="tutorialSaving()"
+        class="arcane-btn inline-flex items-center rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-6 text-sm font-extrabold text-arcane-void shadow-md hover:brightness-105 disabled:opacity-60">
+        Valider le didacticiel &amp; Retour
+      </button>
+      } @else {
       <button type="button" autofocus (click)="returnToLobby()"
         class="arcane-btn inline-flex items-center rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-6 text-sm font-extrabold text-arcane-void shadow-md hover:brightness-105">
         Retour au Sanctuaire
       </button>
+      }
     </div>
   </div>
   }

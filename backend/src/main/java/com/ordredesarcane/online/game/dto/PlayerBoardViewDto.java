@@ -15,6 +15,7 @@ public record PlayerBoardViewDto(
         boolean connected,
         UUID controlledByUserId,
         boolean mulliganCompleted,
+        List<Integer> mulliganReplacedSlots,
         int energyTokens,
         int deckCount,
         int handCount,

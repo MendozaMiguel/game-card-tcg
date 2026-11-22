@@ -6,10 +6,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public final class PlayerState {
@@ -41,6 +43,7 @@ public final class PlayerState {
     private UUID controlledByUserId;
 
     private boolean mulliganCompleted;
+    private final Set<Integer> mulliganReplacedSlots = new LinkedHashSet<>();
     private int energyTokens;
     private boolean healedThisTurn;
     private boolean spellsLockedThisTurn;
@@ -172,6 +175,9 @@ public final class PlayerState {
 
     public boolean isMulliganCompleted() { return mulliganCompleted; }
     public void setMulliganCompleted(boolean mulliganCompleted) { this.mulliganCompleted = mulliganCompleted; }
+    public boolean hasMulliganReplacedSlot(int slotIndex) { return mulliganReplacedSlots.contains(slotIndex); }
+    public void markMulliganSlotReplaced(int slotIndex) { mulliganReplacedSlots.add(slotIndex); }
+    public List<Integer> getMulliganReplacedSlots() { return List.copyOf(mulliganReplacedSlots); }
     public int getEnergyTokens() { return energyTokens; }
     public void addEnergy(int amount) { this.energyTokens = Math.max(0, this.energyTokens + amount); }
     public void spendEnergy(int amount) {

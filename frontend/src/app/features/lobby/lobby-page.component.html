@@ -20,6 +20,61 @@
   </div>
   }
 
+  @if (showTutorialBanner()) {
+  <section aria-labelledby="lobby-tutorial-title"
+    class="arcane-panel-hero lobby-tuto-banner rounded-2xl p-4 sm:p-6 space-y-5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex min-w-0 flex-1 items-start gap-3">
+        <span
+          class="lobby-tuto-icon inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-arcane-gold-bright">
+          <ng-icon name="lucideSparkles" size="20px" aria-hidden="true" />
+        </span>
+        <div class="min-w-0 space-y-1">
+          <span
+            class="lobby-tuto-tag inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-200 uppercase">
+            Initiation Nouvel Apprenti
+          </span>
+          <h2 id="lobby-tutorial-title" class="arcane-display text-lg font-bold text-arcane-gold-bright sm:text-xl">
+            Bienvenue dans L'Ordre des Arcanes
+          </h2>
+          <p class="max-w-2xl text-xs leading-relaxed text-arcane-ink-secondary">
+            Apprenez les bases en conditions réelles en 6 étapes guidées face au Mage Automate (Facile) : Mulligan,
+            invocations en ATQ/DÉF, Trêve du Tour 1, Phase de Combat, Survol et 4 Lois Anti-Méta.
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" (click)="onStartTutorialDuel()" [disabled]="busyTutorial() || busyPlay()"
+          class="arcane-btn inline-flex items-center gap-1.5 rounded-xl bg-linear-to-b from-arcane-gold-bright to-arcane-gold px-4 text-xs font-extrabold text-arcane-void shadow-md hover:brightness-105 disabled:opacity-60">
+          <ng-icon name="lucideSparkles" size="14px" aria-hidden="true" />
+          <span>{{ busyTutorial() ? 'Ouverture…' : 'Démarrer le Duel d’Initiation' }}</span>
+        </button>
+        <button type="button" (click)="onDismissTutorial()" [disabled]="busyTutorial()"
+          class="arcane-btn inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-arcane-elevated px-3 text-xs font-bold text-arcane-ink-secondary hover:text-arcane-ink">
+          <span>Passer</span>
+        </button>
+      </div>
+    </div>
+    <div class="lobby-tuto-grid text-xs">
+      <div class="arcane-well rounded-xl p-3">
+        <strong class="block text-arcane-gold-bright">1. Protégez vos 25 PV</strong>
+        <p class="text-arcane-ink-secondary">Vos 4 emplacements Monstre bloquent les assauts adverses tant qu’ils sont
+          debout.</p>
+      </div>
+      <div class="arcane-well rounded-xl p-3">
+        <strong class="block text-arcane-gold-bright">2. Rythme &amp; Trêve du Tour 1</strong>
+        <p class="text-arcane-ink-secondary">+1 Énergie par tour. Aucune attaque n’est autorisée au premier tour du
+          duel.</p>
+      </div>
+      <div class="arcane-well rounded-xl p-3">
+        <strong class="block text-arcane-gold-bright">3. Équilibre Anti-Méta</strong>
+        <p class="text-arcane-ink-secondary">30 cartes uniques (10 Monstres / 10 Familiers / 10 Sorts), max 2 factions.
+        </p>
+      </div>
+    </div>
+  </section>
+  }
+
   <div class="grid gap-6 lg:grid-cols-12">
     <!-- Colonne Principale (8 cols) -->
     <div class="min-w-0 space-y-6 lg:col-span-8">
@@ -40,11 +95,19 @@
               d'entraînement contre le Mage Automate.
             </p>
           </div>
-          <a routerLink="/deckbuilder"
-            class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-arcane-gold/35 bg-arcane-surface px-3.5 text-xs font-bold text-arcane-gold-bright no-underline hover:border-arcane-gold/70 hover:bg-arcane-elevated">
-            <ng-icon name="lucideBookOpen" size="14px" aria-hidden="true" />
-            <span>Modifier mes Decks</span>
-          </a>
+          <div class="flex flex-wrap items-center gap-2">
+            <app-arena-audio-control [compact]="true" />
+            <button type="button" (click)="onStartTutorialDuel()" [disabled]="busyTutorial() || busyPlay()"
+              class="arcane-btn lobby-tuto-replay inline-flex items-center gap-1.5 rounded-xl px-3 text-xs font-bold text-emerald-200 disabled:opacity-60">
+              <ng-icon name="lucideSparkles" size="14px" aria-hidden="true" />
+              <span>Didacticiel</span>
+            </button>
+            <a routerLink="/deckbuilder"
+              class="arcane-btn inline-flex items-center gap-1.5 rounded-xl border border-arcane-gold/35 bg-arcane-surface px-3.5 text-xs font-bold text-arcane-gold-bright no-underline hover:border-arcane-gold/70 hover:bg-arcane-elevated">
+              <ng-icon name="lucideBookOpen" size="14px" aria-hidden="true" />
+              <span>Modifier mes Decks</span>
+            </a>
+          </div>
         </div>
 
         <div class="grid gap-3.5 sm:grid-cols-2">
@@ -478,10 +541,7 @@
           </span>
         </div>
 
-        <ul
-          #globalChatList
-          aria-live="polite"
-          aria-relevant="additions"
+        <ul #globalChatList aria-live="polite" aria-relevant="additions"
           class="arcane-well mb-3 flex-1 space-y-2 overflow-y-auto rounded-xl p-3 text-xs">
           @for (msg of stomp.globalMessages(); track msg.messageId) {
           <li class="leading-relaxed">
@@ -499,8 +559,8 @@
         <form (submit)="onSendGlobalChat($event)" class="flex gap-2">
           <label for="global-chat-input" class="visually-hidden">Message dans le chat du Sanctuaire</label>
           <textarea id="global-chat-input" name="globalChatMessage" rows="1" appImeEnterSubmit enterkeyhint="send"
-            placeholder="Message global (Entrée)…"
-            maxlength="300" class="arcane-input min-h-11 flex-1 resize-none py-2.5" [value]="chatInput()"
+            placeholder="Message global (Entrée)…" maxlength="300"
+            class="arcane-input min-h-11 flex-1 resize-none py-2.5" [value]="chatInput()"
             (input)="onChatInput($event)"></textarea>
           <button type="submit" [disabled]="!chatInput().trim()"
             class="arcane-btn inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-arcane-gold px-4 text-xs font-extrabold text-arcane-void hover:bg-arcane-gold-bright disabled:opacity-45">

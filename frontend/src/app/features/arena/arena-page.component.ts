@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
   viewChild,
+  viewChildren,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -57,7 +58,7 @@ import {
   TeamId,
 } from '../../core/models/arcane.models';
 import { AnnouncerService } from '../../core/services/announcer.service';
-import { extractApiErrorMessage } from '../../core/services/auth.service';
+import { AuthService, extractApiErrorMessage } from '../../core/services/auth.service';
 import { LobbyApiService } from '../../core/services/lobby-api.service';
 import { StompService } from '../../core/services/stomp.service';
 import { ArcaneAvatarComponent } from '../../shared/components/arcane-avatar/arcane-avatar.component';
@@ -66,8 +67,28 @@ import {
   ActiveProjectile,
   ArenaProjectileOverlayComponent,
 } from '../../shared/components/arena-projectile-overlay/arena-projectile-overlay.component';
+import {
+  ArenaCombatPopupsComponent,
+  FloatingCombatPopup,
+} from '../../shared/components/arena-combat-popups/arena-combat-popups.component';
+import {
+  ArenaImpactCanvasComponent,
+  CanvasImpactBurst,
+} from '../../shared/components/arena-impact-canvas/arena-impact-canvas.component';
 import { ArenaSlotVfxComponent } from '../../shared/components/arena-slot-vfx/arena-slot-vfx.component';
+import { ArenaSummonShowcaseComponent } from '../../shared/components/arena-summon-showcase/arena-summon-showcase.component';
+import {
+  ArenaThreeBackdropComponent,
+  ThreeCombatPulse,
+} from '../../shared/components/arena-three-backdrop/arena-three-backdrop.component';
+import { ArenaAudioControlComponent } from '../../shared/components/arena-audio-control/arena-audio-control.component';
+import { ArenaTutorialCoachComponent } from '../../shared/components/arena-tutorial-coach/arena-tutorial-coach.component';
+import {
+  ArenaTurnPopupComponent,
+  TurnAnnouncement,
+} from '../../shared/components/arena-turn-popup/arena-turn-popup.component';
 import { ImeEnterSubmitDirective } from '../../shared/directives/ime-enter-submit.directive';
+import { ArcaneAudioService } from '../../shared/services/arcane-audio.service';
 import {
   HandCardPlayability,
   TacticalGuidance,
@@ -75,11 +96,17 @@ import {
   evaluateHandCardPlayability,
 } from '../../shared/utils/arena-tactical-guide';
 import {
+  ArenaVfxBatch,
   AvatarImpactEvent,
+  CombatPopupRequest,
+  CombatShatterEvent,
   LpVfxEvent,
+  MythicShowcaseBanner,
+  PROJECTILE_IMPACT_DELAY_MS,
   SlotVfxEvent,
   SlotZone,
   SpellWaveBanner,
+  SummonImpactEvent,
   VisualProjectileRequest,
   extractArenaVfxEvents,
   slotBurstKey,
@@ -98,6 +125,11 @@ import {
   getTargetRequirementForTrigger,
 } from '../../shared/utils/faction-theme';
 import {
+  animateBoardShake,
+  animateCardAttackLunge,
+  animateCardSummonSlam,
+  animateMulliganCardIn,
+  animateMulliganCardOut,
   launchVictoryConfetti,
   prefersReducedMotion,
   pulseElementImpact,
@@ -116,17 +148,17 @@ const ARENA_PHASE_LABELS: Record<GamePhase, { full: string; short: string }> = {
 type PendingInteraction =
   | { kind: 'PICK_SLOT'; mode: 'MONSTER' | 'FAMILIAR' | 'SPELL' | 'REACTIVE'; card: CardViewDto }
   | {
-      kind: 'PICK_TARGET';
-      actionType: 'PLAY_CARD' | 'ACTIVATE_EFFECT' | 'DECLARE_ATTACK';
-      sourceInstanceId: string;
-      targetSlot: number | null;
-      posture: Posture | null;
-      requirement: TargetRequirement;
-      maxTargets: 1 | 2;
-      eligibleIds: Set<string>;
-      originX: number;
-      originY: number;
-    };
+    kind: 'PICK_TARGET';
+    actionType: 'PLAY_CARD' | 'ACTIVATE_EFFECT' | 'DECLARE_ATTACK';
+    sourceInstanceId: string;
+    targetSlot: number | null;
+    posture: Posture | null;
+    requirement: TargetRequirement;
+    maxTargets: 1 | 2;
+    eligibleIds: Set<string>;
+    originX: number;
+    originY: number;
+  };
 
 @Component({
   selector: 'app-arena-page',
@@ -134,8 +166,15 @@ type PendingInteraction =
   imports: [
     ArcaneAvatarComponent,
     ArcaneCardComponent,
+    ArenaAudioControlComponent,
+    ArenaCombatPopupsComponent,
+    ArenaImpactCanvasComponent,
     ArenaProjectileOverlayComponent,
     ArenaSlotVfxComponent,
+    ArenaSummonShowcaseComponent,
+    ArenaThreeBackdropComponent,
+    ArenaTutorialCoachComponent,
+    ArenaTurnPopupComponent,
     ImeEnterSubmitDirective,
     NgIcon,
   ],
@@ -183,6 +222,8 @@ export class ArenaPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly lobbyApi = inject(LobbyApiService);
   private readonly announcer = inject(AnnouncerService);
+  private readonly audio = inject(ArcaneAudioService);
+  private readonly auth = inject(AuthService, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
   protected readonly stomp = inject(StompService);
 
@@ -191,6 +232,7 @@ export class ArenaPageComponent implements OnInit {
   private readonly enemyLpBoxRef = viewChild<ElementRef<HTMLElement>>('enemyLpBox');
   private readonly allyLpBoxRef = viewChild<ElementRef<HTMLElement>>('allyLpBox');
   private readonly mulliganDialogRef = viewChild<ElementRef<HTMLDialogElement>>('mulliganDialog');
+  private readonly mulliganCardSlots = viewChildren<ElementRef<HTMLElement>>('mulliganCardSlot');
   private readonly reactionDialogRef = viewChild<ElementRef<HTMLDialogElement>>('reactionDialog');
   private readonly choiceDialogRef = viewChild<ElementRef<HTMLDialogElement>>('choiceDialog');
   private readonly discardDialogRef = viewChild<ElementRef<HTMLDialogElement>>('discardDialog');
@@ -209,26 +251,39 @@ export class ArenaPageComponent implements OnInit {
   private catalogByName = new Map<string, CardDefinition>();
   private readonly activeVfxTimers = new Set<number>();
   private readonly activeAnimationFrames = new Set<number>();
+  private readonly activeTimelineCleanups = new Set<() => void>();
   private celebratedMatchFinish = false;
+  private finishedAudioPlayed = false;
   private destroyed = false;
   private stopVictoryConfetti: (() => void) | null = null;
 
   protected readonly nowMs = signal(Date.now());
   protected readonly gameView = this.stomp.gameState;
+  private readonly tutorialQueryActive = signal(false);
+  private readonly tutorialDismissedLocally = signal(false);
+  protected readonly tutorialSaving = signal(false);
+  protected readonly tutorialActive = computed(() => {
+    const view = this.gameView();
+    if (!view || view.spectator || this.tutorialDismissedLocally()) {
+      return false;
+    }
+    return this.tutorialQueryActive() || this.auth?.user()?.tutorialCompleted === false;
+  });
   protected readonly slotBursts = signal<Readonly<Record<string, SlotVfxEvent>>>({});
   protected readonly avatarBursts = signal<Readonly<Record<string, AvatarImpactEvent>>>({});
   protected readonly activeProjectiles = signal<readonly ActiveProjectile[]>([]);
+  protected readonly canvasBursts = signal<readonly CanvasImpactBurst[]>([]);
+  protected readonly floatingPopups = signal<readonly FloatingCombatPopup[]>([]);
+  protected readonly mythicShowcase = signal<MythicShowcaseBanner | null>(null);
+  protected readonly threeCombatPulse = signal<ThreeCombatPulse | null>(null);
+  protected readonly boardImpactTint = signal<Faction | 'CRITICAL_HIT' | null>(null);
   protected readonly enemyLpBurst = signal<LpVfxEvent | null>(null);
   protected readonly allyLpBurst = signal<LpVfxEvent | null>(null);
   protected readonly spellWave = signal<SpellWaveBanner | null>(null);
   protected readonly aiDifficultyMeta = AI_DIFFICULTY_META;
   protected readonly factionMeta = FACTION_META;
   protected readonly logFilterMode = signal<'HIGHLIGHTS' | 'ALL'>('HIGHLIGHTS');
-  protected readonly turnAnnouncement = signal<{
-    turnNumber: number;
-    label: string;
-    faction: Faction | null;
-  } | null>(null);
+  protected readonly turnAnnouncement = signal<TurnAnnouncement | null>(null);
   protected readonly presentedLogs = computed<PresentedCombatLogEntry[]>(() => {
     const view = this.gameView();
     if (!view) return [];
@@ -257,6 +312,7 @@ export class ArenaPageComponent implements OnInit {
   protected readonly monsterSlots = [0, 1, 2, 3] as const;
   protected readonly familiarSlots = [0, 1, 2] as const;
   protected readonly spellSlots = [0, 1] as const;
+  protected readonly handSlotIndices = [0, 1, 2, 3, 4, 5] as const;
 
   protected readonly relayTargetUserId = signal<string | null>(null);
   protected readonly summonPosture = signal<Posture>('ATTACK');
@@ -274,7 +330,9 @@ export class ArenaPageComponent implements OnInit {
   protected readonly mobileDrawerOpen = signal(false);
   protected readonly mobileReaderOpen = signal(false);
 
-  protected readonly mulliganSelectedIds = signal<string[]>([]);
+  protected readonly mulliganSwappingSlots = signal<ReadonlySet<number>>(new Set());
+  private readonly mulliganPendingPreviousIds = new Map<number, string>();
+  private readonly mulliganLastKnownIds: string[] = [];
   protected readonly discardSelectedIds = signal<string[]>([]);
   protected readonly modalChoiceIndex = signal<number | null>(null);
   protected readonly modalChoiceTargetId = signal<string | null>(null);
@@ -451,30 +509,39 @@ export class ArenaPageComponent implements OnInit {
     const attacker = me
       ? ([...me.monsters, ...me.familiars].find((c) => c?.instanceId === pending.sourceInstanceId) ?? null)
       : null;
-    const hasSurvol = !!attacker?.keywords?.includes('SURVOL');
+    const hasSurvol = !!attacker?.keywords?.some((k) => k === 'SURVOL' || k === 'VOL');
 
-    let hasGuardian = false;
-    let hasMonster = false;
+    let guardianName: string | null = null;
+    let blockingMonsterName: string | null = null;
     let hasFamiliar = false;
     for (const opp of this.opponentBoards()) {
       for (const m of opp.monsters) {
         if (m && !m.hidden && !m.camouflaged) {
-          hasMonster = true;
-          if (m.keywords?.includes('GARDIEN')) hasGuardian = true;
+          blockingMonsterName ??= m.name;
+          if (m.keywords?.includes('GARDIEN')) {
+            guardianName ??= m.name;
+          }
         }
       }
       for (const f of opp.familiars) {
         if (f && !f.hidden && !f.camouflaged) {
           hasFamiliar = true;
-          if (f.keywords?.includes('GARDIEN')) hasGuardian = true;
+          if (f.keywords?.includes('GARDIEN')) {
+            guardianName ??= f.name;
+          }
         }
       }
     }
-    if (hasGuardian) {
-      return { allowed: false, reason: 'Un Gardien adverse doit être ciblé en priorité' };
+    if (guardianName) {
+      return { allowed: false, reason: `Gardien prioritaire : « ${guardianName} »` };
     }
-    if (hasMonster) {
-      return { allowed: false, reason: 'Bloqué par la Règle du Rempart (Monstre adverse présent)' };
+    if (blockingMonsterName) {
+      return {
+        allowed: false,
+        reason: hasSurvol
+          ? `Bloqué par le Monstre « ${blockingMonsterName} » (Vol contourne uniquement les Familiers)`
+          : `Bloqué par le Monstre « ${blockingMonsterName} » (Règle du Rempart)`,
+      };
     }
     if (hasFamiliar && !hasSurvol) {
       return { allowed: false, reason: 'Bloqué par la Règle du Rempart (Familier adverse — requiert Survol)' };
@@ -498,10 +565,29 @@ export class ArenaPageComponent implements OnInit {
   constructor() {
     effect(() => {
       const view = this.gameView();
-      if (!view || view.spectator || view.phase === 'MULLIGAN' || view.phase === 'FINISHED') {
+      const isModalWaitPhase =
+        !view ||
+        view.phase === 'MULLIGAN' ||
+        view.phase === 'FINISHED' ||
+        view.phase === 'WAITING_FOR_REACTION' ||
+        view.phase === 'WAITING_FOR_MODAL_CHOICE' ||
+        view.phase === 'WAITING_FOR_DISCARD';
+      if (!view || view.spectator || isModalWaitPhase || !this.isMyTurn()) {
+        if (this.turnBeaconTimer !== null && typeof window !== 'undefined') {
+          window.clearTimeout(this.turnBeaconTimer);
+          this.turnBeaconTimer = null;
+        }
+        this.turnAnnouncement.set(null);
         return;
       }
-      const turnKey = `${view.turnNumber}:${view.activeTurnPlayerId}`;
+      if (view.phase !== 'MAIN_PHASE') {
+        return;
+      }
+      const opponents = this.opponentBoards();
+      if (opponents.length === 0) {
+        return;
+      }
+      const turnKey = `${view.matchId}:${view.turnNumber}:${view.activeTurnPlayerId}`;
       if (turnKey === this.lastTurnBeaconKey) {
         return;
       }
@@ -510,22 +596,25 @@ export class ArenaPageComponent implements OnInit {
         window.clearTimeout(this.turnBeaconTimer);
         this.turnBeaconTimer = null;
       }
-      if (this.isMyTurn() && view.phase === 'MAIN_PHASE') {
-        const faction = this.activeControlledBoard()?.primaryFaction ?? null;
-        this.turnAnnouncement.set({
-          turnNumber: view.turnNumber,
-          label: 'À vous de jouer',
-          faction,
-        });
-        untracked(() => this.announcer.announce(`Tour ${view.turnNumber} : à vous de jouer.`, 'polite'));
-        if (typeof window !== 'undefined') {
-          this.turnBeaconTimer = window.setTimeout(() => {
-            this.turnAnnouncement.set(null);
-            this.turnBeaconTimer = null;
-          }, 2100);
-        }
-      } else {
-        this.turnAnnouncement.set(null);
+      const faction = this.activeControlledBoard()?.primaryFaction ?? null;
+      const opponentName =
+        opponents.length === 1 ? opponents[0].username : `${opponents.length} adversaires`;
+      this.turnAnnouncement.set({
+        key: turnKey,
+        turnNumber: view.turnNumber,
+        phrase: 'C’est à vous de jouer !',
+        opponentName,
+        faction,
+      });
+      untracked(() => {
+        this.audio.playSfx('YOUR_TURN', faction);
+        this.announcer.announce(`Tour ${view.turnNumber} : c’est à vous de jouer.`, 'polite');
+      });
+      if (typeof window !== 'undefined') {
+        this.turnBeaconTimer = window.setTimeout(() => {
+          this.turnAnnouncement.set(null);
+          this.turnBeaconTimer = null;
+        }, 2400);
       }
     });
 
@@ -543,6 +632,7 @@ export class ArenaPageComponent implements OnInit {
         (controlled.userId === view.viewerUserId ||
           view.controlledRelays.includes(controlled.userId));
       this.syncDialog(this.mulliganDialogRef()?.nativeElement, showMulligan);
+      untracked(() => this.syncMulliganCardAnimations(controlled, view.phase));
 
       const rw = view.pendingReaction;
       const showReaction =
@@ -596,6 +686,14 @@ export class ArenaPageComponent implements OnInit {
       }
       this.prevAllyLp = allyTeam.lp;
 
+      if (view.phase === 'FINISHED' && !view.spectator && !this.finishedAudioPlayed) {
+        this.finishedAudioPlayed = true;
+        untracked(() => {
+          this.audio.stopMusic();
+          this.audio.playSfx(view.winnerTeam === myTeam ? 'VICTORY' : 'DEFEAT');
+        });
+      }
+
       if (
         view.phase === 'FINISHED' &&
         !view.spectator &&
@@ -642,6 +740,10 @@ export class ArenaPageComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.matchId = this.route.snapshot.paramMap.get('matchId') ?? '';
     const spectate = this.route.snapshot.queryParamMap.get('spectate') === '1';
+    this.tutorialQueryActive.set(
+      !spectate && this.route.snapshot.queryParamMap.get('tutorial') === '1',
+    );
+    this.audio.startMusic('COMBAT');
 
     const interval = setInterval(() => this.nowMs.set(Date.now()), 250);
     this.destroyRef.onDestroy(() => {
@@ -649,6 +751,7 @@ export class ArenaPageComponent implements OnInit {
       clearInterval(interval);
       this.clearVfxTimers();
       this.stopVictoryConfetti?.();
+      this.audio.stopMusic();
       this.stomp.leaveMatchSubscription();
     });
 
@@ -669,6 +772,46 @@ export class ArenaPageComponent implements OnInit {
 
   protected phaseLabel(phase: GamePhase): string {
     return ARENA_PHASE_LABELS[phase].full;
+  }
+
+  protected async onCompleteTutorial(): Promise<void> {
+    this.tutorialDismissedLocally.set(true);
+    this.tutorialQueryActive.set(false);
+    if (!this.auth || this.auth.user()?.tutorialCompleted === true) {
+      this.announcer.pushToast('Didacticiel terminé ! Bonne conquête dans l’Arène.', 'success');
+      return;
+    }
+    this.tutorialSaving.set(true);
+    try {
+      await this.auth.completeTutorial();
+      this.announcer.pushToast('Initiation validée ! Bonne conquête dans l’Arène.', 'success');
+    } catch (err) {
+      this.announcer.pushToast(extractApiErrorMessage(err), 'error');
+    } finally {
+      this.tutorialSaving.set(false);
+    }
+  }
+
+  protected async onDismissTutorial(): Promise<void> {
+    this.tutorialDismissedLocally.set(true);
+    this.tutorialQueryActive.set(false);
+    if (!this.auth || this.auth.user()?.tutorialCompleted === true) {
+      return;
+    }
+    try {
+      await this.auth.completeTutorial();
+      this.announcer.pushToast(
+        'Didacticiel ignoré : vous pouvez le relancer depuis le Sanctuaire.',
+        'info',
+      );
+    } catch {
+      // Allow exiting tutorial cleanly even if offline persistence call fails
+    }
+  }
+
+  protected async onFinishTutorialAndReturn(): Promise<void> {
+    await this.onCompleteTutorial();
+    this.returnToLobby();
   }
 
   protected shortPhaseLabel(phase: GamePhase): string {
@@ -946,7 +1089,13 @@ export class ArenaPageComponent implements OnInit {
     });
   }
 
+  protected setSummonPosture(posture: Posture): void {
+    this.summonPosture.set(posture);
+    this.audio.playSfx(posture === 'DEFENSE' ? 'POSTURE_DEFENSE' : 'POSTURE_ATTACK');
+  }
+
   protected onChangePosture(card: CardViewDto): void {
+    this.audio.playSfx(card.posture === 'ATTACK' ? 'POSTURE_DEFENSE' : 'POSTURE_ATTACK', card.faction);
     this.dispatchAction({
       actionType: 'CHANGE_POSTURE',
       cardInstanceId: card.instanceId,
@@ -1065,19 +1214,108 @@ export class ArenaPageComponent implements OnInit {
     });
   }
 
-  protected toggleMulliganCard(instanceId: string): void {
-    this.mulliganSelectedIds.update((ids) =>
-      ids.includes(instanceId) ? ids.filter((id) => id !== instanceId) : [...ids, instanceId],
-    );
+  protected isMulliganSlotReplaced(slotIdx: number): boolean {
+    const slots = this.activeControlledBoard()?.mulliganReplacedSlots;
+    return !!slots && slots.includes(slotIdx);
+  }
+
+  protected replaceMulliganCard(slotIdx: number, card: CardViewDto): void {
+    const view = this.gameView();
+    const me = this.activeControlledBoard();
+    if (!view || !me || view.phase !== 'MULLIGAN' || me.mulliganCompleted) {
+      return;
+    }
+    if (this.isMulliganSlotReplaced(slotIdx) || this.mulliganSwappingSlots().has(slotIdx)) {
+      return;
+    }
+    this.mulliganPendingPreviousIds.set(slotIdx, card.instanceId);
+    this.mulliganSwappingSlots.update((prev) => {
+      const next = new Set(prev);
+      next.add(slotIdx);
+      return next;
+    });
+    const slotEl = this.mulliganCardSlots()[slotIdx]?.nativeElement;
+    this.audio.playSfx('SPELL_CAST', card.faction);
+    this.trackTimelineCleanup(animateMulliganCardOut(slotEl));
+    this.dispatchAction({
+      actionType: 'MULLIGAN_REPLACE_CARD',
+      cardInstanceId: card.instanceId,
+    });
+    this.scheduleDelayedTimer(2500, () => {
+      if (this.mulliganSwappingSlots().has(slotIdx)) {
+        this.mulliganSwappingSlots.update((prev) => {
+          const next = new Set(prev);
+          next.delete(slotIdx);
+          return next;
+        });
+        this.mulliganPendingPreviousIds.delete(slotIdx);
+        const el = this.mulliganCardSlots()[slotIdx]?.nativeElement;
+        if (el) {
+          gsap.set(el, { clearProps: 'transform,opacity' });
+        }
+      }
+    });
   }
 
   protected confirmMulligan(): void {
-    const ids = this.mulliganSelectedIds();
-    this.mulliganSelectedIds.set([]);
+    this.mulliganSwappingSlots.set(new Set());
+    this.mulliganPendingPreviousIds.clear();
     this.dispatchAction({
       actionType: 'MULLIGAN_SWAP',
-      instanceIds: ids,
+      instanceIds: [],
     });
+  }
+
+  private syncMulliganCardAnimations(me: PlayerBoardViewDto | null, phase: GamePhase): void {
+    if (phase !== 'MULLIGAN' || !me || me.mulliganCompleted) {
+      this.mulliganPendingPreviousIds.clear();
+      this.mulliganLastKnownIds.length = 0;
+      if (this.mulliganSwappingSlots().size > 0) {
+        this.mulliganSwappingSlots.set(new Set());
+      }
+      return;
+    }
+
+    const replacedSlots = new Set(me.mulliganReplacedSlots ?? []);
+    const animatedSlots: { slotIdx: number; cardName: string }[] = [];
+
+    for (let i = 0; i < me.hand.length; i++) {
+      const card = me.hand[i];
+      if (!card) continue;
+      const pendingPrev = this.mulliganPendingPreviousIds.get(i);
+      const prevKnown = this.mulliganLastKnownIds[i];
+      const changed =
+        (pendingPrev !== undefined && card.instanceId !== pendingPrev) ||
+        (prevKnown !== undefined && card.instanceId !== prevKnown && replacedSlots.has(i));
+      if (changed) {
+        this.mulliganPendingPreviousIds.delete(i);
+        if (this.mulliganSwappingSlots().has(i)) {
+          this.mulliganSwappingSlots.update((prev) => {
+            const next = new Set(prev);
+            next.delete(i);
+            return next;
+          });
+        }
+        animatedSlots.push({ slotIdx: i, cardName: card.name ?? 'Carte' });
+      }
+      this.mulliganLastKnownIds[i] = card.instanceId;
+    }
+    this.mulliganLastKnownIds.length = me.hand.length;
+
+    if (animatedSlots.length > 0 && typeof window !== 'undefined') {
+      const rafId = window.requestAnimationFrame(() => {
+        this.activeAnimationFrames.delete(rafId);
+        if (this.destroyed) return;
+        const refs = this.mulliganCardSlots();
+        for (const item of animatedSlots) {
+          const el = refs[item.slotIdx]?.nativeElement;
+          this.trackTimelineCleanup(animateMulliganCardIn(el));
+        }
+      });
+      this.activeAnimationFrames.add(rafId);
+      const last = animatedSlots[animatedSlots.length - 1];
+      this.announcer.announce(`Nouvelle carte piochée : ${last.cardName}.`, 'polite');
+    }
   }
 
   protected getReactiveModalOptions(card: CardViewDto): AbilityOption[] {
@@ -1329,12 +1567,33 @@ export class ArenaPageComponent implements OnInit {
     }
     const batch = extractArenaVfxEvents(prevView, nextView, this.catalogByName);
     const reduced = prefersReducedMotion();
+    this.triggerBatchAudio(batch, reduced);
 
-    if (batch.projectiles.length > 0 && typeof window !== 'undefined') {
+    if (
+      (batch.projectiles.length > 0 ||
+        batch.summonEvents.length > 0 ||
+        batch.shatterEvents.length > 0 ||
+        batch.popups.length > 0 ||
+        batch.spellWaves.length > 0) &&
+      typeof window !== 'undefined'
+    ) {
       const rafId = window.requestAnimationFrame(() => {
         this.activeAnimationFrames.delete(rafId);
-        if (!this.destroyed) {
+        if (this.destroyed) return;
+        if (batch.projectiles.length > 0) {
           this.spawnProjectiles(batch.projectiles, myTeam, reduced);
+        }
+        if (batch.summonEvents.length > 0) {
+          this.triggerSummonSlams(batch.summonEvents, reduced);
+        }
+        if (batch.shatterEvents.length > 0) {
+          this.triggerShatterBursts(batch.shatterEvents, reduced);
+        }
+        if (batch.popups.length > 0) {
+          this.triggerCombatPopups(batch.popups, reduced);
+        }
+        if (batch.spellWaves.length > 0) {
+          this.triggerSpellCanvasBursts(batch.spellWaves, batch.slotEvents, reduced);
         }
       });
       this.activeAnimationFrames.add(rafId);
@@ -1349,9 +1608,73 @@ export class ArenaPageComponent implements OnInit {
     for (const lpEvt of batch.lpEvents) {
       this.scheduleLpBurst(lpEvt, myTeam, reduced);
     }
+    const showcase = batch.mythicShowcases.at(-1);
     const wave = batch.spellWaves.at(-1);
-    if (wave) {
+    if (showcase && nextView.phase !== 'MULLIGAN' && nextView.phase !== 'FINISHED') {
+      this.scheduleMythicShowcase(showcase);
+    } else if (wave) {
       this.scheduleSpellWave(wave);
+    }
+  }
+
+  private triggerBatchAudio(batch: ArenaVfxBatch, reduced: boolean): void {
+    const impactDelay = reduced ? 0 : PROJECTILE_IMPACT_DELAY_MS;
+    for (const proj of batch.projectiles) {
+      this.audio.playSfx('ATTACK_SWING', proj.faction);
+      this.scheduleDelayedTimer(impactDelay, () => {
+        if (
+          proj.outcome === 'DEFENSE_BLOCKED' ||
+          proj.outcome === 'ATTACKER_REPELLED' ||
+          proj.outcome === 'DIRECT_BLOCKED'
+        ) {
+          this.audio.playSfx('DEFENSE_BLOCK', proj.faction);
+        } else if (proj.outcome === 'DEFENSE_BROKEN') {
+          this.audio.playSfx('DEFENSE_BROKEN', proj.faction);
+        } else if (proj.outcome === 'DIRECT_HIT') {
+          this.audio.playSfx('DIRECT_HIT', proj.faction);
+        } else if (proj.hitStrength === 'CRITICAL') {
+          this.audio.playSfx('HIT_CRITICAL', proj.faction);
+        } else if (proj.hitStrength === 'HEAVY') {
+          this.audio.playSfx('HIT_HEAVY', proj.faction);
+        } else {
+          this.audio.playSfx('HIT_LIGHT', proj.faction);
+        }
+      });
+    }
+
+    for (const sum of batch.summonEvents) {
+      this.audio.playSfx(sum.tier === 'MYTHIC' ? 'SUMMON_MYTHIC' : 'SUMMON_STANDARD', sum.faction);
+    }
+
+    for (const shat of batch.shatterEvents) {
+      const shatDelay = reduced ? 0 : shat.delayMs;
+      if (shatDelay > 0) {
+        this.scheduleDelayedTimer(shatDelay, () => this.audio.playSfx('CREATURE_DESTROY', shat.faction));
+      } else {
+        this.audio.playSfx('CREATURE_DESTROY', shat.faction);
+      }
+    }
+
+    if (batch.projectiles.length === 0) {
+      const slotEvt = batch.slotEvents.find(
+        (evt) => evt.kind !== 'SUMMON' && evt.kind !== 'DESTROY',
+      );
+      if (slotEvt) {
+        const sfx =
+          slotEvt.kind === 'DEFENSE_BLOCK'
+            ? 'DEFENSE_BLOCK'
+            : slotEvt.kind === 'DEFENSE_BROKEN'
+              ? 'DEFENSE_BROKEN'
+              : slotEvt.kind === 'SHIELD' || slotEvt.kind === 'REACTIVE'
+                ? 'SHIELD_BUFF'
+                : slotEvt.kind === 'HEAL'
+                  ? 'HEAL'
+                  : 'SPELL_CAST';
+        this.audio.playSfx(sfx, slotEvt.faction);
+      } else if (batch.spellWaves.length > 0) {
+        const wave = batch.spellWaves[batch.spellWaves.length - 1];
+        this.audio.playSfx(wave.effect === 'SHIELD' ? 'SHIELD_BUFF' : 'SPELL_CAST', wave.faction);
+      }
     }
   }
 
@@ -1430,6 +1753,235 @@ export class ArenaPageComponent implements OnInit {
     }
   }
 
+  private emitCanvasBurst(burst: CanvasImpactBurst, delayMs = 0): void {
+    const activate = () => {
+      this.canvasBursts.update((prev) => [...prev, burst]);
+      this.scheduleDelayedTimer(920, () => {
+        this.canvasBursts.update((prev) => prev.filter((item) => item.id !== burst.id));
+      });
+    };
+    if (delayMs > 0) {
+      this.scheduleDelayedTimer(delayMs, activate);
+    } else {
+      activate();
+    }
+  }
+
+  private triggerBoardVignette(tint: Faction | 'CRITICAL_HIT'): void {
+    this.boardImpactTint.set(null);
+    if (typeof window !== 'undefined') {
+      this.scheduleDelayedTimer(16, () => {
+        this.boardImpactTint.set(tint);
+        this.scheduleDelayedTimer(480, () => {
+          if (this.boardImpactTint() === tint) {
+            this.boardImpactTint.set(null);
+          }
+        });
+      });
+    }
+  }
+
+  private scheduleMythicShowcase(showcase: MythicShowcaseBanner): void {
+    if (this.turnAnnouncement()) {
+      this.turnAnnouncement.set(null);
+    }
+    this.mythicShowcase.set(showcase);
+    this.scheduleDelayedTimer(showcase.durationMs, () => {
+      if (this.mythicShowcase()?.id === showcase.id) {
+        this.mythicShowcase.set(null);
+      }
+    });
+  }
+
+  private trackTimelineCleanup(cleanup: () => void): void {
+    this.activeTimelineCleanups.add(cleanup);
+    this.scheduleDelayedTimer(650, () => {
+      this.activeTimelineCleanups.delete(cleanup);
+    });
+  }
+
+  private collectBoardSlotMap(container: HTMLElement): Map<string, HTMLElement> {
+    const slotMap = new Map<string, HTMLElement>();
+    for (const el of Array.from(container.querySelectorAll<HTMLElement>('[data-board-slot]'))) {
+      const key = el.getAttribute('data-board-slot');
+      if (key) slotMap.set(key, el);
+    }
+    return slotMap;
+  }
+
+  private collectPlayerAvatarMap(container: HTMLElement): Map<string, HTMLElement> {
+    const avatarMap = new Map<string, HTMLElement>();
+    for (const el of Array.from(container.querySelectorAll<HTMLElement>('[data-player-avatar]'))) {
+      const id = el.getAttribute('data-player-avatar');
+      if (id) avatarMap.set(id, el);
+    }
+    return avatarMap;
+  }
+
+  private triggerCombatPopups(requests: readonly CombatPopupRequest[], reduced: boolean): void {
+    const container = this.arenaPlayColRef()?.nativeElement;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const slotMap = this.collectBoardSlotMap(container);
+    const avatarMap = this.collectPlayerAvatarMap(container);
+
+    requests.forEach((req, idx) => {
+      const targetEl =
+        req.targetKind === 'SLOT' ? slotMap.get(req.key) : avatarMap.get(req.key);
+      if (!targetEl) return;
+
+      const center = this.elementCenter(targetEl);
+      const jitterX = req.targetKind === 'SLOT' ? ((idx % 3) - 1) * 14 : 0;
+      const popup: FloatingCombatPopup = {
+        id: req.id,
+        x: center.x - containerRect.left + jitterX,
+        y: Math.max(28, center.y - containerRect.top - (req.targetKind === 'SLOT' ? 14 : 6)),
+        headline: req.headline,
+        sublabel: req.sublabel,
+        tone: req.tone,
+        faction: req.faction,
+        tiltDeg: ((idx % 2) === 0 ? -1 : 1) * (req.tone === 'CRIT' || req.tone === 'DIRECT' ? 4 : 2),
+      };
+      const launchDelay = reduced ? 0 : req.delayMs;
+      const pushPopup = () => {
+        this.floatingPopups.update((prev) => [...prev, popup]);
+        this.scheduleDelayedTimer(1020, () => {
+          this.floatingPopups.update((prev) => prev.filter((item) => item.id !== popup.id));
+        });
+      };
+
+      if (launchDelay > 0) {
+        this.scheduleDelayedTimer(launchDelay, pushPopup);
+      } else {
+        pushPopup();
+      }
+    });
+  }
+
+  private triggerSpellCanvasBursts(
+    waves: readonly SpellWaveBanner[],
+    slotEvents: readonly SlotVfxEvent[],
+    reduced: boolean,
+  ): void {
+    if (reduced) return;
+    const container = this.arenaPlayColRef()?.nativeElement;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const slotMap = this.collectBoardSlotMap(container);
+    const avatarMap = this.collectPlayerAvatarMap(container);
+    const wave = waves.at(-1);
+    if (!wave) return;
+
+    const targetSlots = slotEvents.filter(
+      (evt) =>
+        (evt.delayMs ?? 0) === 0 &&
+        (evt.kind === 'DAMAGE' || evt.kind === 'DESTROY' || evt.kind === 'ATK_BUFF' || evt.kind === 'SHIELD' || evt.kind === 'SLOW'),
+    );
+
+    if (targetSlots.length > 0) {
+      for (const evt of targetSlots) {
+        const el = slotMap.get(evt.key);
+        if (!el) continue;
+        const center = this.elementCenter(el);
+        this.emitCanvasBurst({
+          id: `${wave.id}-${evt.key}`,
+          kind: 'SPELL_BURST',
+          x: center.x - containerRect.left,
+          y: center.y - containerRect.top,
+          faction: wave.faction,
+          power: evt.kind === 'DESTROY' ? 4 : 3,
+        });
+      }
+      if (wave.effect === 'DAMAGE' || wave.effect === 'DESTROY') {
+        this.trackTimelineCleanup(animateBoardShake(container, 'light'));
+      }
+      return;
+    }
+
+    const actorEl = wave.actorPlayerId ? avatarMap.get(wave.actorPlayerId) : undefined;
+    const origin = actorEl
+      ? this.elementCenter(actorEl)
+      : { x: containerRect.left + containerRect.width * 0.5, y: containerRect.top + containerRect.height * 0.45 };
+    this.emitCanvasBurst({
+      id: `${wave.id}-cast`,
+      kind: 'SPELL_BURST',
+      x: origin.x - containerRect.left,
+      y: origin.y - containerRect.top,
+      faction: wave.faction,
+      power: 3,
+    });
+  }
+
+  private triggerSummonSlams(summons: readonly SummonImpactEvent[], reduced: boolean): void {
+    const container = this.arenaPlayColRef()?.nativeElement;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const cWidth = Math.max(containerRect.width, 1);
+    const cHeight = Math.max(containerRect.height, 1);
+    const slotMap = this.collectBoardSlotMap(container);
+
+    for (const sum of summons) {
+      const slotEl = slotMap.get(sum.key);
+      if (!slotEl) continue;
+      const cardEl = (slotEl.querySelector(':scope > button') as HTMLElement | null) ?? slotEl;
+      const center = this.elementCenter(slotEl);
+      const x = center.x - containerRect.left;
+      const y = center.y - containerRect.top;
+
+      if (!reduced) {
+        this.trackTimelineCleanup(animateCardSummonSlam(cardEl, sum.tier));
+        const burstDelay = sum.tier === 'MYTHIC' ? 140 : 40;
+        const kind =
+          sum.tier === 'MYTHIC'
+            ? 'SUMMON_MYTHIC'
+            : sum.tier === 'HEAVY'
+              ? 'SUMMON_HEAVY'
+              : 'SUMMON_STANDARD';
+        this.emitCanvasBurst({ id: sum.id, kind, x, y, faction: sum.faction, power: sum.energyCost }, burstDelay);
+
+        if (sum.tier === 'MYTHIC') {
+          this.scheduleDelayedTimer(140, () => {
+            this.trackTimelineCleanup(animateBoardShake(container, 'heavy'));
+            this.threeCombatPulse.set({
+              id: sum.id,
+              faction: sum.faction,
+              kind: 'SUMMON_MYTHIC',
+              nx: (x / cWidth - 0.5) * 2,
+              ny: (0.5 - y / cHeight) * 2,
+            });
+            this.triggerBoardVignette(sum.faction);
+          });
+        }
+      }
+    }
+  }
+
+  private triggerShatterBursts(shatters: readonly CombatShatterEvent[], reduced: boolean): void {
+    if (reduced) return;
+    const container = this.arenaPlayColRef()?.nativeElement;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const slotMap = this.collectBoardSlotMap(container);
+    for (const shat of shatters) {
+      const slotEl = slotMap.get(shat.key);
+      if (!slotEl) continue;
+      const center = this.elementCenter(slotEl);
+      this.emitCanvasBurst(
+        {
+          id: shat.id,
+          kind: 'SHATTER',
+          x: center.x - containerRect.left,
+          y: center.y - containerRect.top,
+          faction: shat.faction,
+          power: 3,
+        },
+        shat.delayMs,
+      );
+    }
+  }
+
   private spawnProjectiles(
     requests: readonly VisualProjectileRequest[],
     myTeam: TeamId,
@@ -1439,17 +1991,12 @@ export class ArenaPageComponent implements OnInit {
     if (!container) return;
 
     const containerRect = container.getBoundingClientRect();
-    const slotMap = new Map<string, HTMLElement>();
-    for (const el of Array.from(container.querySelectorAll<HTMLElement>('[data-board-slot]'))) {
-      const key = el.getAttribute('data-board-slot');
-      if (key) slotMap.set(key, el);
-    }
-    const avatarMap = new Map<string, HTMLElement>();
-    for (const el of Array.from(container.querySelectorAll<HTMLElement>('[data-player-avatar]'))) {
-      const id = el.getAttribute('data-player-avatar');
-      if (id) avatarMap.set(id, el);
-    }
+    const cWidth = Math.max(containerRect.width, 1);
+    const cHeight = Math.max(containerRect.height, 1);
+    const slotMap = this.collectBoardSlotMap(container);
+    const avatarMap = this.collectPlayerAvatarMap(container);
 
+    const activeUserId = this.activeControlledBoard()?.userId ?? null;
     const launched: ActiveProjectile[] = [];
     for (const req of requests) {
       const sourceEl =
@@ -1460,7 +2007,7 @@ export class ArenaPageComponent implements OnInit {
 
       const fallbackLpEl =
         req.targetPlayerId &&
-        this.gameView()?.players.find((p) => p.userId === req.targetPlayerId)?.teamId === myTeam
+          this.gameView()?.players.find((p) => p.userId === req.targetPlayerId)?.teamId === myTeam
           ? this.allyLpBoxRef()?.nativeElement
           : this.enemyLpBoxRef()?.nativeElement;
 
@@ -1479,21 +2026,82 @@ export class ArenaPageComponent implements OnInit {
       const end = this.elementCenter(targetEl);
       const startX = start.x - containerRect.left;
       const startY = start.y - containerRect.top;
+      const endX = end.x - containerRect.left;
+      const endY = end.y - containerRect.top;
       const dx = end.x - start.x;
       const dy = end.y - start.y;
       const distance = Math.hypot(dx, dy);
       const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
 
-      pulseElementImpact(sourceEl, 'attack');
-      const impactKind =
+      const blocked =
         req.outcome === 'DEFENSE_BLOCKED' ||
         req.outcome === 'DIRECT_BLOCKED' ||
-        req.outcome === 'ATTACKER_REPELLED'
-          ? 'defense'
-          : 'damage';
-      this.scheduleDelayedTimer(reduced ? 0 : 260, () => {
+        req.outcome === 'ATTACKER_REPELLED';
+      const gsHitStrength: 'light' | 'heavy' | 'critical' =
+        req.hitStrength === 'CRITICAL' ? 'critical' : req.hitStrength === 'HEAVY' ? 'heavy' : 'light';
+
+      const sourceCardEl = (sourceEl.querySelector(':scope > button') as HTMLElement | null) ?? sourceEl;
+      const targetCardEl = !req.directAttack
+        ? ((targetEl.querySelector(':scope > button') as HTMLElement | null) ?? targetEl)
+        : targetEl;
+
+      if (!reduced && req.outcome !== 'SPELL_STRIKE') {
+        this.trackTimelineCleanup(
+          animateCardAttackLunge(sourceCardEl, targetCardEl, dx, dy, blocked, gsHitStrength),
+        );
+        this.emitCanvasBurst(
+          {
+            id: `${req.uid}-trail`,
+            kind: 'TRAIL_STREAK',
+            x: startX + dx * 0.22,
+            y: startY + dy * 0.22,
+            dx,
+            dy,
+            faction: req.faction,
+            power: 2,
+          },
+          35,
+        );
+      } else {
+        pulseElementImpact(sourceEl, 'attack');
+      }
+
+      const impactDelay = reduced ? 0 : PROJECTILE_IMPACT_DELAY_MS;
+      const impactKind = blocked ? 'defense' : 'damage';
+      this.scheduleDelayedTimer(impactDelay, () => {
         pulseElementImpact(targetEl, impactKind);
+        if (!reduced) {
+          this.trackTimelineCleanup(animateBoardShake(container, gsHitStrength, dx, dy));
+        }
+        this.threeCombatPulse.set({
+          id: `${req.uid}-3d`,
+          faction: req.faction,
+          kind: req.directAttack ? 'DIRECT' : 'CLASH',
+          nx: (endX / cWidth - 0.5) * 2,
+          ny: (0.5 - endY / cHeight) * 2,
+        });
+        if (req.directAttack && req.outcome !== 'DIRECT_BLOCKED') {
+          this.triggerBoardVignette(
+            req.targetPlayerId && req.targetPlayerId === activeUserId ? 'CRITICAL_HIT' : req.faction,
+          );
+        }
       });
+
+      if (!reduced) {
+        this.emitCanvasBurst(
+          {
+            id: `${req.uid}-canvas`,
+            kind: blocked ? 'PARRY' : req.directAttack ? 'DIRECT_STRIKE' : 'CLASH',
+            x: endX,
+            y: endY,
+            dx,
+            dy,
+            faction: req.faction,
+            power: Math.max(2, req.damageDealt || (req.hitStrength === 'CRITICAL' ? 4 : 2)),
+          },
+          impactDelay,
+        );
+      }
 
       launched.push({
         uid: req.uid,
@@ -1506,6 +2114,7 @@ export class ArenaPageComponent implements OnInit {
         distance,
         outcome: req.outcome,
         directAttack: req.directAttack,
+        hitStrength: req.hitStrength,
       });
     }
 
@@ -1544,6 +2153,10 @@ export class ArenaPageComponent implements OnInit {
       }
     }
     this.activeAnimationFrames.clear();
+    for (const cleanup of this.activeTimelineCleanups) {
+      cleanup();
+    }
+    this.activeTimelineCleanups.clear();
   }
 
   private animateLatestCombatPulse(): void {

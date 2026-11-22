@@ -78,6 +78,7 @@ const EFFECT_ICON_MAP: Record<CardEffectVisualKind, string> = {
   host: {
     '[class.arcane-card-playable]': 'playable()',
     '[class.arcane-card-ready-attacker]': 'attackerReady()',
+    '[class.arcane-card-tabletop-host]': 'tabletop()',
     '[attr.data-card-faction]': 'card()?.faction ?? catalogCard()?.faction ?? null',
   },
 })
@@ -85,6 +86,7 @@ export class ArcaneCardComponent {
   readonly card = input<CardViewDto | null>(null);
   readonly catalogCard = input<CardDefinition | null>(null);
   readonly compact = input(false);
+  readonly tabletop = input(false);
   readonly showCompactText = input(false);
   readonly selected = input(false);
   readonly highlightedTarget = input(false);
@@ -107,7 +109,16 @@ export class ArcaneCardComponent {
 
   protected readonly shouldShowArtwork = computed(() => {
     const explicit = this.showArtwork();
-    return explicit !== null ? explicit : !this.compact();
+    return explicit !== null ? explicit : (!this.compact() || this.tabletop());
+  });
+
+  protected readonly isPowerhouse = computed(() => {
+    const view = this.card();
+    const def = this.catalogCard();
+    const isEpic = view ? !!view.epic : !!def?.isEpic;
+    const type = view?.cardType ?? def?.cardType ?? null;
+    const cost = view?.energyCost ?? def?.energyCost ?? 0;
+    return isEpic || type === 'SPELL_ULTIMATE' || cost >= 5;
   });
 
   protected readonly resolvedCardId = computed(

@@ -14,6 +14,7 @@ import {
   buildCardIllustrationSpec,
   CardEffectVisualKind,
 } from './card-artwork';
+import type { CombatPopupTone } from '../components/arena-combat-popups/arena-combat-popups.component';
 
 export type SlotZone = 'monster' | 'familiar' | 'spell';
 
@@ -32,6 +33,49 @@ export type SlotVfxKind =
   | 'REACTIVE';
 
 export type AvatarImpactKind = 'DEFENSE_BLOCK' | 'DAMAGE';
+export type SummonTier = 'STANDARD' | 'HEAVY' | 'MYTHIC';
+export type ImpactHitStrength = 'LIGHT' | 'HEAVY' | 'CRITICAL';
+
+export interface SummonImpactEvent {
+  id: string;
+  key: string;
+  playerId: string;
+  zone: SlotZone;
+  slotIndex: number;
+  faction: Faction;
+  tier: SummonTier;
+  cardName: string;
+  cardId: string | null;
+  cardType: CardViewDto['cardType'];
+  energyCost: number;
+  epic: boolean;
+  baseAtk: number | null;
+  baseDef: number | null;
+}
+
+export interface CombatShatterEvent {
+  id: string;
+  key: string;
+  playerId: string;
+  zone: SlotZone;
+  slotIndex: number;
+  faction: Faction;
+  delayMs: number;
+}
+
+export interface MythicShowcaseBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  cardName: string;
+  cardId: string | null;
+  faction: Faction;
+  isUltimate: boolean;
+  atk: number | null;
+  def: number | null;
+  cost: number | null;
+  durationMs: number;
+}
 
 export interface SlotVfxEvent {
   id: string;
@@ -69,6 +113,7 @@ export interface VisualProjectileRequest {
   outcome: CombatOutcome;
   damageDealt: number;
   recoilDamage: number;
+  hitStrength: ImpactHitStrength;
 }
 
 export interface LpVfxEvent {
@@ -84,6 +129,7 @@ export interface LpVfxEvent {
 
 export interface SpellWaveBanner {
   id: string;
+  actorPlayerId: string | null;
   cardName: string;
   faction: Faction;
   effect: CardEffectVisualKind;
@@ -93,15 +139,30 @@ export interface SpellWaveBanner {
   durationMs: number;
 }
 
+export interface CombatPopupRequest {
+  id: string;
+  targetKind: 'SLOT' | 'AVATAR';
+  key: string;
+  faction: Faction;
+  headline: string;
+  sublabel: string | null;
+  tone: CombatPopupTone;
+  delayMs: number;
+}
+
 export interface ArenaVfxBatch {
   slotEvents: SlotVfxEvent[];
   lpEvents: LpVfxEvent[];
   spellWaves: SpellWaveBanner[];
   projectiles: VisualProjectileRequest[];
   avatarImpacts: AvatarImpactEvent[];
+  summonEvents: SummonImpactEvent[];
+  shatterEvents: CombatShatterEvent[];
+  mythicShowcases: MythicShowcaseBanner[];
+  popups: CombatPopupRequest[];
 }
 
-const PROJECTILE_IMPACT_DELAY_MS = 260;
+export const PROJECTILE_IMPACT_DELAY_MS = 185;
 
 export function slotBurstKey(playerId: string, zone: SlotZone, slotIndex: number): string {
   return `${playerId}:${zone}:${slotIndex}`;
@@ -113,12 +174,22 @@ export function extractArenaVfxEvents(
   catalogByName: ReadonlyMap<string, CardDefinition>,
 ): ArenaVfxBatch {
   if (!prevView || prevView.matchId !== nextView.matchId) {
-    return { slotEvents: [], lpEvents: [], spellWaves: [], projectiles: [], avatarImpacts: [] };
+    return {
+      slotEvents: [],
+      lpEvents: [],
+      spellWaves: [],
+      projectiles: [],
+      avatarImpacts: [],
+      summonEvents: [],
+      shatterEvents: [],
+      mythicShowcases: [],
+      popups: [],
+    };
   }
 
   const prevLastSeq = prevView.combatLog.at(-1)?.sequence ?? 0;
   const newLogs = nextView.combatLog.filter((entry) => entry.sequence > prevLastSeq);
-  const spellWaves = extractSpellWaves(newLogs, nextView, catalogByName);
+  const { waves: spellWaves, showcases: spellShowcases } = extractSpellWaves(newLogs, nextView, catalogByName);
 
   const prevVisualSeq = prevView.visualEvents?.at(-1)?.sequence ?? 0;
   const newVisualEvents = (nextView.visualEvents ?? []).filter((ev) => ev.sequence > prevVisualSeq);
@@ -134,6 +205,9 @@ export function extractArenaVfxEvents(
 
   const waveFaction = newVisualEvents.at(-1)?.faction ?? spellWaves.at(-1)?.faction ?? null;
   const slotEvents: SlotVfxEvent[] = [...combatSlotEvents.values()];
+  const summonEvents: SummonImpactEvent[] = [];
+  const shatterEvents: CombatShatterEvent[] = [];
+  const mythicShowcases: MythicShowcaseBanner[] = [...spellShowcases];
   const prevByPlayer = new Map(prevView.players.map((p) => [p.userId, p]));
   const uidBase = `${nextView.turnNumber}-${nextView.combatLog.at(-1)?.sequence ?? 0}`;
 
@@ -142,9 +216,48 @@ export function extractArenaVfxEvents(
     if (!prevPlayer) {
       continue;
     }
-    diffZoneSlots(prevPlayer.monsters, nextPlayer.monsters, nextPlayer.userId, 'monster', waveFaction, uidBase, slotEvents);
-    diffZoneSlots(prevPlayer.familiars, nextPlayer.familiars, nextPlayer.userId, 'familiar', waveFaction, uidBase, slotEvents);
-    diffZoneSlots(prevPlayer.spellArtifacts, nextPlayer.spellArtifacts, nextPlayer.userId, 'spell', waveFaction, uidBase, slotEvents);
+    diffZoneSlots(
+      prevPlayer.monsters,
+      nextPlayer.monsters,
+      nextPlayer.userId,
+      'monster',
+      waveFaction,
+      uidBase,
+      slotEvents,
+      summonEvents,
+      shatterEvents,
+      mythicShowcases,
+    );
+    diffZoneSlots(
+      prevPlayer.familiars,
+      nextPlayer.familiars,
+      nextPlayer.userId,
+      'familiar',
+      waveFaction,
+      uidBase,
+      slotEvents,
+      summonEvents,
+      shatterEvents,
+      mythicShowcases,
+    );
+    diffZoneSlots(
+      prevPlayer.spellArtifacts,
+      nextPlayer.spellArtifacts,
+      nextPlayer.userId,
+      'spell',
+      waveFaction,
+      uidBase,
+      slotEvents,
+      summonEvents,
+      shatterEvents,
+      mythicShowcases,
+    );
+  }
+
+  for (const shatter of shatterEvents) {
+    if (delayedHitSlotKeys.has(shatter.key)) {
+      shatter.delayMs = PROJECTILE_IMPACT_DELAY_MS;
+    }
   }
 
   // Filter duplicate board diff destruction/damage events when combat visual event already drives that slot cleanly,
@@ -171,7 +284,149 @@ export function extractArenaVfxEvents(
     }
   }
 
-  return { slotEvents: dedupedSlots, lpEvents, spellWaves, projectiles, avatarImpacts };
+  const popups = buildCombatPopupRequests(dedupedSlots, avatarImpacts);
+
+  return {
+    slotEvents: dedupedSlots,
+    lpEvents,
+    spellWaves,
+    projectiles,
+    avatarImpacts,
+    summonEvents,
+    shatterEvents,
+    mythicShowcases: mythicShowcases.length > 1 ? [mythicShowcases[mythicShowcases.length - 1]] : mythicShowcases,
+    popups,
+  };
+}
+
+function buildCombatPopupRequests(
+  slotEvents: readonly SlotVfxEvent[],
+  avatarImpacts: readonly AvatarImpactEvent[],
+): CombatPopupRequest[] {
+  const popups: CombatPopupRequest[] = [];
+
+  for (const evt of slotEvents) {
+    if (evt.kind === 'SUMMON' || evt.kind === 'REACTIVE') {
+      continue;
+    }
+    const baseDelay = evt.delayMs ?? 0;
+    let headline = evt.label;
+    let sublabel: string | null = null;
+    let tone: CombatPopupTone = 'DAMAGE';
+
+    switch (evt.kind) {
+      case 'DESTROY':
+        headline = 'K.O.!';
+        sublabel = 'DÉTRUIT';
+        tone = 'DESTROY';
+        break;
+      case 'DEFENSE_BROKEN':
+        headline = 'BRISÉ!';
+        sublabel = 'GARDE CÉDÉE';
+        tone = 'CRIT';
+        break;
+      case 'DEFENSE_BLOCK': {
+        const recoilMatch = evt.label.match(/-(\d+)/);
+        headline = recoilMatch ? `-${recoilMatch[1]} RENVOI` : 'PARÉ!';
+        sublabel = recoilMatch ? 'CONTRE-CHOC' : 'DÉFENSE';
+        tone = 'BLOCK';
+        break;
+      }
+      case 'DAMAGE': {
+        const dmgMatch = evt.label.match(/-(\d+)/);
+        const dmg = dmgMatch ? Number(dmgMatch[1]) : 1;
+        headline = `-${dmg}`;
+        sublabel = dmg >= 4 ? 'CRITIQUE!' : 'DÉF';
+        tone = dmg >= 4 ? 'CRIT' : 'DAMAGE';
+        break;
+      }
+      case 'SHIELD':
+        headline = evt.label;
+        tone = 'BLOCK';
+        break;
+      case 'ATK_BUFF':
+        headline = evt.label;
+        sublabel = 'BOOST';
+        tone = 'BUFF';
+        break;
+      case 'SLOW':
+        headline = 'RALENTI';
+        tone = 'DEBUFF';
+        break;
+      case 'STEALTH':
+        headline = 'FURTIF';
+        tone = 'DEBUFF';
+        break;
+      case 'CURSE':
+      case 'HEAL':
+        headline = evt.label;
+        tone = evt.kind === 'HEAL' ? 'HEAL' : 'DEBUFF';
+        break;
+    }
+
+    popups.push({
+      id: `pop-${evt.id}`,
+      targetKind: 'SLOT',
+      key: evt.key,
+      faction: evt.faction,
+      headline,
+      sublabel,
+      tone,
+      delayMs: baseDelay,
+    });
+  }
+
+  for (const av of avatarImpacts) {
+    const baseDelay = av.delayMs ?? 0;
+    if (av.kind === 'DEFENSE_BLOCK') {
+      popups.push({
+        id: `pop-${av.id}`,
+        targetKind: 'AVATAR',
+        key: av.playerId,
+        faction: av.faction,
+        headline: 'BLOQUÉ!',
+        sublabel: 'BOUCLIER ACTIF',
+        tone: 'BLOCK',
+        delayMs: baseDelay,
+      });
+    } else {
+      const dmgMatch = av.label.match(/-(\d+)/);
+      const dmg = dmgMatch ? Number(dmgMatch[1]) : 1;
+      popups.push({
+        id: `pop-${av.id}`,
+        targetKind: 'AVATAR',
+        key: av.playerId,
+        faction: av.faction,
+        headline: av.label,
+        sublabel: dmg >= 3 ? 'FRAPPE DIRECTE!' : 'COUP DIRECT',
+        tone: dmg >= 3 ? 'DIRECT' : 'DAMAGE',
+        delayMs: baseDelay,
+      });
+    }
+  }
+
+  return popups;
+}
+
+function classifyHitStrength(ev: CombatVisualEvent): ImpactHitStrength {
+  if (
+    ev.outcome === 'DEFENSE_BROKEN' ||
+    ev.outcome === 'TRADE' ||
+    ev.damageDealt >= 4 ||
+    (ev.directAttack && ev.outcome === 'DIRECT_HIT' && ev.damageDealt >= 3)
+  ) {
+    return 'CRITICAL';
+  }
+  if (
+    ev.directAttack ||
+    ev.outcome === 'ATTACKER_VICTORY' ||
+    ev.outcome === 'DEFENSE_BLOCKED' ||
+    ev.outcome === 'ATTACKER_REPELLED' ||
+    ev.damageDealt >= 2
+  ) {
+    return 'HEAVY';
+  }
+  return 'LIGHT';
 }
 
 function toProjectileRequest(ev: CombatVisualEvent): VisualProjectileRequest {
@@ -188,6 +443,7 @@ function toProjectileRequest(ev: CombatVisualEvent): VisualProjectileRequest {
     outcome: ev.outcome,
     damageDealt: ev.damageDealt,
     recoilDamage: ev.recoilDamage,
+    hitStrength: classifyHitStrength(ev),
   };
 }
 
@@ -282,6 +538,17 @@ function collectCombatVisualResponses(
   }
 }
 
+function classifySummonTier(card: CardViewDto): SummonTier {
+  const cost = card.energyCost ?? 0;
+  if (card.epic || card.cardType === 'SPELL_ULTIMATE' || cost >= 5) {
+    return 'MYTHIC';
+  }
+  if (cost >= 3) {
+    return 'HEAVY';
+  }
+  return 'STANDARD';
+}
+
 function diffZoneSlots(
   prevSlots: readonly (CardViewDto | null)[],
   nextSlots: readonly (CardViewDto | null)[],
@@ -290,6 +557,9 @@ function diffZoneSlots(
   waveFaction: Faction | null,
   uidBase: string,
   out: SlotVfxEvent[],
+  summonOut: SummonImpactEvent[],
+  shatterOut: CombatShatterEvent[],
+  showcaseOut: MythicShowcaseBanner[],
 ): void {
   const maxLen = Math.max(prevSlots.length, nextSlots.length);
   for (let i = 0; i < maxLen; i += 1) {
@@ -298,6 +568,56 @@ function diffZoneSlots(
     const event = resolveSlotTransition(prevCard, nextCard, playerId, zone, i, waveFaction, uidBase);
     if (event) {
       out.push(event);
+    }
+
+    const key = slotBurstKey(playerId, zone, i);
+    if ((!prevCard && nextCard) || (prevCard && nextCard && prevCard.instanceId !== nextCard.instanceId)) {
+      const isFaceDown = nextCard.faceDown || nextCard.hidden;
+      const faction: Faction = nextCard.faction ?? (isFaceDown ? 'SHADOW' : 'LIGHT');
+      const tier: SummonTier = isFaceDown ? 'STANDARD' : classifySummonTier(nextCard);
+      const energyCost = nextCard.energyCost ?? 0;
+      summonOut.push({
+        id: `${uidBase}:sum:${key}`,
+        key,
+        playerId,
+        zone,
+        slotIndex: i,
+        faction,
+        tier,
+        cardName: nextCard.name ?? 'Arcane',
+        cardId: nextCard.cardId,
+        cardType: nextCard.cardType,
+        energyCost,
+        epic: !!nextCard.epic,
+        baseAtk: nextCard.effectiveAtk ?? nextCard.baseAtk,
+        baseDef: nextCard.effectiveDef ?? nextCard.baseDef,
+      });
+
+      if (!isFaceDown && tier === 'MYTHIC') {
+        showcaseOut.push({
+          id: `${uidBase}:mythic:${nextCard.instanceId}`,
+          title: nextCard.epic ? 'INVOCATION ÉPIQUE ★' : nextCard.cardType === 'SPELL_ULTIMATE' ? 'SORT ULTIME ⚡' : 'COLOSSE INVOCATOIRE',
+          subtitle: nextCard.epic ? 'Présence Légendaire sur le Plateau' : `Coût ${energyCost} Énergie · Entrée Fracassante`,
+          cardName: nextCard.name ?? 'Carte Mythique',
+          cardId: nextCard.cardId,
+          faction,
+          isUltimate: nextCard.cardType === 'SPELL_ULTIMATE',
+          atk: nextCard.effectiveAtk ?? nextCard.baseAtk,
+          def: nextCard.effectiveDef ?? nextCard.baseDef,
+          cost: nextCard.energyCost,
+          durationMs: 1450,
+        });
+      }
+    } else if (prevCard && !nextCard) {
+      shatterOut.push({
+        id: `${uidBase}:shat:${key}`,
+        key,
+        playerId,
+        zone,
+        slotIndex: i,
+        faction: waveFaction ?? prevCard.faction ?? 'FIRE',
+        delayMs: 0,
+      });
     }
   }
 }
@@ -498,8 +818,9 @@ function extractSpellWaves(
   newLogs: readonly CombatLogEntry[],
   nextView: PlayerGameView,
   catalogByName: ReadonlyMap<string, CardDefinition>,
-): SpellWaveBanner[] {
+): { waves: SpellWaveBanner[]; showcases: MythicShowcaseBanner[] } {
   const waves: SpellWaveBanner[] = [];
+  const showcases: MythicShowcaseBanner[] = [];
   for (const entry of newLogs) {
     if (
       entry.eventType !== 'CAST_SPELL'
@@ -517,9 +838,11 @@ function extractSpellWaves(
     }
 
     const spec = buildCardIllustrationSpec(matchedCard);
+    const resolvedName = matchedCard.name ?? cardName ?? 'Sort arcanique';
     waves.push({
       id: `wave-${entry.sequence}`,
-      cardName: matchedCard.name ?? cardName ?? 'Sort arcanique',
+      actorPlayerId: entry.actorPlayerId,
+      cardName: resolvedName,
       faction: spec.faction,
       effect: spec.effect,
       effectTag: spec.effectTag,
@@ -527,10 +850,32 @@ function extractSpellWaves(
       summary: entry.message,
       durationMs: 1500,
     });
+
+    const isUltimate = matchedCard.cardType === 'SPELL_ULTIMATE';
+    const cost = matchedCard.energyCost ?? 0;
+    const isEpicCard = 'isEpic' in matchedCard ? matchedCard.isEpic : !!matchedCard.epic;
+    if (isUltimate || isEpicCard || cost >= 5) {
+      showcases.push({
+        id: `wave-mythic-${entry.sequence}`,
+        title: isUltimate ? 'SORT ULTIME DÉCHAÎNÉ ⚡' : 'INCANTATION MAJEURE ★',
+        subtitle: `${entry.actorUsername} · ${spec.effectTag}`,
+        cardName: resolvedName,
+        cardId: matchedCard.cardId ?? null,
+        faction: spec.faction,
+        isUltimate,
+        atk: null,
+        def: null,
+        cost: matchedCard.energyCost,
+        durationMs: 1450,
+      });
+    }
   }
 
   // Keep only the latest wave if multiple triggered synchronously in one log tick to stay visually focused.
-  return waves.length > 1 ? [waves[waves.length - 1]] : waves;
+  return {
+    waves: waves.length > 1 ? [waves[waves.length - 1]] : waves,
+    showcases: showcases.length > 1 ? [showcases[showcases.length - 1]] : showcases,
+  };
 }
 
 function extractCardNameFromLog(entry: CombatLogEntry): string | null {

@@ -22,6 +22,7 @@ public record UserProfileDto(
         String equippedTitle,
         String equippedFinisher,
         Map<String, Integer> factionWins,
-        List<CosmeticItemDto> unlockedCosmetics
+        List<CosmeticItemDto> unlockedCosmetics,
+        boolean tutorialCompleted
 ) {
 }

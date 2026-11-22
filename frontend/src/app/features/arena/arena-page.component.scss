@@ -2,121 +2,159 @@
   display: block;
 }
 
-.arena-svg-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  pointer-events: none;
-  inline-size: 100%;
-  block-size: 100%;
-}
+.arena-rope-bar { transition: inline-size 0.2s linear; }
 
-.arena-rope-bar {
-  transition: inline-size 0.2s linear;
-}
-
-.arena-scroll-region {
-  scrollbar-gutter: stable;
-  overscroll-behavior: contain;
-}
+.arena-scroll-region,
+.arena-battlefield { scrollbar-gutter: stable; overscroll-behavior: contain; }
 
 .arena-action-mini {
   min-block-size: 1.75rem;
   min-inline-size: 1.75rem;
 
-  @media (pointer: coarse) {
-    min-block-size: 2.75rem;
-    min-inline-size: 2.75rem;
-  }
+  @media (pointer: coarse) { min-block-size: 2.75rem; min-inline-size: 2.75rem; }
+  @media (pointer: fine) and (min-width: 80rem) { min-block-size: 1.3rem; padding-block: 0; }
 }
 
-.arena-play-col,
-.arena-side-col,
-.arena-battlefield,
-.arena-hand-band,
-.arena-battlefield > section,
-.arena-battlefield > section > div {
-  min-inline-size: 0;
-}
-
-.arena-hand-rail {
-  overscroll-behavior-x: contain;
-}
-
-.arena-tab-panel[hidden] {
-  display: none;
-}
-
-.arena-tab-list-scroll {
-  max-block-size: 18rem;
-  overflow-y: auto;
-}
+.arena-hand-rail { overscroll-behavior-x: contain; }
+.arena-tab-panel[hidden] { display: none; }
+.arena-tab-list-scroll { max-block-size: 18rem; overflow-y: auto; }
 
 /* Single-screen zero-scroll Arena cockpit across Mobile Portrait (390x844) & Desktop (1440x900) */
 @media (min-height: 35rem) {
-  .arena-shell {
-    display: flex;
-    flex: 1 1 0%;
-    flex-direction: column;
-    inline-size: 100%;
-    min-block-size: 0;
-    overflow: hidden;
-  }
-
-  .arena-grid {
-    flex: 1 1 0%;
-    min-block-size: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .arena-play-col {
-    display: flex;
-    flex: 1 1 0%;
-    flex-direction: column;
-    min-block-size: 0;
-    overflow: hidden;
-  }
-
+  .arena-shell,
+  .arena-grid,
+  .arena-play-col,
   .arena-battlefield {
+    display: flex;
     flex: 1 1 0%;
+    flex-direction: column;
     min-block-size: 0;
-    overflow-y: auto;
   }
+
+  .arena-shell,
+  .arena-grid,
+  .arena-play-col { overflow: hidden; }
+  .arena-shell { inline-size: 100%; }
+  .arena-battlefield { overflow-y: auto; }
 }
 
 @media (min-width: 80rem) and (min-height: 35rem) {
-  .arena-grid {
-    display: grid;
-  }
-
-  .arena-side-col {
+  .arena-grid { display: grid; }
+  .arena-side-col { block-size: 100%; }
+  .arena-side-col,
+  .arena-tab-container,
+  .arena-tab-panel:not([hidden]) {
     display: flex;
     flex-direction: column;
     min-block-size: 0;
-    block-size: 100%;
     overflow: hidden;
   }
 
-  .arena-tab-container {
-    flex: 1 1 0%;
-    min-block-size: 0;
-    display: flex;
-    flex-direction: column;
+  .arena-tab-container,
+  .arena-tab-panel:not([hidden]),
+  .arena-tab-list-scroll { flex: 1 1 0%; min-block-size: 0; }
+  .arena-tab-list-scroll { max-block-size: none; overflow-y: auto; }
+}
+
+.arena-scenic-play-col {
+  background: radial-gradient(ellipse 90% 52% at 50% 44%, rgb(56 189 248 / 0.09), #070b16 74%);
+  border: 1px solid rgb(148 163 184 / 0.14);
+  border-radius: 1rem;
+}
+
+[class*='arena-zone-'] {
+  --z: 148 163 184;
+  border: 1px solid rgb(var(--z) / 0.44);
+  background: linear-gradient(180deg, rgb(var(--z) / 0.08), rgb(8 12 24 / 0.62));
+}
+
+.arena-zone-monsters { --z: 244 63 94; }
+.arena-zone-familiars { --z: 52 211 153; }
+.arena-zone-spell { --z: 244 114 182; }
+.arena-zone-hand { --z: 168 85 247; }
+.arena-zone-deck { --z: 249 115 22; box-shadow: 3px 3px 0 0 #0f172a, 4px 4px 0 0 rgb(249 115 22 / 0.36); }
+
+.arena-hero-dock {
+  border: 1px solid rgb(56 189 248 / 0.44);
+  background: linear-gradient(180deg, rgb(14 40 72 / 0.44), rgb(8 13 24 / 0.94));
+
+  &[data-my-turn='true'] {
+    border-color: rgb(52 211 153 / 0.72);
+    box-shadow: 0 0 22px -8px rgb(52 211 153 / 0.38);
+  }
+}
+
+.arena-lp-orb {
+  --orb-b: 56 189 248;
+  --orb-g: 14 116 144;
+  --orb-bg: 7 15 32;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.25rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgb(var(--orb-b) / 0.68);
+  background: radial-gradient(circle at 35% 30%, rgb(var(--orb-g) / 0.55), rgb(var(--orb-bg) / 0.96));
+
+  &--enemy { --orb-b: 251 113 133; --orb-g: 159 18 57; --orb-bg: 24 9 20; }
+}
+
+.arena-support-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 3.05fr) minmax(0, 0.95fr);
+  gap: 0.35rem;
+}
+
+.arena-hand-fan-card {
+  position: relative;
+  display: block;
+  block-size: 7.15rem;
+  transform-origin: center bottom;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform 240ms var(--arcane-spring-easing), opacity 160ms ease-out;
+  }
+}
+
+.arcane-slot-empty { display: flex; flex-direction: column; justify-content: space-between; }
+.arena-slot-front { min-block-size: 4.5rem; }
+.arena-slot-support { min-block-size: 4.1rem; }
+
+.arena-w-board { max-inline-size: 46rem; }
+.arena-w-support { max-inline-size: 35rem; }
+.arena-w-front { max-inline-size: 26.5rem; }
+.arena-w-dock { max-inline-size: 62rem; }
+
+@media (min-width: 80rem) {
+  .arcane-slot-empty { gap: 0; padding: 0.125rem; }
+  .arena-slot-front { block-size: 6.1rem; }
+  .arena-slot-support { block-size: 5.3rem; }
+  .arena-hand-fan-card { block-size: 6.95rem; }
+  .arena-hand-deck { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 0.5rem; }
+
+  .arena-slot-actions {
+    position: absolute;
+    inset-inline: 0.12rem;
+    inset-block-end: -0.32rem;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease-out;
+  }
+  .arcane-slot-empty:is(:hover, :focus-within, [data-selected='true']) > .arena-slot-actions {
+    opacity: 1;
+    pointer-events: auto;
   }
 
-  .arena-tab-panel:not([hidden]) {
-    flex: 1 1 0%;
-    min-block-size: 0;
-    display: flex;
-    flex-direction: column;
+  @media (prefers-reduced-motion: no-preference) {
+    .arena-hand-fan-card:is(:hover, :focus-visible, [data-selected='true']) { z-index: 25; transform: translateY(-0.7rem) scale(1.15); }
   }
+}
 
-  .arena-tab-list-scroll {
-    flex: 1 1 0%;
-    max-block-size: none;
-    min-block-size: 0;
-    overflow-y: auto;
-  }
+@media (forced-colors: active) {
+  [class*='arena-zone-'],
+  .arena-hero-dock { border: 1.5px solid CanvasText; }
+  .arena-hero-dock[data-my-turn='true'] { border: 2px solid Highlight; }
 }

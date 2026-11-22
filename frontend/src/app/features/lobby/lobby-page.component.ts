@@ -48,8 +48,10 @@ import { AnnouncerService } from '../../core/services/announcer.service';
 import { AuthService, extractApiErrorMessage } from '../../core/services/auth.service';
 import { LobbyApiService } from '../../core/services/lobby-api.service';
 import { StompService } from '../../core/services/stomp.service';
+import { ArenaAudioControlComponent } from '../../shared/components/arena-audio-control/arena-audio-control.component';
 import { FormAriaSyncDirective } from '../../shared/directives/form-aria-sync.directive';
 import { ImeEnterSubmitDirective } from '../../shared/directives/ime-enter-submit.directive';
+import { ArcaneAudioService } from '../../shared/services/arcane-audio.service';
 import {
   AI_DIFFICULTY_META,
   AI_DIFFICULTY_ORDER,
@@ -62,7 +64,7 @@ import {
 @Component({
   selector: 'app-lobby-page',
   standalone: true,
-  imports: [RouterLink, FormAriaSyncDirective, ImeEnterSubmitDirective, NgIcon],
+  imports: [RouterLink, FormAriaSyncDirective, ImeEnterSubmitDirective, NgIcon, ArenaAudioControlComponent],
   viewProviders: [
     provideIcons({
       lucideAlertTriangle,
@@ -88,6 +90,36 @@ import {
     }),
   ],
   templateUrl: './lobby-page.component.html',
+  styles: `
+    .lobby-tuto-banner {
+      border: 1px solid rgba(217, 164, 65, 0.5);
+    }
+    .lobby-tuto-icon {
+      border: 1px solid rgba(217, 164, 65, 0.55);
+      background: rgba(217, 164, 65, 0.2);
+    }
+    .lobby-tuto-tag {
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      background: rgba(6, 78, 59, 0.7);
+    }
+    .lobby-tuto-grid {
+      display: grid;
+      gap: 0.625rem;
+    }
+    @media (min-width: 640px) {
+      .lobby-tuto-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    .lobby-tuto-replay {
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      background: rgba(6, 78, 59, 0.55);
+    }
+    .lobby-tuto-replay:hover {
+      border-color: rgba(52, 211, 153, 0.9);
+      background: rgba(6, 95, 70, 0.7);
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LobbyPageComponent implements OnInit {
@@ -95,6 +127,7 @@ export class LobbyPageComponent implements OnInit {
   protected readonly stomp = inject(StompService);
   private readonly lobbyApi = inject(LobbyApiService);
   private readonly announcer = inject(AnnouncerService);
+  private readonly audio = inject(ArcaneAudioService);
   private readonly router = inject(Router);
 
   private readonly createRoomDialogRef = viewChild<ElementRef<HTMLDialogElement>>('createRoomDialog');
@@ -115,6 +148,11 @@ export class LobbyPageComponent implements OnInit {
   protected readonly selectedBotDifficulty = signal<AiDifficulty>('MEDIUM');
   protected readonly queueStatus = signal<QueueStatusResponse>({ queued: false });
   protected readonly busyPlay = signal(false);
+  protected readonly tutorialDismissed = signal(false);
+  protected readonly busyTutorial = signal(false);
+  protected readonly showTutorialBanner = computed(
+    () => !this.tutorialDismissed() && this.auth.user()?.tutorialCompleted === false,
+  );
 
   protected readonly customRooms = signal<readonly CustomRoomDto[]>([]);
   protected readonly friends = signal<readonly FriendDto[]>([]);
@@ -151,6 +189,7 @@ export class LobbyPageComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.stomp.connect();
+    this.audio.startMusic('CALM');
     await this.loadInitialData();
   }
 
@@ -217,6 +256,36 @@ export class LobbyPageComponent implements OnInit {
       this.announcer.pushToast(extractApiErrorMessage(err), 'error');
     } finally {
       this.busyPlay.set(false);
+    }
+  }
+
+  protected async onStartTutorialDuel(): Promise<void> {
+    const deckId = this.selectedDeckId() || this.validDecks()[0]?.deckId;
+    if (!deckId) {
+      this.announcer.pushToast('Sélectionnez un deck valide pour lancer l’initiation.', 'info');
+      return;
+    }
+    this.busyTutorial.set(true);
+    try {
+      const res = await this.lobbyApi.startAiMatch('DUEL_1V1', deckId, null, 'EASY');
+      await this.router.navigate(['/arena', res.matchId], { queryParams: { tutorial: '1' } });
+    } catch (err) {
+      this.announcer.pushToast(extractApiErrorMessage(err), 'error');
+    } finally {
+      this.busyTutorial.set(false);
+    }
+  }
+
+  protected async onDismissTutorial(): Promise<void> {
+    this.tutorialDismissed.set(true);
+    try {
+      await this.auth.completeTutorial();
+      this.announcer.pushToast(
+        'Didacticiel ignoré : vous pouvez le relancer à tout moment depuis le Sanctuaire.',
+        'info',
+      );
+    } catch (err) {
+      this.announcer.pushToast(extractApiErrorMessage(err), 'error');
     }
   }
 

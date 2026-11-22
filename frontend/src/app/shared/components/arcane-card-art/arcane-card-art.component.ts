@@ -8,6 +8,8 @@ import { CardIllustrationSpec } from '../../utils/card-artwork';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArcaneCardArtComponent {
+  private static nextUid = 0;
+  protected readonly uid = ArcaneCardArtComponent.nextUid++;
   readonly spec = input.required<CardIllustrationSpec>();
   readonly compact = input(false);
 }

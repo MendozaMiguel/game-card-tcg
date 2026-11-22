@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CombatOutcome, Faction } from '../../../core/models/arcane.models';
+import { ImpactHitStrength } from '../../utils/arena-vfx';
 
 export interface ActiveProjectile {
   uid: string;
@@ -12,12 +13,190 @@ export interface ActiveProjectile {
   distance: number;
   outcome: CombatOutcome;
   directAttack: boolean;
+  hitStrength?: ImpactHitStrength;
 }
 
 @Component({
   selector: 'app-arena-projectile-overlay',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      .arcane-projectile-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 42;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .arcane-proj-anchor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate3d(var(--proj-x, 0px), var(--proj-y, 0px), 0);
+        pointer-events: none;
+      }
+
+      .arcane-proj-anchor[data-faction='FIRE'] {
+        color: #fb923c;
+      }
+      .arcane-proj-anchor[data-faction='ICE'] {
+        color: #38bdf8;
+      }
+      .arcane-proj-anchor[data-faction='SHADOW'] {
+        color: #c084fc;
+      }
+      .arcane-proj-anchor[data-faction='LIGHT'] {
+        color: #facc15;
+      }
+
+      .arcane-proj-bolt {
+        position: absolute;
+        left: -48px;
+        top: -22px;
+        width: 96px;
+        height: 44px;
+        transform-origin: center;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .arcane-proj-anchor[data-strength='CRITICAL'] .arcane-proj-bolt,
+      .arcane-proj-anchor[data-direct='true'] .arcane-proj-bolt {
+        left: -58px;
+        top: -26px;
+        width: 116px;
+        height: 52px;
+      }
+
+      .arcane-proj-svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        filter: drop-shadow(0 0 10px currentColor);
+      }
+
+      .arcane-proj-arrival {
+        position: absolute;
+        left: -44px;
+        top: -44px;
+        width: 88px;
+        height: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .arcane-proj-anchor[data-strength='CRITICAL'] .arcane-proj-arrival,
+      .arcane-proj-anchor[data-direct='true'] .arcane-proj-arrival {
+        left: -56px;
+        top: -56px;
+        width: 112px;
+        height: 112px;
+      }
+
+      .arcane-proj-arrival-ring {
+        position: absolute;
+        inset: 6px;
+        border-radius: 999px;
+        border: 2.5px solid currentColor;
+        background: radial-gradient(circle, currentColor 0%, transparent 65%);
+        opacity: 0.72;
+      }
+
+      .arcane-proj-origin {
+        position: absolute;
+        left: -28px;
+        top: -28px;
+        width: 56px;
+        height: 56px;
+        border-radius: 999px;
+        border: 2px solid currentColor;
+        background: radial-gradient(circle, currentColor 0%, transparent 66%);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .arcane-proj-star-svg {
+        position: relative;
+        width: 68px;
+        height: 68px;
+        overflow: visible;
+        filter: drop-shadow(0 0 12px currentColor);
+      }
+
+      .arcane-proj-deflect-arc {
+        width: 56px;
+        height: 56px;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .arcane-proj-origin {
+          animation: arcaneProjectileOriginFlare 0.2s ease-out forwards;
+        }
+        .arcane-proj-bolt {
+          animation: arcaneProjectileFlight 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .arcane-proj-arrival {
+          animation: arcaneProjectileArrival 0.36s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+        }
+        @keyframes arcaneProjectileOriginFlare {
+          0% {
+            opacity: 0.92;
+            transform: scale(0.35);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.38);
+          }
+        }
+        @keyframes arcaneProjectileFlight {
+          0% {
+            opacity: 0;
+            transform: translate3d(0, 0, 0) rotate(var(--proj-angle, 0deg)) scale(0.75, 0.85);
+          }
+          18% {
+            opacity: 1;
+            transform: translate3d(calc(var(--proj-dx, 0px) * 0.18), calc(var(--proj-dy, 0px) * 0.18), 0)
+              rotate(var(--proj-angle, 0deg)) scale(1.26, 0.88);
+          }
+          84% {
+            opacity: 1;
+            transform: translate3d(calc(var(--proj-dx, 0px) * 0.95), calc(var(--proj-dy, 0px) * 0.95), 0)
+              rotate(var(--proj-angle, 0deg)) scale(1.18, 0.94);
+          }
+          100% {
+            opacity: 0;
+            transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) rotate(var(--proj-angle, 0deg)) scale(0.65);
+          }
+        }
+        @keyframes arcaneProjectileArrival {
+          0% {
+            opacity: 0;
+            transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(0.4);
+          }
+          28% {
+            opacity: 1;
+            transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.22);
+          }
+          100% {
+            opacity: 0;
+            transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.52);
+          }
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .arcane-proj-arrival {
+          opacity: 0.85;
+        }
+      }
+    `,
+  ],
   template: `
     <div class="arcane-projectile-layer" aria-hidden="true">
       @for (p of projectiles(); track p.uid) {
@@ -25,11 +204,16 @@ export interface ActiveProjectile {
           class="arcane-proj-anchor"
           [attr.data-faction]="p.faction"
           [attr.data-outcome]="p.outcome"
+          [attr.data-direct]="p.directAttack ? 'true' : null"
+          [attr.data-strength]="p.hitStrength ?? null"
           [style.--proj-x.px]="p.startX"
           [style.--proj-y.px]="p.startY"
           [style.--proj-dx.px]="p.dx"
           [style.--proj-dy.px]="p.dy"
           [style.--proj-angle.deg]="p.angleDeg">
+          <!-- Charge / Launch Flare at Source -->
+          <span class="arcane-proj-origin"></span>
+
           <!-- Elemental Projectile Bolt -->
           <div class="arcane-proj-bolt">
             @switch (p.faction) {
@@ -86,9 +270,25 @@ export interface ActiveProjectile {
                   stroke="#e0f2fe"
                   stroke-width="2"
                   stroke-linecap="round" />
+                @if (p.outcome === 'DEFENSE_BROKEN') {
+                  <path
+                    d="M34 14 L27 32 L38 40 L28 54"
+                    stroke="#fda4af"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                }
               </svg>
             } @else {
-              <span class="arcane-proj-arrival-core"></span>
+              <svg class="arcane-proj-star-svg" viewBox="0 0 64 64" fill="none">
+                <polygon
+                  points="32,4 37,24 58,18 40,32 56,50 35,39 30,60 27,39 6,46 24,31 10,14 28,25"
+                  fill="currentColor"
+                  fill-opacity="0.88" />
+                <polygon
+                  points="32,12 35,27 49,23 37,32 47,44 34,36 31,51 28,36 16,41 26,31 18,20 29,27"
+                  fill="#ffffff" />
+              </svg>
             }
           </div>
         </div>

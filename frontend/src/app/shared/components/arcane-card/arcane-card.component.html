@@ -19,34 +19,40 @@
 @let artVisual = artTheme();
 @let illustration = artSpec();
 @let displayArt = shouldShowArtwork();
+@let isTabletop = tabletop();
 
 @if (isHidden) {
 <div
   class="arcane-card-root arcane-card-frame arcane-cardback relative flex h-full w-full flex-col items-center justify-center rounded-xl border-arcane-gold/45 text-center select-none"
-  [class]="compact() ? 'min-h-18 p-1.5' : 'min-h-40 p-2.5'">
-  <div class="pointer-events-none absolute inset-1.5 rounded-lg border border-arcane-gold/25" aria-hidden="true"></div>
+  [class]="isTabletop ? 'min-h-0 p-1' : compact() ? 'min-h-18 p-1.5' : 'min-h-40 p-2.5'">
+  <div class="pointer-events-none absolute inset-1 rounded-lg border border-arcane-gold/25" aria-hidden="true"></div>
   <div
     class="relative z-10 flex items-center justify-center rounded-full border border-arcane-gold/50 bg-arcane-elevated/90 shadow-inner"
-    [class]="compact() ? 'h-8 w-8' : 'h-12 w-12'">
-    <ng-icon name="lucideSparkles" [size]="compact() ? '15px' : '20px'" class="text-arcane-gold-bright"
-      aria-hidden="true" />
+    [class]="isTabletop ? 'h-6 w-6' : compact() ? 'h-8 w-8' : 'h-12 w-12'">
+    <ng-icon name="lucideSparkles" [size]="isTabletop ? '12px' : compact() ? '15px' : '20px'"
+      class="text-arcane-gold-bright" aria-hidden="true" />
   </div>
+  @if (!isTabletop) {
   <span
     class="arcane-display relative z-10 mt-1.5 text-[10px] font-semibold tracking-wider text-arcane-gold-bright/90 uppercase">
     {{ viewCard?.faceDown ? 'Sort face cachée' : 'Dos Arcanes' }}
   </span>
+  }
 </div>
 } @else {
 <div
   class="arcane-card-root arcane-card-frame arcane-card-body relative flex h-full w-full flex-col overflow-hidden rounded-xl bg-linear-to-br text-left select-none"
-  [attr.data-faction]="faction ?? null"
-  [attr.data-effect]="illustration.effect"
-  [class.arcane-card-tilt]="interactiveTilt()" [style.--card-rx.deg]="tiltX()" [style.--card-ry.deg]="tiltY()"
-  [style.--foil-x.%]="foilX()" [style.--foil-y.%]="foilY()" (pointermove)="onPointerMove($event)"
-  (pointerleave)="onPointerLeave()"
-  [class]="(meta ? meta.surfaceClass + ' ' + meta.borderClass : 'from-arcane-surface to-arcane-void border-slate-700') + (compact() ? (showCompactText() ? ' justify-between px-1.5 py-1.5 min-h-22' : ' justify-between px-1.5 py-1 min-h-18') : ' arcane-card-standard gap-1.5 p-2.5') + (selected() ? ' arcane-card-selected' : '') + (highlightedTarget() ? ' arcane-card-targetable' : '') + (viewCard?.canAttackNow ? ' arcane-card-ready' : '') + (viewCard?.exhausted ? ' opacity-75 saturate-75' : '')">
+  [attr.data-faction]="faction ?? null" [attr.data-effect]="illustration.effect"
+  [class.arcane-card-tabletop]="isTabletop"
+  [class.arcane-card-def-stance]="isTabletop && showPosture() && posture === 'DEFENSE'"
+  [class.arcane-card-mythic]="isPowerhouse()" [class.arcane-card-tilt]="interactiveTilt()"
+  [style.--card-rx.deg]="tiltX()" [style.--card-ry.deg]="tiltY()" [style.--foil-x.%]="foilX()"
+  [style.--foil-y.%]="foilY()" (pointermove)="onPointerMove($event)" (pointerleave)="onPointerLeave()"
+  [class]="(meta ? meta.surfaceClass + ' ' + meta.borderClass : 'from-arcane-surface to-arcane-void border-slate-700') + (isTabletop ? ' gap-0.5 p-[3px]' : compact() ? (showCompactText() ? ' justify-between px-1.5 py-1.5 min-h-22' : ' justify-between px-1.5 py-1 min-h-18') : ' arcane-card-standard gap-1.5 p-2.5') + (selected() ? ' arcane-card-selected' : '') + (highlightedTarget() ? ' arcane-card-targetable' : '') + (viewCard?.canAttackNow ? ' arcane-card-ready' : '') + (viewCard?.exhausted ? ' opacity-75 saturate-75' : '')">
   @if (foil) {
   <div class="arcane-foil-sheen absolute inset-0 z-20" aria-hidden="true"></div>
+  } @else if (isPowerhouse()) {
+  <div class="arcane-mythic-aura" aria-hidden="true"></div>
   }
 
   <!-- Subtle inner filigree border inside outer frame -->
@@ -55,35 +61,36 @@
 
   <!-- Top Header Crest: Energy Orb + Nameplate + Posture -->
   <div class="relative z-10 flex shrink-0 items-center justify-between gap-1">
-    <div class="flex min-w-0 items-center gap-1.5">
+    <div class="flex min-w-0 items-center gap-1">
       @if (cost !== null) {
       <span
         class="arcane-orb-energy arcane-num inline-flex shrink-0 items-center justify-center rounded-full font-extrabold"
-        [class]="compact() ? 'h-5 w-5 text-[11px]' : 'h-6 w-6 text-xs'" title="Coût en Énergie">
+        [class]="isTabletop ? 'h-4 w-4 text-[9px]' : compact() ? 'h-5 w-5 text-[11px]' : 'h-6 w-6 text-xs'"
+        title="Coût en Énergie">
         {{ cost }}
       </span>
       }
       @if (epic) {
       <span class="inline-flex shrink-0 items-center text-arcane-gold-bright" title="Carte Épique (1 exemplaire max)">
-        <ng-icon name="lucideCrown" [size]="compact() ? '10px' : '12px'" aria-hidden="true" />
+        <ng-icon name="lucideCrown" [size]="isTabletop ? '9px' : compact() ? '10px' : '12px'" aria-hidden="true" />
       </span>
       }
       <span class="arcane-card-name arcane-display truncate font-semibold text-arcane-ink"
-        [class]="compact() ? 'text-[11px]' : 'text-[13px]'" [title]="name">
+        [class]="isTabletop ? 'text-[9px]' : compact() ? 'text-[11px]' : 'text-[13px]'" [title]="name">
         {{ name }}
       </span>
     </div>
 
     <div class="flex shrink-0 items-center gap-1">
-      @if (ramp) {
+      @if (ramp && !isTabletop) {
       <span
-        class="inline-flex items-center rounded border border-emerald-400/40 bg-emerald-500/20 px-1 py-0.5 text-[10px] font-bold text-emerald-200"
+        class="arcane-card-ramp inline-flex items-center rounded border border-emerald-400/40 bg-emerald-500/20 px-1 py-0.5 text-[10px] font-bold text-emerald-200"
         title="Générateur Ramp">
         <ng-icon name="lucideZap" size="11px" aria-hidden="true" />
       </span>
       }
       @if (showPosture() && posture) {
-      <span class="inline-flex items-center gap-0.5 rounded border font-bold uppercase"
+      <span class="arcane-card-posture-pill inline-flex items-center gap-0.5 rounded border font-bold uppercase"
         [class]="(compact() ? 'px-1 py-0 text-[9px] ' : 'px-1.5 py-0.5 text-[10px] ') + (posture === 'ATTACK' ? 'border-rose-400/50 bg-rose-500/25 text-rose-100' : 'border-sky-400/50 bg-sky-500/25 text-sky-100')"
         [title]="posture === 'ATTACK' ? 'Posture Attaque' : 'Posture Défense'">
         <ng-icon [name]="posture === 'ATTACK' ? 'lucideArrowUp' : 'lucideRotateCw'" [size]="compact() ? '9px' : '10px'"
@@ -94,19 +101,55 @@
     </div>
   </div>
 
-  <!-- Artwork Window: custom illustration when provided, thematic SVG scene fallback meanwhile -->
+  <!-- Artwork Window: painted Yu-Gi-Oh!/MTG illustration when registered, rich multi-layered vector scene otherwise -->
   @if (displayArt) {
-  <div class="arcane-art-frame relative z-10 flex shrink-0 items-center justify-center"
-    [class]="compact() ? 'my-1.5 h-14' : 'aspect-16/9 w-full'">
+  <div class="arcane-art-frame relative z-10 flex items-center justify-center"
+    [class]="isTabletop ? 'arcane-art-frame--tabletop w-full flex-1' : 'shrink-0 aspect-16/9 w-full'">
     @if (artSrc) {
-    <img [src]="artSrc" [alt]="name" loading="lazy" class="h-full w-full object-cover" />
+    <img [src]="artSrc" [alt]="name" width="640" height="360" [attr.loading]="isTabletop ? 'eager' : 'lazy'"
+      decoding="async" class="h-full w-full object-cover" />
+    <div class="arcane-art-scrim" aria-hidden="true"></div>
+    @if (!compact()) {
+    <span class="arcane-art-effect-chip">{{ illustration.effectTag }}</span>
+    }
     } @else {
-    <app-arcane-card-art class="block h-full w-full" [spec]="illustration" [compact]="compact()" />
+    <app-arcane-card-art class="block h-full w-full" [spec]="illustration" [compact]="compact() || isTabletop" />
+    }
+    @if (isTabletop && viewCard && (viewCard.exhausted || viewCard.slowed || viewCard.camouflaged ||
+    viewCard.canAttackNow || viewCard.curseRemainingTurns !== null)) {
+    <div class="arcane-tabletop-statuses" aria-hidden="true">
+      @if (viewCard.canAttackNow) {
+      <span class="arcane-tstat arcane-tstat--ready" title="Prêt">
+        <ng-icon name="lucideCheck" size="8px" />
+      </span>
+      }
+      @if (viewCard.exhausted) {
+      <span class="arcane-tstat arcane-tstat--muted" title="Épuisé">
+        <ng-icon name="lucideClock" size="8px" />
+      </span>
+      }
+      @if (viewCard.slowed) {
+      <span class="arcane-tstat arcane-tstat--slow" title="Ralenti">
+        <ng-icon name="lucideClock" size="8px" />
+      </span>
+      }
+      @if (viewCard.camouflaged) {
+      <span class="arcane-tstat arcane-tstat--stealth" title="Camouflé">
+        <ng-icon name="lucideEyeOff" size="8px" />
+      </span>
+      }
+      @if (viewCard.curseRemainingTurns !== null) {
+      <span class="arcane-tstat arcane-tstat--curse" title="Malédiction">
+        <ng-icon name="lucideSkull" size="8px" />
+      </span>
+      }
+    </div>
     }
   </div>
   }
 
-  <!-- Center strip: type / keywords / defense emblem -->
+  <!-- Center strip: type / keywords / defense emblem (masquée en vue miniature plateau/main pour laisser place à l'image) -->
+  @if (!isTabletop) {
   <div class="arcane-card-badges relative z-10 flex shrink-0 items-center justify-between gap-1"
     [class]="compact() ? 'my-0.5' : 'min-h-6'">
     <div class="flex flex-wrap items-center gap-1">
@@ -121,11 +164,9 @@
       }
       @if (!displayArt) {
       <span
-        class="inline-flex shrink-0 items-center gap-0.5 rounded border border-slate-600/50 bg-arcane-void/75 px-1 py-0 text-[9px] font-semibold whitespace-nowrap"
-        [style.color]="illustration.secondaryColor"
-        [title]="illustration.effectTag"
-        aria-hidden="true">
-        <ng-icon [name]="effectIconName(illustration.effect)" size="9px" />
+        class="inline-flex shrink-0 items-center gap-0.5 rounded border border-arcane-gold/35 bg-arcane-void/85 px-1 py-0 text-[9px] font-semibold whitespace-nowrap text-arcane-ink-secondary">
+        <ng-icon [name]="effectIconName(illustration.effect)" size="9px" aria-hidden="true" />
+        <span class="arcane-emblem-label">{{ illustration.effectTag }}</span>
       </span>
       }
       @for (kw of keywords; track kw) {
@@ -145,9 +186,10 @@
     </span>
     }
   </div>
+  }
 
   <!-- Rules / Description Scroll Strip -->
-  @if (!compact()) {
+  @if (!isTabletop && !compact()) {
   <div class="relative z-10 flex flex-1 flex-col rounded-md border border-slate-700/45 bg-arcane-void/55 px-2.5 py-2">
     @if (viewCard?.description || defCard?.description) {
     <p class="text-[11px] leading-[1.38] text-arcane-ink-secondary" [class.arcane-line-clamp-4]="!unclampDescription()">
@@ -155,7 +197,7 @@
     </p>
     }
   </div>
-  } @else if (showCompactText() && (viewCard?.description || defCard?.description)) {
+  } @else if (!isTabletop && showCompactText() && (viewCard?.description || defCard?.description)) {
   <p class="relative z-10 text-arcane-ink-secondary text-[10px] leading-tight"
     [class]="effAtk === null && effDef === null ? 'line-clamp-2' : 'line-clamp-1'">
     {{ viewCard?.description ?? defCard?.description }}
@@ -163,62 +205,75 @@
   }
 
   <!-- Status Badges with Non-Color Lucide Iconography -->
-  @if (viewCard && (viewCard.exhausted || viewCard.slowed || viewCard.camouflaged || viewCard.canAttackNow ||
-  viewCard.curseRemainingTurns !== null)) {
-  <div class="relative z-10 mt-0.5 flex shrink-0 flex-wrap gap-1">
+  @if (!isTabletop && viewCard && (viewCard.exhausted || viewCard.slowed || viewCard.camouflaged ||
+  viewCard.canAttackNow || viewCard.curseRemainingTurns !== null)) {
+  <div class="arcane-card-statuses relative z-10 mt-0.5 flex shrink-0 flex-wrap gap-1">
     @if (viewCard.canAttackNow) {
-    <span
-      class="inline-flex items-center gap-0.5 rounded border border-emerald-400/65 bg-emerald-900/55 px-1 py-0.2 text-[9px] font-bold text-emerald-100">
+    <span title="Prêt à attaquer" aria-label="Prêt à attaquer"
+      class="arcane-status-badge inline-flex items-center gap-0.5 rounded border border-emerald-400/65 bg-emerald-900/55 px-1 py-0.2 text-[9px] font-bold text-emerald-100">
       <ng-icon name="lucideCheck" size="9px" aria-hidden="true" />
-      <span>PRÊT</span>
+      <span class="arcane-status-text">PRÊT</span>
     </span>
     }
     @if (viewCard.exhausted) {
-    <span
-      class="inline-flex items-center gap-0.5 rounded border border-slate-500/50 bg-slate-800/85 px-1 text-[9px] font-bold text-slate-200">
+    <span title="Épuisé ce tour" aria-label="Épuisé"
+      class="arcane-status-badge inline-flex items-center gap-0.5 rounded border border-slate-500/50 bg-slate-800/85 px-1 text-[9px] font-bold text-slate-200">
       <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
-      <span>ÉPUISÉ</span>
+      <span class="arcane-status-text">ÉPUISÉ</span>
     </span>
     }
     @if (viewCard.slowed) {
-    <span
-      class="inline-flex items-center gap-0.5 rounded border border-cyan-400/50 bg-cyan-900/75 px-1 text-[9px] font-bold text-cyan-100">
+    <span title="Ralenti" aria-label="Ralenti"
+      class="arcane-status-badge inline-flex items-center gap-0.5 rounded border border-cyan-400/50 bg-cyan-900/75 px-1 text-[9px] font-bold text-cyan-100">
       <ng-icon name="lucideClock" size="9px" aria-hidden="true" />
-      <span>RALENTI</span>
+      <span class="arcane-status-text">RALENTI</span>
     </span>
     }
     @if (viewCard.camouflaged) {
-    <span
-      class="inline-flex items-center gap-0.5 rounded border border-indigo-400/50 bg-indigo-900/75 px-1 text-[9px] font-bold text-indigo-100">
+    <span title="Camouflé" aria-label="Camouflé"
+      class="arcane-status-badge inline-flex items-center gap-0.5 rounded border border-indigo-400/50 bg-indigo-900/75 px-1 text-[9px] font-bold text-indigo-100">
       <ng-icon name="lucideEyeOff" size="9px" aria-hidden="true" />
-      <span>CAMOUFLÉ</span>
+      <span class="arcane-status-text">CAMOUFLÉ</span>
     </span>
     }
     @if (viewCard.curseRemainingTurns !== null) {
-    <span
-      class="inline-flex items-center gap-0.5 rounded border border-purple-400/50 bg-purple-900/80 px-1 text-[9px] font-bold text-purple-100">
+    <span [attr.title]="'Malédiction : ' + viewCard.curseRemainingTurns + ' tour(s)'"
+      [attr.aria-label]="'Malédiction ' + viewCard.curseRemainingTurns + ' tours'"
+      class="arcane-status-badge inline-flex items-center gap-0.5 rounded border border-purple-400/50 bg-purple-900/80 px-1 text-[9px] font-bold text-purple-100">
       <ng-icon name="lucideSkull" size="9px" aria-hidden="true" />
-      <span>Malédiction {{ viewCard.curseRemainingTurns }}t</span>
+      <span class="arcane-status-text">Malédiction {{ viewCard.curseRemainingTurns }}t</span>
     </span>
     }
   </div>
   }
 
-  <!-- Bottom Sculpted Stat Capsules: ATK / DEF (or Arcane Spell/Artifact Seal on full card) -->
+  <!-- Bottom Sculpted Stat Capsules: ATK / DEF (or Arcane Spell/Artifact Seal) -->
   @if (effAtk !== null || effDef !== null) {
   <div
-    class="arcane-card-stats arcane-num relative z-10 mt-auto flex shrink-0 items-center justify-between gap-1.5 border-t border-arcane-gold/20 font-extrabold"
-    [class]="compact() ? 'pt-1 text-[11px]' : 'pt-1.5 text-xs'">
-    <span class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5"
-      [class]="effAtk !== null && baseAtk !== null && effAtk > baseAtk ? 'text-emerald-300 border-emerald-500/45' : effAtk !== null && baseAtk !== null && effAtk < baseAtk ? 'text-rose-300 border-rose-500/45' : 'text-rose-200'">
-      <ng-icon name="lucideSwords" [size]="compact() ? '11px' : '13px'" aria-hidden="true" />
+    class="arcane-card-stats arcane-num relative z-10 mt-auto flex shrink-0 items-center justify-between gap-1 border-t border-arcane-gold/20 font-extrabold"
+    [class]="isTabletop ? 'pt-0.5 text-[9px] leading-none' : compact() ? 'pt-1 text-[11px]' : 'pt-1.5 text-xs'">
+    <span
+      class="arcane-card-stat-pill inline-flex items-center gap-0.5 rounded border border-slate-700/70 bg-arcane-void/75"
+      [class]="(isTabletop ? 'px-1 py-0 ' : 'px-1.5 py-0.5 gap-1 rounded-md ') + (effAtk !== null && baseAtk !== null && effAtk > baseAtk ? 'text-emerald-300 border-emerald-500/45' : effAtk !== null && baseAtk !== null && effAtk < baseAtk ? 'text-rose-300 border-rose-500/45' : 'text-rose-200')">
+      <ng-icon name="lucideSwords" [size]="isTabletop ? '8.5px' : compact() ? '11px' : '13px'" aria-hidden="true" />
       <span>{{ effAtk ?? '-' }}</span>
     </span>
-    <span class="inline-flex items-center gap-1 rounded-md border border-slate-700/70 bg-arcane-void/75 px-1.5 py-0.5"
-      [class]="effDef !== null && baseDef !== null && effDef > baseDef ? 'text-emerald-300 border-emerald-500/45' : effDef !== null && baseDef !== null && effDef < baseDef ? 'text-rose-300 border-rose-500/45' : 'text-sky-200'">
-      <ng-icon name="lucideShield" [size]="compact() ? '11px' : '13px'" aria-hidden="true" />
+    <span
+      class="arcane-card-stat-pill inline-flex items-center gap-0.5 rounded border border-slate-700/70 bg-arcane-void/75"
+      [class]="(isTabletop ? 'px-1 py-0 ' : 'px-1.5 py-0.5 gap-1 rounded-md ') + (effDef !== null && baseDef !== null && effDef > baseDef ? 'text-emerald-300 border-emerald-500/45' : effDef !== null && baseDef !== null && effDef < baseDef ? 'text-rose-300 border-rose-500/45' : 'text-sky-200')">
+      <ng-icon name="lucideShield" [size]="isTabletop ? '8.5px' : compact() ? '11px' : '13px'" aria-hidden="true" />
       <span>{{ effDef ?? '-' }}</span>
     </span>
+  </div>
+  } @else if (isTabletop) {
+  <div class="relative z-10 mt-auto flex shrink-0 items-center justify-between gap-1 border-t border-arcane-gold/20 pt-0.5 text-[8.5px] leading-tight font-bold">
+    <span class="inline-flex min-w-0 items-center gap-0.5 truncate text-arcane-ink-secondary">
+      <ng-icon [name]="effectIconName(illustration.effect)" size="8.5px" class="shrink-0" aria-hidden="true" />
+      <span class="truncate">{{ cardType ? typeLabels[cardType] : '' }}</span>
+    </span>
+    @if (keywords.length > 0) {
+    <span class="shrink-0 truncate text-arcane-gold-bright">{{ keywords[0] }}</span>
+    }
   </div>
   } @else if (!compact()) {
   <div

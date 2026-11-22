@@ -13,7 +13,7 @@ import {
 import { filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { StompService } from '../../../core/services/stomp.service';
-import { LEAGUE_LABELS } from '../../utils/faction-theme';
+import { LEAGUE_LABELS } from '../../utils/league-labels';
 import { ArcaneAvatarComponent } from '../arcane-avatar/arcane-avatar.component';
 
 @Component({

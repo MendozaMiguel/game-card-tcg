@@ -277,6 +277,7 @@ public class FogOfWarProjector {
                 player.isConnected(),
                 player.getControlledByUserId(),
                 player.isMulliganCompleted(),
+                seesPrivateZone ? player.getMulliganReplacedSlots() : List.of(),
                 player.getEnergyTokens(),
                 player.getDeck().size(),
                 player.getHand().size(),

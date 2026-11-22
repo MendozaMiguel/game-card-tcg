@@ -9,7 +9,7 @@
 | **Front-End** | Angular 22.2 (`standalone`, `signals`, `@if`/`@for`), Tailwind CSS 4.3, SCSS, GSAP 3.15, `@stomp/stompjs` 7.5 | [`frontend/package.json`](../frontend/package.json) |
 | **Reverse Proxy** | `nginxinc/nginx-unprivileged:alpine` (écoute `8080`, exposé `${WEB_PORT:-80}`) | [`nginx/default.conf`](../nginx/default.conf) |
 | **Back-End** | Java 21 LTS (`Virtual Threads`), Spring Boot 4.1.2, Spring Security, STOMP WebSocket, Hibernate 7.4 (`ddl-auto: validate`) | [`backend/pom.xml`](../backend/pom.xml) |
-| **Base de données** | PostgreSQL 17 Alpine (`arcane_online`), migrations séquentielles Flyway (`V1` → `V4`) | [`backend/src/main/resources/db/migration/`](../backend/src/main/resources/db/migration) |
+| **Base de données** | PostgreSQL 17 Alpine (`arcane_online`), migrations séquentielles Flyway (`V1` → `V5`) | [`backend/src/main/resources/db/migration/`](../backend/src/main/resources/db/migration) |
 
 ---
 
@@ -31,7 +31,7 @@ Racine Java : `com.ordredesarcane.online` (`backend/src/main/java/com/ordredesar
   - Persistance froide PostgreSQL (`MatchEntity` avec `Persistable<UUID>` calé sur `room.getMatchId()`, `MatchParticipantEntity`, `MatchPersistenceService`, `MatchSource`).
   - Tournois Conquest Bo3 à 8 ou 16 joueurs (`TournamentController`, `TournamentService`, `TournamentEntity`, `TournamentParticipantEntity`).
 - **`social`** : gestion d'amis (`FriendshipController`, `FriendshipService`, `FriendshipEntity`).
-- **`user`** : authentification (`AuthController`, `AuthService`), profil/ligues/cosmétiques & avatars de départ (`STARTER_AVATAR_IDS` dans `ProfileController`, `ProfileService`, `LeagueTier`), statistiques et historique joueur (`PlayerMatchHistoryService`).
+- **`user`** : authentification (`AuthController`, `AuthService`), profil/ligues/cosmétiques, avatars de départ (`STARTER_AVATAR_IDS`) & progression d'initiation (`tutorialCompleted` via `V5__add_user_tutorial_flag.sql` dans `ProfileController`, `ProfileService`, `LeagueTier`), statistiques et historique joueur (`PlayerMatchHistoryService`).
 
 ---
 
@@ -48,11 +48,13 @@ Racine Java : `com.ordredesarcane.online` (`backend/src/main/java/com/ordredesar
   - `credentials.interceptor.ts` : envoi systématique des cookies `withCredentials`.
   - `stomp.service.ts` : client WebSocket STOMP (`/ws`) + signals réactifs (`connected`, `gameState`, `lastError`, `lobbyNotification`, `globalMessages`, `gameMessages`).
   - `auth.service.ts`, `lobby-api.service.ts`, `announcer.service.ts` (annonces d'accessibilité ARIA `polite`/`assertive` + toasts).
-- **`shared/`** :
-  - `components/app-header/` : navigation, indicateur temps réel, profil rapide, déconnexion.
-  - `components/arcane-card/` : rendu d'une carte (statistiques, mots-clés, posture défense, effet foil).
-  - `directives/` : `form-aria-sync.directive.ts`, `ime-enter-submit.directive.ts`.
-  - `utils/faction-theme.ts` : métadonnées de factions, `MATCH_SOURCE_META`, `END_REASON_LABELS`, `formatDurationCompact`.
+  - `shared/` :
+    - `components/app-header/` : navigation, indicateur temps réel, profil rapide, déconnexion.
+    - `components/arcane-card/` : rendu d'une carte (statistiques, mots-clés, posture défense, effet foil).
+    - `components/arena-tutorial-coach/` : guide d'initiation interactif en 6 étapes (`TUTORIAL_STEPS` / `computeAutoTutorialIndex`) monté sur les duels d'initiation (`/arena/:matchId?tutorial=1` ou nouveau profil).
+    - `components/arena-audio-control/` & `services/arcane-audio.service.ts` : synthétiseur Web Audio API sans dépendance (bruitages attaque/défense + thème musical Ré dorien inspiré de *The Witcher 3*) chargé uniquement sur les routes paresseuses Sanctuaire & Arène.
+    - `directives/` : `form-aria-sync.directive.ts`, `ime-enter-submit.directive.ts`.
+    - `utils/` : `league-labels.ts` (extrait pour préserver le budget initial `< 500 kB`), `faction-theme.ts`, `arena-vfx.ts`, `combat-log-presenter.ts`.
 
 ---
 
@@ -67,7 +69,7 @@ Racine Java : `com.ordredesarcane.online` (`backend/src/main/java/com/ordredesar
 - **Jeu** : `GET /api/game/active`, `GET /api/game/{matchId}/state`
 - **Tournois** : `GET /api/tournaments`, `POST /api/tournaments`, `POST /api/tournaments/{tournamentId}/join`
 - **Amis** : `GET /api/friends`, `POST /api/friends/request`, `POST /api/friends/{friendshipId}/accept`, `DELETE /api/friends/{friendshipId}`
-- **Profil & Historique** : `GET /api/profile`, `GET /api/profile/matches?limit=20&source=...`, `PUT /api/profile/cosmetics`
+- **Profil & Historique** : `GET /api/profile`, `GET /api/profile/matches?limit=20&source=...`, `PUT /api/profile/cosmetics`, `POST /api/profile/tutorial/complete` (marque `tutorialCompleted = true` sur un profil nouvellement inscrit)
 
 ### WebSocket STOMP (`/ws`)
 - **Publications client (`/app`)** :
@@ -93,11 +95,17 @@ Racine Java : `com.ordredesarcane.online` (`backend/src/main/java/com/ordredesar
 4. **Allégeance Bi-Faction** : maximum 2 factions, dont au moins 15 cartes pour la faction principale.
 - **Tournois Conquest Bo3** : inscription avec 2 decks distincts valides ayant des **factions principales différentes**.
 
+### Règle du Rempart, Survol (`Vol`) & Camouflage (`CombatResolver` / `BoardRuleEvaluator`)
+- **Règle du Rempart** : en `1v1` comme en `2v2`, les attaques directes sur les PV de l'équipe adverse (`DIRECT_PLAYER`) sont bloquées s'il existe au moins une créature adverse sans `CAMOUFLAGE` actif sur le terrain ennemi (`GARDIEN` obligatoire en priorité, puis Monstres, puis Familiers).
+- **`SURVOL` (`Vol`)** : une créature dotée de `SURVOL` ignore uniquement les **Familiers** adverses (camouflés ou non) ; elle ne contourne **pas** un **Monstre** adverse actif dépourvu de `CAMOUFLAGE` en cours (`isCamouflaged() == true`).
+- **`CAMOUFLAGE`** : évalué dynamiquement via `BoardRuleEvaluator.hasKeyword` / `evaluateKeywords` selon l'état actif `creature.isCamouflaged()` (`camouflageUntilNextOwnTurn`). Dès l'expiration au début du tour du propriétaire (`onOwnerTurnStart`), le mot-clé actif `CAMOUFLAGE` est retiré du plateau (`CardViewDto.keywords`) afin que la créature redevienne ciblable en combat et par les sorts.
+
 ### Modèle de Persistance des Matchs (`V4`)
 - **`matches`** : archive globale immuable par match (`match_id`, `mode_1v1_2v2`, `is_ranked`, `is_ai_match`, `is_custom_room`, `match_source`, `tournament_id`, `tournament_name`, `team_a_ids`, `team_b_ids`, `winner_team`, `end_reason`, `turn_count`, `match_summary` JSONB léger, `replay_log` JSONB complet).
 - **`match_participants`** : table relationnelle normalisée par participant (`match_id`, `user_id` nullable `ON DELETE SET NULL`, `username`, `is_bot`, `team_id`, `seat_index`, `won`, `primary_faction`, `final_lp`, `mmr_delta`, `created_at`) permettant d'agréger ratio, série, forme récente, faction favorite et historique des 20 derniers duels sans scanner `replay_log`.
 - **Règle de récompenses** : `MatchSource.RANKED` attribue les ajustements MMR/shards complets si la partie n'a pas subi de prise de relais 2v2 et a dépassé le seuil minimal; `AI`, `CUSTOM` et parties abandonnées prématurément n'altèrent pas le MMR (`mmr_delta = 0`).
 
-### Constantes Temps Réel (`GameEngineService` / `PlayerState`)
+### Constantes & Phase Mulligan (`GameEngineService` / `PlayerState`)
 - Emplacements plateau par joueur : 4 Monstres, 3 Familiers, 2 Sorts/Artéfacts ; limite de main en fin de tour : 6 cartes.
 - Minuteries : Mulligan `20s`, Tour 1v1 `60s`, Tour 2v2 `75s`, Fenêtre Réaction `12s`, Défausse excédent `15s`, Grâce déconnexion 1v1 `60s`, Relais allié 2v2 `30s`.
+- **Mulligan interactif (`MULLIGAN_REPLACE_CARD` + `MULLIGAN_SWAP`)** : durant `GamePhase.MULLIGAN`, un joueur peut échanger immédiatement n'importe quel emplacement de sa main de départ (1 fois maximum par emplacement, suivi via `PlayerState.mulliganReplacedSlots` masqué aux adversaires dans `FogOfWarProjector`), piocher la nouvelle carte avant de remettre et mélanger l'ancienne dans le deck, puis valider (`MULLIGAN_SWAP`) pour passer au Tour 1.

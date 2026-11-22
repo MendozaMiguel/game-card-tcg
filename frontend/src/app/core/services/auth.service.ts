@@ -130,6 +130,15 @@ export class AuthService {
     return updated;
   }
 
+  /** Marks the onboarding interactive tutorial as completed for the signed-in user. */
+  async completeTutorial(): Promise<UserProfileDto> {
+    const updated = await firstValueFrom(
+      this.http.post<UserProfileDto>('/api/profile/tutorial/complete', {}),
+    );
+    this.user.set(updated);
+    return updated;
+  }
+
   getMatchHistory(limit = 20, source?: MatchSource | null): Promise<PlayerMatchHistoryResponse> {
     let params = new HttpParams().set('limit', String(limit));
     if (source) {

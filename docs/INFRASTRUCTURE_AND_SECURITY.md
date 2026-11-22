@@ -32,7 +32,7 @@ Définie dans [`docker-compose.yml`](../docker-compose.yml) sur le réseau bridg
 - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
 - **Content-Security-Policy (CSP)** :
   `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self';`
-  > Note : ne jamais injecter de scripts tiers/inline sans mettre à jour la CSP et privilégier les styles compilés et SVG inline/locaux.
+  > Note : ne jamais injecter de scripts tiers/inline sans mettre à jour la CSP et privilégier les styles compilés et SVG inline/locaux. Les rendus 3D WebGL (`three@^0.187.0`, chargé en lazy-chunk uniquement sur `/arena`) utilisent exclusivement des shaders WebGL internes et des `THREE.DataTexture` générées en mémoire, et les illustrations de cartes (`frontend/public/cards/*.jpg`, `27` assets `640×360`) sont servies localement sous `img-src 'self' data:` (`0` requête réseau externe, `0` vulnérabilité npm).
 - Proxies : `/api/` (`proxy_read_timeout 60s`), `/ws` (Upgrade WebSocket, `3600s`), cache immutable `30d` sur assets hashés, fallback SPA `/index.html`.
 
 ### 2.2 Authentification & HTTP ([`SecurityConfig.java`](../backend/src/main/java/com/ordredesarcane/online/config/SecurityConfig.java), [`JwtService.java`](../backend/src/main/java/com/ordredesarcane/online/security/JwtService.java))
@@ -40,7 +40,7 @@ Définie dans [`docker-compose.yml`](../docker-compose.yml) sur le réseau bridg
 - **JWT HS512** stocké exclusivement dans un cookie `HttpOnly`, `SameSite=Strict`, chemin `/`, expiration `86400s` (`ARCANE_SESSION`). Aucun token JWT n'est stocké dans `localStorage`/`sessionStorage`.
 - **Hachage mots de passe** : `BCryptPasswordEncoder(12)`.
 - **Désérialisation stricte** : `spring.jackson.deserialization.fail-on-unknown-properties: true` + Jakarta Bean Validation (`@Valid`) sur chaque payload REST et STOMP.
-- **ORM sûr** : `spring.jpa.open-in-view: false`, `ddl-auto: validate` (le schéma n'est modifié **que** par Flyway `V1`, `V2`, `V3`, `V4`, ...).
+- **ORM sûr** : `spring.jpa.open-in-view: false`, `ddl-auto: validate` (le schéma n'est modifié **que** par Flyway `V1`, `V2`, `V3`, `V4`, `V5`, ...).
 
 ### 2.3 Sécurité WebSocket STOMP & Anti-Abus ([`WebSocketSecurityConfig.java`](../backend/src/main/java/com/ordredesarcane/online/config/WebSocketSecurityConfig.java))
 - Handshake `/ws` : vérification obligatoire du cookie JWT avant l'upgrade (`HttpStatus.UNAUTHORIZED` sinon) et origine validée via `corsProperties.allowedOrigins()`.

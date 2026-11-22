@@ -4,6 +4,40 @@
 
 ---
 
+## [2026-11-22] — Didacticiel Interactif Nouvel Apprenti & Bande-Son *Witcher 3* + Bruitages Combat
+
+### Objectif
+1. Accompagner automatiquement chaque nouvel inscrit étape par étape depuis le Sanctuaire jusqu'aux bases d'un duel réel (Mulligan, plateau, Énergie, postures `ATQ`/`DÉF`, Trêve du Tour 1, Combat/Survol et 4 Lois Anti-Méta) avec mémorisation en base.
+2. Ajouter un thème musical de fond inspiré de *The Witcher 3* (Ré dorien procédural adaptatif) et des bruitages distincts d'attaque, de défense/bouclier, d'invocation et de tour.
+
+### Back-End (Java 21 / Flyway `V5` / IA Automate)
+- **Persistance d'initiation (`V5`)** :
+  - Ajout de la migration [`V5__add_user_tutorial_flag.sql`](../backend/src/main/resources/db/migration/V5__add_user_tutorial_flag.sql) ajoutant `tutorial_completed BOOLEAN NOT NULL DEFAULT false` sur `user_profiles` (rétro-rempli à `true` pour les comptes existants, `false` pour toute nouvelle inscription).
+  - Mise à jour de [`UserProfileEntity.java`](../backend/src/main/java/com/ordredesarcane/online/user/UserProfileEntity.java), [`UserProfileDto.java`](../backend/src/main/java/com/ordredesarcane/online/user/dto/UserProfileDto.java), [`ProfileService.java`](../backend/src/main/java/com/ordredesarcane/online/user/ProfileService.java) (`markTutorialCompleted`) et [`ProfileController.java`](../backend/src/main/java/com/ordredesarcane/online/user/ProfileController.java) (`POST /api/profile/tutorial/complete`).
+- **Correction robustesse IA (`MageAutomateBot`)** :
+  - Correction dans [`BotLethalSolver.java`](../backend/src/main/java/com/ordredesarcane/online/game/engine/BotLethalSolver.java) et [`BotTacticalPlanner.java`](../backend/src/main/java/com/ordredesarcane/online/game/engine/BotTacticalPlanner.java) empêchant l'émission d'attaques `DIRECT_PLAYER` simulées lorsque des actions préparatoires ne sont pas encore réglées ou bloquées par `CombatResolver.validateAttackLegality`.
+- **Tests JUnit** : ajout de [`ProfileTutorialTests.java`](../backend/src/test/java/com/ordredesarcane/online/ProfileTutorialTests.java) (`42/42` tests `mvn test` passés).
+
+### Front-End (Angular 22 / Web Audio API / WCAG 2.2 AA & 1.4.2)
+- **Didacticiel pas-à-pas** :
+  - [`auth.service.ts`](../frontend/src/app/core/services/auth.service.ts) (`completeTutorial()`) & [`arcane.models.ts`](../frontend/src/app/core/models/arcane.models.ts) (`tutorialCompleted?: boolean`).
+  - [`lobby-page.component.ts`](../frontend/src/app/features/lobby/lobby-page.component.ts) / [`.html`](../frontend/src/app/features/lobby/lobby-page.component.html) : bannière d'initiation non bloquante pour `tutorialCompleted === false`, lancement direct en 1v1 IA Faible (`?tutorial=1`), bouton « Passer » persistant et bouton permanent « Didacticiel ».
+  - [`ArenaTutorialCoachComponent`](../frontend/src/app/shared/components/arena-tutorial-coach/arena-tutorial-coach.component.ts) + [`arena-tutorial-steps.ts`](../frontend/src/app/shared/components/arena-tutorial-coach/arena-tutorial-steps.ts) : progression automatique synchronisée à `PlayerGameView` (Étape 1 intégrée dans `#mulliganDialog`, Étapes 2–6 dans `<dialog popover="manual" role="dialog">`), cibles tactiles `>= 44px` et prise en charge `prefers-reduced-motion` / `forced-colors`.
+- **Moteur Audio Procédural (`Web Audio API`)** :
+  - [`ArcaneAudioService`](../frontend/src/app/shared/services/arcane-audio.service.ts) : thème boucle Ré dorien (`~116 BPM`, bourdon, luth/bouzouki en `3+3+2`, vielle slave avec vibrato + réverbération de salle et tambour *Bodhrán*) en mode `'CALM'` (Sanctuaire) et `'COMBAT'` (Arène), plus bruitages (`ATTACK_SWING`, `HIT_*`, `DIRECT_HIT`, `DEFENSE_BLOCK`, `DEFENSE_BROKEN`, `POSTURE_DEFENSE`, `POSTURE_ATTACK`, `SUMMON_*`, `SPELL_CAST`, `YOUR_TURN`, `VICTORY`, `DEFEAT`).
+  - [`ArenaAudioControlComponent`](../frontend/src/app/shared/components/arena-audio-control/arena-audio-control.component.ts) : contrôles indépendants **Musique**, **SFX** et **Volume** (`localStorage`, WCAG 1.4.2 Audio Control) intégrés aux bandeaux Sanctuaire et Arène.
+- **Optimisation Budget Initial (`< 500 kB`) & Synchronisation GitHub (`origin/main` `1ea678c`)** :
+  - Extraction de [`league-labels.ts`](../frontend/src/app/shared/utils/league-labels.ts) aligné 1:1 avec `LeagueTier` (`APPRENTI`, `INITIE`, `ADEPTE`, `MAGE`, `ARCHIMAGE`, `GRAND_MAITRE`) pour éviter d'inclure tout [`faction-theme.ts`](../frontend/src/app/shared/utils/faction-theme.ts) dans `main` via [`AppHeaderComponent`](../frontend/src/app/shared/components/app-header/app-header.component.ts) ; fusion propre avec `origin/main` (`1ea678c` : refonte deux vues Grimoire, `LeagueTier`, `start-docker.ps1`) sans perte de fonctionnalité.
+- **Complétion Illustrations 120 / 120 cartes (Decks Ombres Occultes & Lumière Astrale)** :
+  - Génération et export en `640×360` JPEG dans [`frontend/public/cards/`](../frontend/public/cards/) de `10` nouvelles illustrations style TCG : `shadow-wolf.jpg`, `shadow-lich.jpg`, `shadow-harpy.jpg`, `shadow-abyss.jpg`, `shadow-familiar.jpg`, `light-unicorn.jpg`, `light-dragon.jpg`, `light-griffin.jpg`, `light-familiar.jpg` et `light-spell.jpg` (`27` visuels au total).
+  - Câblage complet dans [`card-artwork.ts`](../frontend/src/app/shared/utils/card-artwork.ts) : **`120/120` cartes** couvertes (`FIRE` `30/30`, `ICE` `30/30`, `SHADOW` `30/30`, `LIGHT` `30/30`).
+- **Tests, Build & Contrôle Live (post-fusion `origin/main` `1ea678c`)** :
+  - Ajout de [`arena-tutorial-coach.component.spec.ts`](../frontend/src/app/shared/components/arena-tutorial-coach/arena-tutorial-coach.component.spec.ts), [`arcane-audio.service.spec.ts`](../frontend/src/app/shared/services/arcane-audio.service.spec.ts), test `120/120` dans [`card-artwork-and-vfx.spec.ts`](../frontend/src/app/shared/utils/card-artwork-and-vfx.spec.ts) et mise à jour de [`lobby-page.component.spec.ts`](../frontend/src/app/features/lobby/lobby-page.component.spec.ts) & [`arcane-card.component.spec.ts`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.spec.ts) (`ngc` OK ; `ng test --watch=false` : `18` fichiers / `45/45` tests Vitest passés ; `ng build` : **`490.71 kB`** initial sans dépassement de budget ; `mvn test` : `42/42` tests passés).
+  - Stack Docker (`docker compose up -d --build` → `arcane-db`, `arcane-server` `healthy`, `arcane-web` actif) et Chrome DevTools live sur `http://localhost/` : `/lobby` (`1425 <= 1440` desktop, `390 === 390` mobile), `/deckbuilder` deux vues `LIST` + `EDITOR` (`150` cartes rendues, `27` JPEG `200 OK`, `0` repli SVG, `1425 <= 1440`) et `/arena?tutorial=1` (`1440×900` et `390×844`, `impactCanvasMounted: true`, `threeReady: true`, `0` image cassée, `0` erreur console).
+  - Documentation [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md), [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) et [`docs/INFRASTRUCTURE_AND_SECURITY.md`](./INFRASTRUCTURE_AND_SECURITY.md) mise à jour.
+
+---
+
 ## [2026-11-21] — Refonte Grimoire & Decks en Deux Vues (`LIST` + `EDITOR`) selon Maquettes
 
 - **Front-End ([`deckbuilder-page.component.ts`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.ts), [`deckbuilder-page.component.html`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.html), [`deckbuilder-page.component.scss`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.scss))** :
@@ -14,6 +48,151 @@
   - Création de [`deckbuilder-page.component.spec.ts`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.spec.ts) (`3` tests couvrant `LIST`, `Nouveau` → `EDITOR`, filtres, validation 30 cartes, favoris et édition).
   - Build & Suite Front-End sous conteneur `node:24-alpine` : `ng build` (`499.71 kB` initial, `0` warning, `0` erreur) et `ng test --watch=false` (`9` fichiers, `27/27` tests passés).
   - Déploiement live : reconstruction et redémarrage du conteneur `arcane-web` (`docker compose up -d --build arcane-web`).
+
+---
+
+## [2026-11-20] — Effets de Combat & Animations Inspirés de *Cross Blitz*
+
+### Objectif
+Donner au plateau d'arène le « *juice* » visuel et tactile d'un RPG-TCG nerveux type **Cross Blitz** (élan + *hit-stop*, *hit-flash*, entailles croisées, étoiles de choc Canvas 2D, panaches de pose, secousse directionnelle et chiffres flottants non rognés) sans dépasser le budget CSS initial (`499.42 kB / 500 kB`).
+
+### Modifications Front-End (Angular 22 / GSAP 3.15 / Canvas 2D)
+- **Chorégraphie GSAP *Cross Blitz* (`motion-presets.ts`)** :
+  - [`animateCardAttackLunge`](../frontend/src/app/shared/utils/motion-presets.ts) : phase d'armement (*wind-up* `60 ms` avec bascule 3D inverse), ruée rapide vers la cible (`125 ms`), micro ***hit-stop*** d'impact synchronisé à `185 ms` (`hitStrength` `light`/`heavy`/`critical`) couplé au recul + *squash-and-stretch* du défenseur (et garde métallique en blocage), puis rebond élastique.
+  - [`animateCardSummonSlam`](../frontend/src/app/shared/utils/motion-presets.ts) & [`animateBoardShake`](../frontend/src/app/shared/utils/motion-presets.ts) : pose *drop-slam* avec compression d'atterrissage sur le plateau et secousse directionnelle orientée selon le vecteur `(dx, dy)` de l'impact.
+- **Popups Arcade Flottants Non Rognés (`ArenaCombatPopupsComponent`)** :
+  - Création du composant autonome [`ArenaCombatPopupsComponent`](../frontend/src/app/shared/components/arena-combat-popups/arena-combat-popups.component.ts) projetant `-X`, `-X PV`, `K.O.!`, `BRISÉ!`, `PARÉ!`, `BLOQUÉ!`, `+X ATQ` / `+X DÉF` hors du cadre des cartes avec ressort CSS `linear()` (fallback `cubic-bezier(0.34, 1.56, 0.64, 1)`), contour sombre à contraste élevé et prise en charge `prefers-reduced-motion: reduce` / `forced-colors`.
+- **Calque Canvas 2D & Projectiles (`ArenaImpactCanvasComponent`, `ArenaProjectileOverlayComponent`, `ArenaSlotVfxComponent`)** :
+  - [`ArenaImpactCanvasComponent`](../frontend/src/app/shared/components/arena-impact-canvas/arena-impact-canvas.component.ts) : ajout des étoiles de choc 8/10 branches (`StarBurst`), entailles croisées effilées en croissant, arcs électriques fissurés (`JaggedArc`), traînées cinétiques `TRAIL_STREAK`, déflagrations par faction `SPELL_BURST` (`FIRE`/`ICE`/`SHADOW`/`LIGHT`), panaches horizontaux de pose (`emitHorizontalPlumes`) et pause automatique hors-écran/onglet masqué (`contentvisibilityautostatechange`, `visibilitychange`).
+  - [`ArenaProjectileOverlayComponent`](../frontend/src/app/shared/components/arena-projectile-overlay/arena-projectile-overlay.component.ts) : éclair d'origine `.arcane-proj-origin`, vol resserré à `220 ms` synchronisé sur `PROJECTILE_IMPACT_DELAY_MS = 185` et étoile de choc `.arcane-proj-star-svg` / fissure de garde `DEFENSE_BROKEN`.
+  - [`ArenaSlotVfxComponent`](../frontend/src/app/shared/components/arena-slot-vfx/arena-slot-vfx.component.ts) : unique impulsion de flash d'impact `.arcane-vfx-hit-flash` (WCAG 2.3.1 <= 3 flashs/s) et double entaille SVG `.arcane-vfx-cross-svg`.
+- **Intégration & Extraction VFX (`arena-vfx.ts`, `arena-page.component.ts/.html`)** :
+  - Synchronisation unifiée à `185 ms` entre projectile, ruée, popups arcade (`popups`), traînées, starburst Canvas, éclats de sorts et secousse du plateau.
+- **Tests & Vérifications** :
+  - Nouveaux tests Vitest dans [`arena-combat-popups.component.spec.ts`](../frontend/src/app/shared/components/arena-combat-popups/arena-combat-popups.component.spec.ts), [`card-artwork-and-vfx.spec.ts`](../frontend/src/app/shared/utils/card-artwork-and-vfx.spec.ts) et [`arena-impact-canvas.component.spec.ts`](../frontend/src/app/shared/components/arena-impact-canvas/arena-impact-canvas.component.spec.ts) (`15` fichiers, `35/35` tests passés ; `ngc` OK ; `ng build` `499.42 kB` initial sans dépassement CSS).
+  - Reconstruction Docker `arcane-web` (`docker compose up -d --build arcane-web`) + contrôle Chrome DevTools en duel réel Desktop `1440×900` (`scrollWidth === 1440`, `scrollHeight === 900`) et Mobile `390×844` (`scrollWidth === 390`) avec `0` erreur console ; serveur LAN `http://192.168.1.66:4200/` `HTTP 200`.
+
+### Documentation
+- Mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§4.3 et §4.4) et [`docs/CHANGELOG.md`](./CHANGELOG.md).
+
+---
+
+## [2026-11-20] — Mulligan Interactif Instantané avec Animation 3D & Validation Explicite
+
+### Contexte
+Lors de la phase de Mulligan, le joueur cochait ses cartes à remplacer et devait attendre la validation finale pour voir sa nouvelle main. Désormais, cliquer sur **`↻ Remplacer`** sous une carte l'échange **immédiatement** sur le serveur avec une animation 3D de retournement avant de lancer la partie via **`Valider et commencer`**.
+
+### Back-End (Java 21 / Spring Boot / Règles & Sécurité)
+- **Nouvelle action autoritaire (`MULLIGAN_REPLACE_CARD`)** : Ajout de `GameActionType.MULLIGAN_REPLACE_CARD` dans [`GameActionType.java`](../backend/src/main/java/com/ordredesarcane/online/game/model/GameActionType.java) et du gestionnaire verrouillé `handleMulliganReplaceCardLocked` dans [`GameEngineService.java`](../backend/src/main/java/com/ordredesarcane/online/game/engine/GameEngineService.java).
+- **Anti-triche & Brouillard de Guerre** : Suivi par emplacement initial (`0..4`) dans [`PlayerState.java`](../backend/src/main/java/com/ordredesarcane/online/game/model/PlayerState.java) (`mulliganReplacedSlots`, `hasMulliganReplacedSlot`, `markMulliganSlotReplaced`, `getMulliganReplacedSlots()`). Chaque emplacement ne peut être remplacé qu'une seule fois ; la nouvelle carte est piochée avant réinsertion et mélange de l'ancienne carte afin d'empêcher tout cyclage ou re-pioche immédiate de la même carte. Projection restreinte au propriétaire / relais allié dans [`PlayerBoardViewDto.java`](../backend/src/main/java/com/ordredesarcane/online/game/dto/PlayerBoardViewDto.java) et [`FogOfWarProjector.java`](../backend/src/main/java/com/ordredesarcane/online/game/engine/FogOfWarProjector.java).
+- **Tests JUnit** : Ajout de `instantMulliganReplaceSwapsCardInPlaceOncePerSlotBeforeConfirming` dans [`GameEngineTests.java`](../backend/src/test/java/com/ordredesarcane/online/GameEngineTests.java) (`40/40` tests passés via `mvn test`).
+
+### Front-End (Angular 22 / GSAP 3.15 / Accessibilité WCAG 2.2 AA)
+- **Modèles & Guide** : Ajout de `'MULLIGAN_REPLACE_CARD'` et `mulliganReplacedSlots?: number[]` dans [`arcane.models.ts`](../frontend/src/app/core/models/arcane.models.ts), et mise à jour de l'aide dans [`arena-tactical-guide.ts`](../frontend/src/app/shared/utils/arena-tactical-guide.ts).
+- **Animation 3D GPUs (`transform` + `opacity`)** : Ajout de `animateMulliganCardOut` et `animateMulliganCardIn` dans [`motion-presets.ts`](../frontend/src/app/shared/utils/motion-presets.ts) avec support strict `prefers-reduced-motion` et nettoyage `clearProps`.
+- **Modale Mulligan (`dialog#mulliganDialog`)** : Refactorisation de [`arena-page.component.ts`](../frontend/src/app/features/arena/arena-page.component.ts) et [`arena-page.component.html`](../frontend/src/app/features/arena/arena-page.component.html) (`@for (card of me.hand; track $index)`, compteur `X / 5 remplacée(s)`, bouton `↻ Remplacer` → `Échange…` → `✓ Remplacée` désactivé sans déplacement des boutons adjacents, pastille `✨ Nouvelle`, marge `pt-2.5` évitant le rognage mobile `390×844`, annonces `AnnouncerService` et validation `Valider et commencer` via `MULLIGAN_SWAP`).
+- **Tests & Build** : Nouveau test Vitest [`arena-page.component.spec.ts`](../frontend/src/app/features/arena/arena-page.component.spec.ts) (`14` fichiers, `34/34` tests passés ; `ng build` à `499.48 kB` initial sans dépassement de budget ; validation live Desktop & Mobile `390×844` sur `http://localhost/` sans erreur console ni débordement horizontal).
+
+### Documentation
+- Mise à jour de [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) (§5), [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§3 et §4.3) et [`docs/CHANGELOG.md`](./CHANGELOG.md).
+
+---
+
+## [2026-11-20] — Correctif Moteur `CAMOUFLAGE` Expiré & Clarifications `SURVOL` (`Vol`) / Attaque Directe
+
+- **Cause identifiée** : dans [`BoardRuleEvaluator`](../backend/src/main/java/com/ordredesarcane/online/game/engine/BoardRuleEvaluator.java), `hasKeyword(..., "CAMOUFLAGE")` et `evaluateKeywords(...)` retombaient sur les mots-clés statiques du catalogue (`definition.keywords()`) lorsque `creature.isCamouflaged()` était `false`, maintenant à tort le badge `CAMOUFLAGE` sur le plateau après expiration (`UNTIL_NEXT_OWN_TURN`) et bloquant les attaques/sorts contre des Monstres exposés comme `Ombre Rampante` alors même que le Front-End bloquait les attaques directes face à ce Monstre non camouflé (`Rempart` — `SURVOL` ne contournant que les Familiers).
+- **Back-End ([`BoardRuleEvaluator.java`](../backend/src/main/java/com/ordredesarcane/online/game/engine/BoardRuleEvaluator.java), [`GameEngineTests.java`](../backend/src/test/java/com/ordredesarcane/online/GameEngineTests.java))** :
+  - `hasKeyword(room, creature, "CAMOUFLAGE")` retourne désormais strictement `creature.isCamouflaged()`, et `evaluateKeywords` retire `"CAMOUFLAGE"` de la projection plateau tant que le camouflage n'est pas actif (`!creature.isCamouflaged()`).
+  - Ajout du test unitaire `expiredCamouflageStopsHidingKeywordAndSurvolBypassesFamiliarsButNotMonsters` dans [`GameEngineTests`](../backend/src/test/java/com/ordredesarcane/online/GameEngineTests.java) (`11/11` tests passés).
+- **Front-End ([`arena-page.component.ts`](../frontend/src/app/features/arena/arena-page.component.ts), [`arena-page.component.html`](../frontend/src/app/features/arena/arena-page.component.html))** :
+  - Précision du message `directAttackStatus()` nommant le Monstre ou Gardien bloquant (en 1v1 et 2v2) et rappelant que `Vol`/`SURVOL` contourne uniquement les Familiers ; prise en charge des mots-clés `SURVOL` et `VOL`.
+  - Ajout d'un bouton accessible sur l'orbe PV adverse `#enemyLpBox` lorsque l'attaque directe est autorisée (`pickingTarget()?.actionType === 'DECLARE_ATTACK' && directAttackStatus().allowed`) en complément du bouton central `Attaque Directe (PV Adv)`.
+- **Documentation & Vérifications** :
+  - Mise à jour de [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) (§5 Règle du Rempart, Survol & Camouflage).
+  - Back-End (`backend/`) : `mvn.cmd test` → `39/39` tests passés (`0` échec).
+  - Front-End (`frontend/`) : `npx.cmd ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`13` fichiers, `33/33` tests passés) ; `npm.cmd run build` (`Initial total: 498.88 kB`, `0` erreur, `0` avertissement CSS).
+
+---
+
+## [2026-11-20] — Représentation Fidèle à la Maquette des Cartes Tabletop & Illustrations Sur Plateau/Main
+
+- **Objectif** : faire apparaître l'illustration de chaque carte directement sur les emplacements du plateau (Monstres, Familiers, Sorts/Artéfacts) et dans la main en proportions portrait TCG fidèles à la maquette d'Arène, tout en maintenant un cockpit zéro-scroll sur desktop (`1440×900`) et mobile (`390×844`).
+- **Mode Tabletop Portrait ([`ArcaneCardComponent`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.ts), [`arcane-card.component.html`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.html), [`arcane-card.component.scss`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.scss), [`arcane-card.component.spec.ts`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.spec.ts))** :
+  - Ajout de l'entrée `[tabletop]="true"` activant `:host(.arcane-card-tabletop-host)` (`block-size: 100%`, `min-block-size: 0`), l'affichage automatique de la fenêtre d'art `.arcane-art-frame--tabletop` (`flex-1 min-h-0`, chargement `eager` sur plateau/main), les indicateurs d'état minimalistes `.arcane-tabletop-statuses` / `.arcane-tstat` superposés en coin d'image et un pied compact ATQ/DÉF ou type/mot-clé (tout en conservant l'aperçu `aspect-16/9` dans l'inspecteur latéral « Détail de la carte »).
+  - Ajout de `2` tests unitaires dans [`arcane-card.component.spec.ts`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.spec.ts) vérifiant le mode `[tabletop]="true"` (artwork peint `<img>`, masquage du texte long, aura épique et repli SVG procédural).
+- **Proportions Maquette & Zéro-Scroll Arène ([`arena-page.component.html`](../frontend/src/app/features/arena/arena-page.component.html), [`arena-page.component.scss`](../frontend/src/app/features/arena/arena-page.component.scss))** :
+  - Activation de `[tabletop]="true"` sur les 10 emplacements de plateau (adverse, allié 2v2, joueur) et la main, avec actions rapides `.arena-slot-actions` ancrées en surcouche (`hover` / `focus-within` / `[data-selected='true']`) pour préserver 100 % de la hauteur d'illustration.
+  - Recentrage maquette des zones (`arena-w-front: 26.5rem`, `arena-w-support: 35rem`, `arena-w-board: 46rem`, `arena-w-dock: 62rem` mono-ligne) et grille main `auto-cols-[minmax(0,1fr)]` à `7+` cartes pour empêcher tout chevauchement avec la pile Deck.
+- **Documentation & Vérifications** :
+  - Mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§4.2, §4.6).
+  - Front-End (`frontend/`) : `npx.cmd ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`13` fichiers, `33/33` tests passés) ; `npm.cmd run build` (`Initial total: 498.58 kB`, `0` erreur, `0` avertissement de budget CSS `<= 4.00 kB`).
+  - Docker & Chrome DevTools live (`docker compose up -d --build arcane-web`, `arcane-db` et `arcane-server` Healthy) : duel live vs IA (`Manche 6 · Tour 11`) inspecté sur `1440×900` (`scrollHeight === 900`, `battlefield clientH/scrollH: 506/506`, `heroDockH: 50`, illustrations plateau `84.6×50.1 px` Monstres / `91×37.7 px` Familiers) et `390×844` mobile tactile (`scrollWidth === 390`, `scrollHeight === 844`, `0` image cassée, `0` erreur console).
+
+---
+
+## [2026-11-20] — Effets de Choc Combat, Table Slam Mythique & VFX Multi-Moteurs (`GSAP` + `Canvas 2D` + `Three.js`)
+
+- **Objectif** : transformer les assauts Monstre contre Monstre, les attaques directes aux PV joueur, les destructions de créatures et l'arrivée sur table de cartes puissantes en animations de duel spectaculaires façon TCG AAA, fluides à 60 FPS et sans bloquer les actions.
+- **Moteur d'Analyse & Timelines GSAP ([`arena-vfx.ts`](../frontend/src/app/shared/utils/arena-vfx.ts), [`motion-presets.ts`](../frontend/src/app/shared/utils/motion-presets.ts))** :
+  - Ajout de `summonEvents` (`MYTHIC` pour `epic` / `SPELL_ULTIMATE` / coût `>= 5`, `HEAVY` `>= 3`, `STANDARD`), `shatterEvents`, `mythicShowcases` (`INVOCATION ÉPIQUE ★`, `SORT ULTIME DÉCHAÎNÉ ⚡`) et `hitStrength` (`LIGHT`/`HEAVY`/`CRITICAL`) dans `extractArenaVfxEvents(...)` avec impact synchronisé à `220ms` (`PROJECTILE_IMPACT_DELAY_MS`).
+  - Ajout des chorégraphies `gsap.timeline()` GPU uniquement (`transform`/`opacity`/`clearProps`) : `animateCardAttackLunge` (élan + frappe le long du vecteur cible + recul défenseur), `animateBoardShake` (`light`/`heavy`/`critical`) et `animateCardSummonSlam` (`STANDARD`/`HEAVY`/`MYTHIC`).
+- **Particules Additives Canvas 2D, Vitrine Mythique, 3D Three.js & Aura Carte ([`ArenaImpactCanvasComponent`](../frontend/src/app/shared/components/arena-impact-canvas/arena-impact-canvas.component.ts), [`ArenaSummonShowcaseComponent`](../frontend/src/app/shared/components/arena-summon-showcase/arena-summon-showcase.component.ts), [`ArenaProjectileOverlayComponent`](../frontend/src/app/shared/components/arena-projectile-overlay/arena-projectile-overlay.component.ts), [`ArenaThreeBackdropComponent`](../frontend/src/app/shared/components/arena-three-backdrop/arena-three-backdrop.component.ts), [`ArcaneCardComponent`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.scss), [`arena-page.component.ts`](../frontend/src/app/features/arena/arena-page.component.ts))** :
+  - Nouveau calque Canvas 2D additif (`CLASH` entailles & étincelles, `PARRY` déviation hexagonale, `DIRECT_STRIKE` onde de choc joueur + `.arena-impact-vignette`, `SHATTER` éclats de carte, `SUMMON_MYTHIC`/`HEAVY`/`STANDARD` hexagramme & particules ascendantes), plafonné à `220` particules et mis en veille (`0 %` CPU) au repos.
+  - Banderole non-bloquante `ArenaSummonShowcaseComponent` à l'invocation de cartes puissantes/Ultimes ; présence vivante `.arcane-card-mythic` & `.arcane-mythic-aura` sur les cartes puissantes (`WCAG 2.3.1` sans stroboscopie, `prefers-reduced-motion` respecté).
+  - Réaction 3D positionnelle `[combatPulse]` dans `ArenaThreeBackdropComponent` (anneau d'impact 3D aux coordonnées normalisées du choc, recul Z caméra et boost de braises).
+- **Tests, Budget CSS & Vérifications Live** :
+  - Nouveaux tests : [`arena-impact-canvas.component.spec.ts`](../frontend/src/app/shared/components/arena-impact-canvas/arena-impact-canvas.component.spec.ts), [`arena-summon-showcase.component.spec.ts`](../frontend/src/app/shared/components/arena-summon-showcase/arena-summon-showcase.component.spec.ts) et extension de [`card-artwork-and-vfx.spec.ts`](../frontend/src/app/shared/utils/card-artwork-and-vfx.spec.ts).
+  - Refactorisation CSS : factorisation `--mc` dans `arcane-card.component.scss` (retrait doublon `::before`), déplacement de `.arena-impact-vignette` dans `ArenaImpactCanvasComponent` et retrait `.arena-pip-back` inutilisé — **0 avertissement** sous la barre `4.00 kB`.
+  - Front-End (`frontend/`) : `npx.cmd ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`12` fichiers, `31/31` tests passés) ; `npm.cmd run build` (`Initial total: 498.97 kB`, `0` erreur, `0` avertissement).
+  - Docker & Chrome DevTools live sur `http://localhost/` : `arcane-web` reconstruit (`arcane-db` et `arcane-server` Healthy), partie réelle vs IA vérifiée avec capture vidéo (attaque directe `Salamandrin`, réplique `Garde Céleste`, lancement `Boule de Feu Arcanique`) à `1440×900` (`impactCanvasMounted: true`, `threeReady: "true"`, `mythicCardsVisible: 6`, `scrollWidth: 1440`) et mobile `390×844` (`scrollWidth === 390`, `0` erreur console/HTTP).
+
+---
+
+## [2026-11-20] — Illustrations TCG Style Yu-Gi-Oh! / Magic & Moteur Vectoriel Multi-Tons
+
+- **Objectif** : rehausser nettement le rendu artistique des Monstres, Familiers et Sorts en combinant illustrations peintes dark-fantasy locales (inspirées de Yu-Gi-Oh! et Magic: The Gathering) et moteur SVG vectoriel multi-tons enrichi.
+- **Illustrations Peintes & Registre ([`frontend/public/cards/`](../frontend/public/cards/), [`card-artwork.ts`](../frontend/src/app/shared/utils/card-artwork.ts), [`card-artwork-and-vfx.spec.ts`](../frontend/src/app/shared/utils/card-artwork-and-vfx.spec.ts))** :
+  - Production et optimisation (`640×360` JPEG haute qualité, sans texte incrusté) de **17 visuels locaux** dérivés de 12 tableaux dark-fantasy générés (`fire-beast.jpg`, `fire-dragon.jpg`, `fire-fam-cat.jpg`, `fire-fam-drake.jpg`, `fire-golem.jpg`, `fire-phoenix.jpg`, `fire-spell.jpg`, `ice-banshee.jpg`, `ice-dragon.jpg`, `ice-familiar.jpg`, `ice-golem.jpg`, `ice-spell.jpg`, `ice-wolf.jpg`, `ice-wraith.jpg`, `ice-yeti.jpg`, `light-seraph.jpg`, `shadow-eclipse.jpg` ; quota temporaire atteint avant complétion des lots `SHADOW` Monstres/Familiers et `LIGHT` Dragons/Familiers/Sorts).
+  - Câblage dans `CARD_ARTWORK_REGISTRY` sur **76 cartes** (`FIRE` `30/30`, `ICE` `30/30`, Sorts `SHADOW_S_01..10` et avant-garde/boucliers `LIGHT` `6/30`), vérifié par test unitaire dédié sur `resolveCardArtworkUrl`.
+- **Intégration Carte & Moteur SVG Enrichi ([`ArcaneCardComponent`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.html), [`arcane-card.component.scss`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.scss), [`ArcaneCardArtComponent`](../frontend/src/app/shared/components/arcane-card-art/arcane-card-art.component.ts), [`arcane-card-art.component.html`](../frontend/src/app/shared/components/arcane-card-art/arcane-card-art.component.html))** :
+  - Fenêtre d'art `<img width="640" height="360" loading="lazy" decoding="async">` protégée par le dégradé `.arcane-art-scrim` sous `.arcane-art-effect-chip`, `[attr.data-faction]`/`[attr.data-effect]` sur `.arcane-card-root`, et pastille compacte d'icône d'effet en main/plateau.
+  - Refonte d'[`ArcaneCardArtComponent`](../frontend/src/app/shared/components/arcane-card-art/arcane-card-art.component.html) pour les `44` cartes sans JPEG : gradients `<defs>` scopés par instance `uid` (`glow-{{uid}}`, `body-{{uid}}`, `rim-{{uid}}`), cercles hexagrammes arcaniques, cryptes gothiques `SHADOW`, cathédrales/rayons solaires `LIGHT` et silhouettes trois tons.
+- **Documentation & Vérifications** :
+  - Mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§4.1, §4.4, §5) et [`docs/INFRASTRUCTURE_AND_SECURITY.md`](./INFRASTRUCTURE_AND_SECURITY.md) (§2.1).
+  - Front-End (`frontend/`) : `npx.cmd ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`10` fichiers, `28/28` tests passés) ; `npm.cmd run build` (`Initial total: 498.82 kB`, `0` erreur, `0` avertissement CSS/TS).
+  - Runtime Docker (`docker compose up -d --build arcane-web` : `arcane-db` Healthy, `arcane-server` Healthy, `arcane-web` Up) & Chrome DevTools live sur `http://localhost/` (`/deckbuilder` filtres `Feu Ardent`, `Ombres Occultes`, `Glace Éternelle`, `Lumière Astrale` + `/arena` Mulligan, main, inspecteur détail) à `1440×900` (`scrollWidth: 1425 <= 1440`) et `390×844` mobile tactile (`scrollWidth === 390`) avec `0` erreur console et `0` image cassée.
+
+---
+
+## [2026-11-20] — Pop-up Central d'Annonce de Tour (« C’est à vous de jouer ! »)
+
+- **Objectif** : afficher un grand pop-up central lisible en une phrase (« **C’est à vous de jouer !** ») au début de chaque tour du joueur face à un adversaire, sans bloquer les actions ni voler le focus clavier.
+- **Composant & Intégration Arène ([`ArenaTurnPopupComponent`](../frontend/src/app/shared/components/arena-turn-popup/arena-turn-popup.component.ts), [`arena-turn-popup.component.spec.ts`](../frontend/src/app/shared/components/arena-turn-popup/arena-turn-popup.component.spec.ts), [`arena-page.component.ts`](../frontend/src/app/features/arena/arena-page.component.ts), [`arena-page.component.html`](../frontend/src/app/features/arena/arena-page.component.html), [`styles.scss`](../frontend/src/styles.scss))** :
+  - Nouveau composant standalone `OnPush` centré sur le plateau (`z-index: 44`, `pointer-events: none`) présentant l'accroche `Tour N · Contre {adversaire}` et la phrase en grand display `Cinzel` (`clamp(1.45rem, 4.4vw, 2.65rem)`), teintée à la faction active et synchronisée avec l'onde de choc WebGL [`ArenaThreeBackdropComponent`](../frontend/src/app/shared/components/arena-three-backdrop/arena-three-backdrop.component.ts).
+  - Déclenchement conditionné à un affrontement avec adversaire(s) en `MAIN_PHASE` (`!view.spectator && isMyTurn() && opponentBoards().length > 0`) et suppression immédiate si une modale (`WAITING_FOR_REACTION`, `WAITING_FOR_MODAL_CHOICE`, `WAITING_FOR_DISCARD`, `FINISHED`) ou le tour adverse survient, avec temporisation `2400ms` nettoyée dans `clearVfxTimers()`.
+  - Accessibilité & Motion : annonce unique conservée sur `AnnouncerService` (`Tour N : c’est à vous de jouer.`), animation GPU (`opacity`/`transform`) uniquement sous `prefers-reduced-motion: no-preference`, fondu simple sous `prefers-reduced-motion: reduce`, support `forced-colors: active` et retrait des anciennes règles `.arcane-turn-beacon` de `styles.scss`.
+- **Documentation & Vérifications** :
+  - Mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§4.5).
+  - Front-End (`frontend/`) : `npx.cmd ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`10` fichiers, `27/27` tests passés) ; `npm.cmd run build` (`Initial total: 498.81 kB`, `0` erreur, `0` avertissement).
+  - Runtime Docker (`docker compose up -d --build arcane-web`) & Chrome DevTools sur `http://localhost/` : apparition live du pop-up vérifiée par enregistrements vidéo sur Desktop (`1440×900`, Tours `5` et `7`) et Mobile (`390×844`, Tour `9`) avec `0` erreur console.
+
+---
+
+## [2026-11-20] — Scénographie Tabletop d'Arène, Toile de Fond 3D WebGL (`three`) & Démarrage Live
+
+- **Objectif** : implémenter la disposition tabletop d'Arène issue de la maquette utilisateur, démarrer la stack complète Docker (`arcane-db`, `arcane-server`, `arcane-web`), installer `three` (`@^0.187.0`) en chargement paresseux pour une toile de fond 3D interactive CSP-safe et valider l'affichage desktop, tablette et mobile tactile.
+- **Scène 3D WebGL & Animations ([`ArenaThreeBackdropComponent`](../frontend/src/app/shared/components/arena-three-backdrop/arena-three-backdrop.component.ts), [`arena-three-backdrop.component.spec.ts`](../frontend/src/app/shared/components/arena-three-backdrop/arena-three-backdrop.component.spec.ts))** :
+  - Installation de `three@^0.187.0` et `@types/three@^0.187.0` dans [`frontend/package.json`](../frontend/package.json) (`found 0 vulnerabilities`).
+  - Import dynamique `await import('three')` isolant `three-module` dans un chunk paresseux (`751.75 kB`, `0` octet ajouté au bundle initial) avec sommets d'obsidienne basse-polygonale, anneaux runiques centraux, particules élémentaires (`DataTexture` radiale en mémoire) adaptées à `[faction]` et onde de choc sur `[pulseTrigger]`.
+  - Conformité accessibilité & cycle de vie : mise en pause automatique lorsque hors-écran (`content-visibility: auto` + `contentvisibilityautostatechange` + `IntersectionObserver`) ou onglet masqué (`visibilitychange`), rendu statique sous `prefers-reduced-motion: reduce`, et libération complète géométries/matériaux/textures/renderer via `DestroyRef`.
+- **Arène Tabletop, Ressorts CSS & Mobile Micro-Cards ([`arena-page.component.html`](../frontend/src/app/features/arena/arena-page.component.html), [`arena-page.component.scss`](../frontend/src/app/features/arena/arena-page.component.scss), [`arena-page.component.ts`](../frontend/src/app/features/arena/arena-page.component.ts), [`ArcaneCardComponent`](../frontend/src/app/shared/components/arcane-card/arcane-card.component.html), [`ArenaProjectileOverlayComponent`](../frontend/src/app/shared/components/arena-projectile-overlay/arena-projectile-overlay.component.ts), [`styles.scss`](../frontend/src/styles.scss))** :
+  - Structuration fidèle des zones visuelles : camp nord miroir (orbe `PV`, avatar, emplacements `[Sort 1 · F1-F3 · Sort 2]` + `4` Monstres, main cachée), ligne frontale `4` Monstres (rouge), sanctuaire `3` Familiers (vert) entouré des `2` Sorts/Artéfacts (rose), main `6` cartes (violet) à ressort CSS `--arcane-spring-easing` (`linear()` + repli `cubic-bezier`), pile Deck/Défausse (orange) et hub joueur `.arena-hero-dock` (bleu : `PV`, avatar, `À VOUS`, énergie, posture `ATQ/DÉF`, `Phase Combat`, `Fin du Tour`).
+  - Encapsulation des styles `.arcane-projectile-layer`/`.arcane-proj-*` dans `ArenaProjectileOverlayComponent` et suppression de classes CSS obsolètes dans `styles.scss` pour maintenir le bundle initial sous `500 kB`.
+  - Branchement des classes container-query (`.arcane-card-statuses`, `.arcane-status-badge`, `.arcane-status-text`, `.arcane-card-stat-pill`) et ajout du palier `@container arcane-card (max-width: 4.5rem)` sur `ArcaneCardComponent` supprimant tout rognage des capsules `ATQ`/`DÉF` et badges sur mobile `390×844`.
+- **Documentation & Vérifications** :
+  - Mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (§4.2, §4.3, §4.4, §4.6) et [`docs/INFRASTRUCTURE_AND_SECURITY.md`](./INFRASTRUCTURE_AND_SECURITY.md) (§2.1).
+  - Typage & Tests Front-End (`frontend/`) : `ngc -p tsconfig.app.json --noEmit` OK ; `npm.cmd test -- --watch=false` (`9` fichiers, `25/25` tests réussis) ; `npm.cmd run build` (`Initial total: 499.57 kB`, `three-module` lazy `751.75 kB`, `0` erreur, `0` avertissement) ; `npm.cmd audit --omit=dev` (`found 0 vulnerabilities`).
+  - Stack Docker & Chrome DevTools Live (`http://localhost/`) : `arcane-db` Healthy, `arcane-server` Healthy, `arcane-web` démarré ; rendu et WebGL vérifiés (`threeReady: "true"`, `0` erreur console) à `1440×900` (`scrollWidth === 1440`, `scrollHeight === 900`), `768×1024` (`scrollWidth === 768`, `scrollHeight === 1024`) et `390×844` mobile tactile (`scrollWidth === 390`, `scrollHeight === 844`).
 
 ---
 

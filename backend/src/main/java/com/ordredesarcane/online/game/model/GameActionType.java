@@ -1,6 +1,7 @@
 package com.ordredesarcane.online.game.model;
 
 public enum GameActionType {
+    MULLIGAN_REPLACE_CARD,
     MULLIGAN_SWAP,
     PLAY_CARD,
     SET_REACTIVE_SPELL,

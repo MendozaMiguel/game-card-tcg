@@ -7,7 +7,11 @@ import {
   PlayerGameView,
 } from '../../core/models/arcane.models';
 import { extractArenaVfxEvents, slotBurstKey } from './arena-vfx';
-import { buildCardIllustrationSpec } from './card-artwork';
+import {
+  CARD_ARTWORK_REGISTRY,
+  buildCardIllustrationSpec,
+  resolveCardArtworkUrl,
+} from './card-artwork';
 import { COSMETIC_CATALOG } from './faction-theme';
 
 function makeAbility(partial: Partial<AbilityDefinition> = {}): AbilityDefinition {
@@ -210,6 +214,17 @@ describe('buildCardIllustrationSpec', () => {
       expect(spec.primaryColor.length).toBeGreaterThan(0);
       expect(spec.effectTag.length).toBeGreaterThan(0);
     }
+  });
+
+  it('resolves registered painted TCG artwork paths cleanly across all factions', () => {
+    expect(resolveCardArtworkUrl('FIRE_M_10')).toBe('/cards/fire-dragon.jpg');
+    expect(resolveCardArtworkUrl('FIRE_F_06')).toBe('/cards/fire-fam-cat.jpg');
+    expect(resolveCardArtworkUrl('ICE_M_08')).toBe('/cards/ice-yeti.jpg');
+    expect(resolveCardArtworkUrl('ICE_S_09')).toBe('/cards/ice-spell.jpg');
+    expect(resolveCardArtworkUrl('SHADOW_S_09')).toBe('/cards/shadow-eclipse.jpg');
+    expect(resolveCardArtworkUrl('LIGHT_M_08')).toBe('/cards/light-seraph.jpg');
+    expect(resolveCardArtworkUrl('FIRE_M_10', '/cards/custom.jpg')).toBe('/cards/custom.jpg');
+    expect(Object.keys(CARD_ARTWORK_REGISTRY).length).toBeGreaterThanOrEqual(70);
   });
 });
 
@@ -415,5 +430,118 @@ describe('extractArenaVfxEvents', () => {
 
     expect(COSMETIC_CATALOG['avatar_pyromancer']?.label).toContain('Pyromancien');
     expect(COSMETIC_CATALOG['avatar_automaton']?.label).toContain('Automate');
+  });
+
+  it('classifies summon tiers (MYTHIC/HEAVY/STANDARD), mythic showcases, hitStrength, and synced shatter events', () => {
+    const prev = makeGameView();
+    prev.players[1].monsters[0] = makeSlotCard({
+      instanceId: 'opp-m0',
+      ownerPlayerId: 'p2',
+      faction: 'SHADOW',
+      effectiveDef: 4,
+    });
+
+    const next = makeGameView({
+      visualEvents: [
+        {
+          sequence: 5,
+          faction: 'FIRE',
+          sourcePlayerId: 'p1',
+          sourceInstanceId: 'ally-m0',
+          sourceZone: 'monster',
+          sourceSlot: 0,
+          targetPlayerId: 'p2',
+          targetInstanceId: 'opp-m0',
+          targetZone: 'monster',
+          targetSlot: 0,
+          directAttack: false,
+          defenderPosture: 'ATTACK',
+          outcome: 'DEFENSE_BROKEN',
+          damageDealt: 5,
+          recoilDamage: 0,
+        },
+        {
+          sequence: 6,
+          faction: 'FIRE',
+          sourcePlayerId: 'p1',
+          sourceInstanceId: 'ally-m1',
+          sourceZone: 'monster',
+          sourceSlot: 1,
+          targetPlayerId: 'p2',
+          targetInstanceId: null,
+          targetZone: null,
+          targetSlot: -1,
+          directAttack: true,
+          defenderPosture: 'ATTACK',
+          outcome: 'DIRECT_HIT',
+          damageDealt: 5,
+          recoilDamage: 0,
+        },
+      ],
+    });
+    next.players[0].monsters[0] = makeSlotCard({
+      instanceId: 'ally-m0',
+      ownerPlayerId: 'p1',
+      cardId: 'FIRE_M_10',
+      name: "Dragon de Braise d'Aurëa",
+      faction: 'FIRE',
+      epic: true,
+      energyCost: 5,
+      effectiveAtk: 5,
+      effectiveDef: 4,
+    });
+    next.players[0].familiars[0] = makeSlotCard({
+      instanceId: 'ally-f0',
+      ownerPlayerId: 'p1',
+      cardType: 'FAMILIAR',
+      faction: 'FIRE',
+      epic: false,
+      energyCost: 3,
+    });
+    next.players[1].monsters[0] = null;
+
+    const batch = extractArenaVfxEvents(prev, next, new Map());
+
+    expect(batch.summonEvents.length).toBe(2);
+    expect(batch.summonEvents[0].tier).toBe('MYTHIC');
+    expect(batch.summonEvents[1].tier).toBe('HEAVY');
+
+    expect(batch.mythicShowcases.length).toBe(1);
+    expect(batch.mythicShowcases[0].cardName).toBe("Dragon de Braise d'Aurëa");
+    expect(batch.mythicShowcases[0].title).toContain('ÉPIQUE');
+
+    expect(batch.shatterEvents.length).toBe(1);
+    expect(batch.shatterEvents[0].delayMs).toBeGreaterThan(0);
+
+    expect(batch.projectiles[0].hitStrength).toBe('CRITICAL');
+    expect(batch.projectiles[1].hitStrength).toBe('CRITICAL');
+    expect(batch.projectiles[1].directAttack).toBe(true);
+
+    const brokenPopup = batch.popups.find((p) => p.key === slotBurstKey('p2', 'monster', 0));
+    expect(brokenPopup?.headline).toBe('BRISÉ!');
+    expect(brokenPopup?.sublabel).toBe('GARDE CÉDÉE');
+    expect(brokenPopup?.tone).toBe('CRIT');
+    expect(brokenPopup?.delayMs).toBe(185);
+
+    const directPopup = batch.popups.find((p) => p.targetKind === 'AVATAR' && p.key === 'p2');
+    expect(directPopup?.headline).toBe('-5 PV');
+    expect(directPopup?.sublabel).toBe('FRAPPE DIRECTE!');
+    expect(directPopup?.tone).toBe('DIRECT');
+    expect(directPopup?.delayMs).toBe(185);
+  });
+
+  it('provides painted artwork URLs for all 120 cards across FIRE, ICE, SHADOW, and LIGHT', () => {
+    const factions: Faction[] = ['FIRE', 'ICE', 'SHADOW', 'LIGHT'];
+    const buckets = ['M', 'F', 'S'] as const;
+    for (const faction of factions) {
+      for (const bucket of buckets) {
+        for (let idx = 1; idx <= 10; idx++) {
+          const id = `${faction}_${bucket}_${String(idx).padStart(2, '0')}`;
+          const url = resolveCardArtworkUrl(id);
+          expect(url, `Missing artwork mapping for ${id}`).toMatch(/^\/cards\/[a-z0-9-]+\.jpg$/);
+        }
+      }
+    }
+    expect(Object.keys(CARD_ARTWORK_REGISTRY).length).toBe(120);
   });
 });

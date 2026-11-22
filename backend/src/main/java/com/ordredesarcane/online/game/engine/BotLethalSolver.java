@@ -28,10 +28,12 @@ final class BotLethalSolver {
 
     private final BoardRuleEvaluator evaluator;
     private final AbilityInterpreter abilities;
+    private final CombatResolver combatResolver;
 
-    BotLethalSolver(BoardRuleEvaluator evaluator, AbilityInterpreter abilities) {
+    BotLethalSolver(BoardRuleEvaluator evaluator, AbilityInterpreter abilities, CombatResolver combatResolver) {
         this.evaluator = evaluator;
         this.abilities = abilities;
+        this.combatResolver = combatResolver;
     }
 
     Optional<GameActionCommand> findLethalAction(GameRoom room, PlayerState bot) {
@@ -129,15 +131,19 @@ final class BotLethalSolver {
         }
 
         // Return first legal prep command if one exists and is affordable right now
-        for (GameActionCommand cmd : prepCommands) {
-            int cost = resolveCommandCost(bot, cmd);
-            if (cost <= bot.getEnergyTokens()) {
-                return Optional.of(cmd);
+        if (!prepCommands.isEmpty()) {
+            for (GameActionCommand cmd : prepCommands) {
+                int cost = resolveCommandCost(bot, cmd);
+                if (cost <= bot.getEnergyTokens()) {
+                    return Optional.of(cmd);
+                }
+                Optional<GameActionCommand> unlock = findNextEnergyUnlockerForLethal(room, bot);
+                if (unlock.isPresent()) {
+                    return unlock;
+                }
             }
-            Optional<GameActionCommand> unlock = findNextEnergyUnlockerForLethal(room, bot);
-            if (unlock.isPresent()) {
-                return unlock;
-            }
+            // Simulated combat assumed prepCommands resolved; never skip unaffordable prep to fire unprepped attacks.
+            return Optional.empty();
         }
 
         // Flip any DEFENSE attacker needed for the simulated lethal
@@ -150,7 +156,7 @@ final class BotLethalSolver {
         }
 
         // Now all MAIN_PHASE prep is done: issue first lethal attack (or ENTER_COMBAT if SHADOW_M_09 lethal)
-        if (combatResult.firstAttack() != null) {
+        if (combatResult.firstAttack() != null && isAttackLegalNow(room, bot, combatResult.firstAttack())) {
             return Optional.of(combatResult.firstAttack());
         }
         if (!room.isCombatPhaseStartedThisTurn()) {
@@ -211,10 +217,30 @@ final class BotLethalSolver {
             List<SimEnemy> enemies,
             List<SimAttacker> attackers) {
         CombatSimResult combatResult = simulateOptimalCombat(room, bot, oppLp, oppRed, enemies, attackers);
-        if (combatResult.damage() >= oppLp && combatResult.firstAttack() != null) {
+        if (combatResult.damage() >= oppLp
+                && combatResult.firstAttack() != null
+                && isAttackLegalNow(room, bot, combatResult.firstAttack())) {
             return Optional.of(combatResult.firstAttack());
         }
         return Optional.empty();
+    }
+
+    private boolean isAttackLegalNow(GameRoom room, PlayerState bot, GameActionCommand cmd) {
+        if (cmd.actionType() != GameActionType.DECLARE_ATTACK
+                || cmd.cardInstanceId() == null
+                || cmd.targetId() == null) {
+            return false;
+        }
+        CardInstance attacker = bot.findOnBoard(cmd.cardInstanceId()).orElse(null);
+        if (attacker == null) {
+            return false;
+        }
+        try {
+            combatResolver.validateAttackLegality(room, bot, attacker, cmd.targetId());
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     private int applyFreeBoardDebuffsForLethal(

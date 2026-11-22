@@ -207,7 +207,7 @@ export function buildTacticalGuidance(
         }
       : {
           headline: 'Mulligan de départ',
-          subline: 'Sélectionnez les cartes à remplacer puis validez votre main.',
+          subline: 'Cliquez « Remplacer » pour piocher immédiatement une autre carte, puis validez pour jouer.',
           iconName: 'lucideLayers',
           tone: 'MY_ACTION',
           playableCardCount: 0,

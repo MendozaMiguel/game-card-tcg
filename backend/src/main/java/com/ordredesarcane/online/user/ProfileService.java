@@ -104,6 +104,18 @@ public class ProfileService {
         return getProfile(userId);
     }
 
+    /** Marks the interactive new-player tutorial as completed on the user's profile. */
+    @Transactional
+    public UserProfileDto markTutorialCompleted(UUID userId) {
+        UserProfileEntity profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profil joueur introuvable."));
+        if (!profile.isTutorialCompleted()) {
+            profile.setTutorialCompleted(true);
+            profileRepository.save(profile);
+        }
+        return getProfile(userId);
+    }
+
     private void verifyOwned(UUID userId, CosmeticType type, String itemId) {
         if (type == CosmeticType.MAGE_PROFILE && STARTER_AVATAR_SET.contains(itemId)) {
             return;
@@ -134,6 +146,7 @@ public class ProfileService {
                 profile.getEquippedTitle(),
                 profile.getEquippedFinisher(),
                 profile.getFactionWins() == null ? Map.of() : Map.copyOf(profile.getFactionWins()),
-                cosmetics);
+                cosmetics,
+                profile.isTutorialCompleted());
     }
 }

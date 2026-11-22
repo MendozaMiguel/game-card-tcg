@@ -376,6 +376,7 @@ public class GameEngineService {
 
             PlayerState actor = resolveAuthorizedActorLocked(room, senderUserId, command);
             switch (command.actionType()) {
+                case MULLIGAN_REPLACE_CARD -> handleMulliganReplaceCardLocked(room, actor, command);
                 case MULLIGAN_SWAP -> handleMulliganLocked(room, actor, command);
                 case PLAY_CARD -> handlePlayCardLocked(room, actor, command);
                 case SET_REACTIVE_SPELL -> handleSetReactiveSpellLocked(room, actor, command);
@@ -522,6 +523,41 @@ public class GameEngineService {
         return targetActor;
     }
 
+    private void handleMulliganReplaceCardLocked(GameRoom room, PlayerState actor, GameActionCommand command) {
+        if (room.getPhase() != GamePhase.MULLIGAN) {
+            throw new IllegalArgumentException("La phase de Mulligan est terminée.");
+        }
+        if (actor.isMulliganCompleted()) {
+            throw new IllegalArgumentException("Vous avez déjà validé votre Mulligan.");
+        }
+        String cardId = requireNonBlank(command.cardInstanceId(), "cardInstanceId obligatoire pour remplacer une carte.");
+        List<CardInstance> hand = actor.getHand();
+        int slotIdx = -1;
+        for (int i = 0; i < hand.size(); i++) {
+            if (hand.get(i).getInstanceId().equals(cardId)) {
+                slotIdx = i;
+                break;
+            }
+        }
+        if (slotIdx < 0) {
+            throw new IllegalArgumentException("Carte de Mulligan introuvable en main : " + cardId);
+        }
+        if (actor.hasMulliganReplacedSlot(slotIdx)) {
+            throw new IllegalArgumentException("Cet emplacement a déjà été remplacé pendant ce Mulligan.");
+        }
+        if (!actor.getDeck().isEmpty()) {
+            CardInstance oldCard = hand.get(slotIdx);
+            Collections.shuffle(actor.getDeck(), random);
+            CardInstance drawn = actor.getDeck().removeFirst();
+            hand.set(slotIdx, drawn);
+            actor.getDeck().add(oldCard);
+            Collections.shuffle(actor.getDeck(), random);
+        }
+        actor.markMulliganSlotReplaced(slotIdx);
+        room.addLog(actor.getUserId(), actor.getUsername(), "MULLIGAN",
+                actor.getUsername() + " remplace une carte de départ.");
+    }
+
     private void handleMulliganLocked(GameRoom room, PlayerState actor, GameActionCommand command) {
         if (room.getPhase() != GamePhase.MULLIGAN) {
             throw new IllegalArgumentException("La phase de Mulligan est terminée.");
@@ -540,9 +576,21 @@ public class GameEngineService {
         if (replaceIds != null && !replaceIds.isEmpty()) {
             Set<String> uniqueIds = new HashSet<>(replaceIds);
             for (String id : uniqueIds) {
-                CardInstance found = actor.findInHand(id)
-                        .orElseThrow(() -> new IllegalArgumentException("Carte de Mulligan introuvable en main : " + id));
-                returned.add(found);
+                int slotIdx = -1;
+                for (int i = 0; i < actor.getHand().size(); i++) {
+                    if (actor.getHand().get(i).getInstanceId().equals(id)) {
+                        slotIdx = i;
+                        break;
+                    }
+                }
+                if (slotIdx < 0) {
+                    throw new IllegalArgumentException("Carte de Mulligan introuvable en main : " + id);
+                }
+                if (actor.hasMulliganReplacedSlot(slotIdx)) {
+                    throw new IllegalArgumentException("Cet emplacement a déjà été remplacé pendant ce Mulligan.");
+                }
+                actor.markMulliganSlotReplaced(slotIdx);
+                returned.add(actor.getHand().get(slotIdx));
             }
             actor.getHand().removeAll(returned);
             actor.getDeck().addAll(returned);
@@ -553,7 +601,7 @@ public class GameEngineService {
         }
         actor.setMulliganCompleted(true);
         room.addLog(actor.getUserId(), actor.getUsername(), "MULLIGAN",
-                actor.getUsername() + " remplace " + returned.size() + " carte(s).");
+                actor.getUsername() + " valide sa main de départ (" + actor.getMulliganReplacedSlots().size() + " remplacée(s)).");
     }
 
     private void beginTurnInternal(GameRoom room) {

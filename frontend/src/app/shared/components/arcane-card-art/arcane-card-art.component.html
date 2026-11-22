@@ -6,7 +6,6 @@
   [attr.data-effect]="s.effect"
   [style.background]="s.backdropGradient"
   aria-hidden="true">
-  <!-- Subtle ambient elemental particles / rays (CSS GPU transform/opacity under reduced-motion guard) -->
   <div class="arcane-art-rays" [attr.data-faction]="s.faction"></div>
 
   <svg
@@ -14,179 +13,219 @@
     preserveAspectRatio="xMidYMid slice"
     class="relative z-10 h-full w-full"
     aria-hidden="true">
-    <!-- 1. Elemental Horizon / Ground Atmosphere -->
+    <defs>
+      <radialGradient [attr.id]="'glow-' + uid" cx="50%" cy="46%" r="54%">
+        <stop offset="0%" [attr.stop-color]="s.secondaryColor" stop-opacity="0.44" />
+        <stop offset="48%" [attr.stop-color]="s.primaryColor" stop-opacity="0.22" />
+        <stop offset="100%" stop-color="#060811" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient [attr.id]="'body-' + uid" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="s.secondaryColor" stop-opacity="0.34" />
+        <stop offset="48%" stop-color="#172038" />
+        <stop offset="100%" stop-color="#070a14" />
+      </linearGradient>
+      <linearGradient [attr.id]="'rim-' + uid" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="s.secondaryColor" />
+        <stop offset="65%" [attr.stop-color]="s.primaryColor" />
+        <stop offset="100%" stop-color="#8c621d" />
+      </linearGradient>
+    </defs>
+
+    <!-- 1. Atmospheric Depth Backdrop & Yu-Gi-Oh! Arcane Summoning Circle -->
+    <rect x="0" y="0" width="240" height="135" [attr.fill]="'url(#glow-' + uid + ')'" />
+
     @switch (s.faction) {
       @case ('FIRE') {
-        <path d="M0 112 Q60 96 120 108 T240 102 L240 135 L0 135 Z" fill="rgb(124 45 18 / 0.45)" />
-        <path d="M0 124 Q80 112 160 121 T240 116 L240 135 L0 135 Z" fill="rgb(249 115 22 / 0.22)" />
-        <g class="arcane-art-float-slow">
-          <circle cx="38" cy="96" r="2.2" [attr.fill]="s.secondaryColor" opacity="0.7" />
-          <circle cx="198" cy="84" r="1.8" [attr.fill]="s.primaryColor" opacity="0.8" />
-          <circle cx="72" cy="34" r="1.5" [attr.fill]="s.secondaryColor" opacity="0.65" />
-          <circle cx="176" cy="40" r="2" [attr.fill]="s.primaryColor" opacity="0.7" />
-        </g>
+        <polygon points="-8,135 28,62 64,135" fill="#1b0d0e" opacity="0.88" />
+        <polygon points="178,135 212,56 248,135" fill="#1b0d0e" opacity="0.88" />
+        <path d="M0 112 Q60 94 120 108 T240 102 L240 135 L0 135 Z" fill="rgb(124 45 18 / 0.52)" />
+        <path d="M0 124 Q80 112 160 121 T240 116 L240 135 L0 135 Z" fill="rgb(249 115 22 / 0.28)" />
       }
       @case ('ICE') {
-        <polygon points="0,135 28,88 54,135" fill="rgb(56 189 248 / 0.16)" />
-        <polygon points="186,135 212,82 240,135" fill="rgb(56 189 248 / 0.16)" />
-        <path d="M0 114 L48 106 L92 118 L150 106 L204 116 L240 108 L240 135 L0 135 Z" fill="rgb(12 74 110 / 0.48)" />
-        <g class="arcane-art-float-slow" [attr.stroke]="s.secondaryColor" stroke-width="1.2" opacity="0.55">
-          <path d="M40 32 L40 42 M35 37 L45 37" />
-          <path d="M202 44 L202 54 M197 49 L207 49" />
-          <circle cx="84" cy="24" r="1.5" fill="currentColor" stroke="none" />
-        </g>
+        <polygon points="-4,135 30,54 66,135" fill="rgb(14 48 82 / 0.72)" stroke="rgb(125 211 252 / 0.25)" stroke-width="0.8" />
+        <polygon points="174,135 210,48 244,135" fill="rgb(14 48 82 / 0.72)" stroke="rgb(125 211 252 / 0.25)" stroke-width="0.8" />
+        <path d="M0 114 L48 104 L92 118 L150 104 L204 116 L240 106 L240 135 L0 135 Z" fill="rgb(12 74 110 / 0.58)" />
       }
       @case ('SHADOW') {
-        <circle cx="120" cy="56" r="36" fill="rgb(15 7 28 / 0.65)" stroke="rgb(168 85 247 / 0.35)" stroke-width="1.5" />
-        <path d="M0 112 C45 98 92 122 142 108 C184 96 212 118 240 106 L240 135 L0 135 Z" fill="rgb(59 7 100 / 0.45)" />
-        <g class="arcane-art-float-slow">
-          <circle cx="44" cy="52" r="2" fill="#c084fc" opacity="0.65" />
-          <circle cx="196" cy="60" r="1.8" fill="#fb7185" opacity="0.55" />
-        </g>
+        <!-- Ruined Gothic Pillars & Fractured Abyssal Moon -->
+        <rect x="14" y="8" width="16" height="127" fill="#0d0a18" stroke="rgb(168 85 247 / 0.22)" stroke-width="0.8" />
+        <rect x="210" y="8" width="16" height="127" fill="#0d0a18" stroke="rgb(168 85 247 / 0.22)" stroke-width="0.8" />
+        <path d="M30 22 Q120 -6 210 22" fill="none" stroke="rgb(168 85 247 / 0.2)" stroke-width="1.2" />
+        <circle cx="120" cy="58" r="46" fill="rgb(22 10 42 / 0.72)" stroke="rgb(192 132 252 / 0.35)" stroke-width="1.2" />
+        <path d="M0 110 C45 94 92 122 142 106 C184 94 212 118 240 104 L240 135 L0 135 Z" fill="rgb(59 7 100 / 0.56)" />
       }
       @case ('LIGHT') {
-        <path d="M120 8 L64 135 M120 8 L96 135 M120 8 L144 135 M120 8 L176 135" [attr.stroke]="s.secondaryColor" stroke-width="1" opacity="0.18" />
-        <circle cx="120" cy="58" r="38" fill="none" stroke="rgb(254 240 138 / 0.28)" stroke-width="1.4" stroke-dasharray="4 4" />
-        <path d="M0 114 Q120 100 240 114 L240 135 L0 135 Z" fill="rgb(133 77 14 / 0.28)" />
+        <!-- Cathedral Lancet Arches & Volumetric God Rays -->
+        <polygon points="120,0 24,135 64,135" fill="rgb(254 240 138 / 0.08)" />
+        <polygon points="120,0 176,135 216,135" fill="rgb(254 240 138 / 0.08)" />
+        <polygon points="120,0 92,135 148,135" fill="rgb(254 240 138 / 0.14)" />
+        <path d="M18 135 V42 Q34 14 50 42 V135 M190 135 V42 Q206 14 222 42 V135" fill="rgb(15 20 38 / 0.65)" stroke="rgb(240 201 110 / 0.25)" stroke-width="0.9" />
+        <path d="M0 114 Q120 98 240 114 L240 135 L0 135 Z" fill="rgb(133 77 14 / 0.36)" />
       }
     }
 
-    <!-- 2. Subject Silhouette / Centerpiece -->
+    <!-- Sacred Geometric Summoning Circle (Yu-Gi-Oh! Spellcaster Glyph Seal) -->
+    <g opacity="0.56">
+      <circle cx="120" cy="64" r="46" fill="none" [attr.stroke]="s.primaryColor" stroke-width="1" stroke-dasharray="5 3" />
+      <circle cx="120" cy="64" r="39" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="0.85" />
+      <polygon points="120,21 157,85 83,85" fill="none" [attr.stroke]="s.primaryColor" stroke-width="0.9" opacity="0.65" />
+      <polygon points="120,107 157,43 83,43" fill="none" [attr.stroke]="s.primaryColor" stroke-width="0.9" opacity="0.65" />
+    </g>
+
+    <!-- 2. Detailed Multi-Tone Subject Artwork -->
     <g stroke-linecap="round" stroke-linejoin="round">
       @switch (s.subject) {
         @case ('dragon') {
-          <!-- Draconic Winged Crest & Horned Head -->
-          <path d="M120 68 L62 28 L76 62 L52 72 L96 84 Z" fill="rgb(10 14 26 / 0.82)" [attr.stroke]="s.primaryColor" stroke-width="2" />
-          <path d="M120 68 L178 28 L164 62 L188 72 L144 84 Z" fill="rgb(10 14 26 / 0.82)" [attr.stroke]="s.primaryColor" stroke-width="2" />
-          <path d="M120 26 L104 48 L92 32 L98 62 L120 96 L142 62 L148 32 L136 48 Z" fill="rgb(16 22 38 / 0.94)" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
-          <circle cx="111" cy="56" r="2.6" [attr.fill]="s.secondaryColor" />
-          <circle cx="129" cy="56" r="2.6" [attr.fill]="s.secondaryColor" />
-          <path d="M108 74 L120 84 L132 74" fill="none" [attr.stroke]="s.primaryColor" stroke-width="2" />
+          <!-- Majestic Winged Dragon / Sun Wyrm / Abyssal Hydra -->
+          <path d="M116 64 L40 20 L60 50 L36 66 L76 74 L58 88 L104 82 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M124 64 L200 20 L180 50 L204 66 L164 74 L182 88 L136 82 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M120 66 L66 38 M120 68 L62 60 M120 66 L174 38 M120 68 L178 60" [attr.stroke]="s.secondaryColor" stroke-width="1" opacity="0.55" />
+          <path d="M98 110 C84 96 86 78 106 72 L134 72 C154 78 156 96 142 110 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="s.primaryColor" stroke-width="1.6" />
+          <path d="M120 22 L106 44 L86 24 L94 56 L112 90 L120 98 L128 90 L146 56 L154 24 L134 44 Z" fill="#0d1324" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <polygon points="120,30 112,50 120,86 128,50" [attr.fill]="s.primaryColor" opacity="0.28" />
+          <polygon points="108,52 115,56 109,59" [attr.fill]="s.secondaryColor" />
+          <polygon points="132,52 125,56 131,59" [attr.fill]="s.secondaryColor" />
+          <path d="M112 72 L120 82 L128 72" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
         }
         @case ('phoenix') {
-          <!-- Soaring Winged Crest -->
-          <path d="M120 58 C95 30 62 34 46 50 C68 58 84 68 102 74 Z" fill="rgb(16 22 38 / 0.88)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <path d="M120 58 C145 30 178 34 194 50 C172 58 156 68 138 74 Z" fill="rgb(16 22 38 / 0.88)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <path d="M120 22 L109 50 L120 98 L131 50 Z" fill="rgb(16 22 38 / 0.95)" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
-          <path d="M110 88 L120 112 L130 88" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" />
+          <!-- Blazing Feathered Phoenix Crest & Ember Plume -->
+          <path d="M114 64 C84 20 44 24 28 48 C54 54 68 68 88 74 C64 80 54 90 76 92 L114 78 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.9" />
+          <path d="M126 64 C156 20 196 24 212 48 C186 54 172 68 152 74 C176 80 186 90 164 92 L126 78 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.9" />
+          <path d="M120 16 L108 42 L114 68 L120 108 L126 68 L132 42 Z" fill="#141a30" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <path d="M106 86 Q120 122 134 86" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
+          <polygon points="120,32 125,40 120,46 115,40" [attr.fill]="s.secondaryColor" />
         }
         @case ('griffin') {
-          <!-- Swept Raptor Wings & Crest -->
-          <path d="M120 64 L54 24 L68 50 L50 64 L96 76 Z" fill="rgb(16 22 38 / 0.86)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <path d="M120 64 L186 24 L172 50 L190 64 L144 76 Z" fill="rgb(16 22 38 / 0.86)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <path d="M120 32 L106 54 L120 94 L134 54 Z" fill="rgb(12 18 32 / 0.96)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <path d="M115 48 L120 56 L125 48" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" />
+          <!-- Solar / Shadow War Griffin with Feathered Armor Pinions -->
+          <path d="M114 66 L44 20 L62 46 L42 60 L72 72 L106 78 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M126 66 L196 20 L178 46 L198 60 L168 72 L134 78 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M120 26 L104 48 L96 42 L106 86 L120 104 L134 86 L144 42 L136 48 Z" fill="#10172b" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <polygon points="114,48 126,48 120,62" [attr.fill]="s.secondaryColor" />
+          <circle cx="112" cy="43" r="2.2" [attr.fill]="s.secondaryColor" />
+          <circle cx="128" cy="43" r="2.2" [attr.fill]="s.secondaryColor" />
         }
         @case ('golem') {
-          <!-- Monolithic Shoulders & Rune Core -->
-          <polygon points="74,98 84,48 104,34 136,34 156,48 166,98 144,104 96,104" fill="rgb(12 18 30 / 0.92)" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <polygon points="104,48 120,38 136,48 132,68 108,68" fill="rgb(22 32 52 / 0.95)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <polygon points="120,74 130,85 120,96 110,85" [attr.fill]="s.primaryColor" [attr.stroke]="s.secondaryColor" stroke-width="1.5" />
-          <line x1="112" y1="54" x2="117" y2="54" [attr.stroke]="s.secondaryColor" stroke-width="2.5" />
-          <line x1="123" y1="54" x2="128" y2="54" [attr.stroke]="s.secondaryColor" stroke-width="2.5" />
+          <!-- Towering Armored Rune Colossus -->
+          <polygon points="62,108 72,56 96,36 144,36 168,56 178,108 152,114 88,114" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.2" />
+          <polygon points="98,46 120,30 142,46 136,70 104,70" fill="#111a30" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
+          <polygon points="68,62 92,48 96,86 72,94" fill="#0d1424" [attr.stroke]="s.primaryColor" stroke-width="1.5" />
+          <polygon points="172,62 148,48 144,86 168,94" fill="#0d1424" [attr.stroke]="s.primaryColor" stroke-width="1.5" />
+          <polygon points="120,76 134,90 120,104 106,90" [attr.fill]="s.secondaryColor" [attr.stroke]="s.primaryColor" stroke-width="1.6" />
+          <line x1="110" y1="54" x2="117" y2="54" [attr.stroke]="s.secondaryColor" stroke-width="2.5" />
+          <line x1="123" y1="54" x2="130" y2="54" [attr.stroke]="s.secondaryColor" stroke-width="2.5" />
         }
         @case ('guardian') {
-          <!-- Crested Vanguard Blade + Tower Shield -->
-          <path d="M120 20 L120 106" stroke="#f4efe6" stroke-width="2.6" />
-          <path d="M113 30 L120 18 L127 30" fill="none" stroke="#f4efe6" stroke-width="2.2" />
-          <path d="M90 40 L120 30 L150 40 L146 82 L120 102 L94 82 Z" fill="rgb(12 18 32 / 0.9)" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <path d="M104 52 L120 44 L136 52 L133 76 L120 88 L107 76 Z" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.6" />
+          <!-- Solar Vanguard Paladin / Lion-Crest Knight -->
+          <path d="M120 14 L120 116" stroke="#f8fafc" stroke-width="3" />
+          <path d="M111 28 L120 12 L129 28" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
+          <path d="M84 40 L120 26 L156 40 L150 86 L120 110 L90 86 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.2" />
+          <path d="M98 48 L120 38 L142 48 L138 78 L120 96 L102 78 Z" fill="#0c1222" [attr.stroke]="s.secondaryColor" stroke-width="1.5" />
+          <polygon points="120,50 128,66 120,82 112,66" [attr.fill]="s.secondaryColor" />
         }
         @case ('owl') {
-          <!-- Watchful Night Owl & Sight Beam -->
-          <path d="M84 44 L120 30 L156 44 L148 86 L120 98 L92 86 Z" fill="rgb(14 19 34 / 0.92)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <circle cx="107" cy="56" r="7" fill="rgb(6 10 20)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <circle cx="133" cy="56" r="7" fill="rgb(6 10 20)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <circle cx="107" cy="56" r="2.5" [attr.fill]="s.secondaryColor" />
-          <circle cx="133" cy="56" r="2.5" [attr.fill]="s.secondaryColor" />
-          <polygon points="116,64 124,64 120,72" [attr.fill]="s.primaryColor" />
+          <!-- Watchful Astral Night Owl -->
+          <path d="M76 58 C64 38 76 26 98 42 L120 28 L142 42 C164 26 176 38 164 58 L150 96 L120 108 L90 96 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <circle cx="106" cy="56" r="8" fill="#070a14" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
+          <circle cx="134" cy="56" r="8" fill="#070a14" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
+          <circle cx="106" cy="56" r="3" [attr.fill]="s.secondaryColor" />
+          <circle cx="134" cy="56" r="3" [attr.fill]="s.secondaryColor" />
+          <polygon points="116,66 124,66 120,76" [attr.fill]="s.primaryColor" />
         }
         @case ('serpent') {
-          <!-- Sinuous Coiled Serpent & Fangs -->
-          <path d="M72 92 C72 64 156 76 156 50 C156 32 108 26 96 42 C90 50 112 58 130 56" fill="none" [attr.stroke]="s.primaryColor" stroke-width="7" />
-          <path d="M72 92 C72 64 156 76 156 50 C156 32 108 26 96 42 C90 50 112 58 130 56" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <polygon points="124,48 144,44 148,56 130,64" fill="rgb(14 19 34 / 0.95)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <circle cx="139" cy="52" r="2" [attr.fill]="s.secondaryColor" />
+          <!-- Sinuous Wyrm Serpent -->
+          <path d="M62 102 C62 68 164 82 164 52 C164 30 108 24 94 42 C88 52 112 60 134 56" fill="none" [attr.stroke]="s.primaryColor" stroke-width="9" />
+          <path d="M62 102 C62 68 164 82 164 52 C164 30 108 24 94 42 C88 52 112 60 134 56" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.4" />
+          <polygon points="124,46 150,42 154,58 130,66" fill="#0c1222" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <circle cx="143" cy="52" r="2.2" [attr.fill]="s.secondaryColor" />
         }
         @case ('beast') {
-          <!-- Prowling Feral Mask & Claws -->
-          <path d="M88 46 L94 26 L112 42 L128 42 L146 26 L152 46 L146 84 L120 98 L94 84 Z" fill="rgb(14 19 34 / 0.92)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <path d="M102 60 L112 64 M138 60 L128 64" [attr.stroke]="s.secondaryColor" stroke-width="2.6" />
-          <path d="M110 78 L120 84 L130 78" fill="none" [attr.stroke]="s.primaryColor" stroke-width="2" />
+          <!-- Prowling Arcane Feline / Ghost Wolf / Lion Familiar -->
+          <path d="M84 78 Q66 64 58 84 Q70 98 92 94 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="s.primaryColor" stroke-width="1.6" />
+          <path d="M86 50 L90 22 L110 40 L130 40 L150 22 L154 50 L146 88 L120 104 L94 88 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <path d="M96 48 L112 54 L102 64 Z M144 48 L128 54 L138 64 Z" [attr.fill]="s.secondaryColor" />
+          <circle cx="105" cy="57" r="2" fill="#060811" />
+          <circle cx="135" cy="57" r="2" fill="#060811" />
+          <path d="M110 78 L120 86 L130 78 M102 74 L84 78 M138 74 L156 78" fill="none" [attr.stroke]="s.primaryColor" stroke-width="1.8" />
         }
         @case ('wisp') {
-          <!-- Radiant Spirit Core with Ethereal Wings -->
-          <path d="M112 62 C90 36 68 42 74 62 C64 74 86 86 112 72 Z" fill="rgb(255 255 255 / 0.08)" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
-          <path d="M128 62 C150 36 172 42 166 62 C176 74 154 86 128 72 Z" fill="rgb(255 255 255 / 0.08)" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
-          <circle cx="120" cy="64" r="14" fill="rgb(12 18 32 / 0.9)" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <circle cx="120" cy="64" r="6" [attr.fill]="s.secondaryColor" />
+          <!-- Astral Fae / Shadow Imp / Winged Familiar with Radiant Core -->
+          <path d="M112 62 C82 26 48 34 58 60 C46 80 80 96 112 72 Z" fill="rgb(255 255 255 / 0.1)" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M128 62 C158 26 192 34 182 60 C194 80 160 96 128 72 Z" fill="rgb(255 255 255 / 0.1)" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="1.8" />
+          <path d="M120 34 C132 48 134 74 120 92 C106 74 108 48 120 34 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="s.secondaryColor" stroke-width="2" />
+          <circle cx="120" cy="62" r="9" [attr.fill]="s.primaryColor" opacity="0.88" />
+          <circle cx="120" cy="62" r="4.5" [attr.fill]="s.secondaryColor" />
         }
         @case ('reaper') {
-          <!-- Hooded Shadow / Spectral Mantle -->
-          <path d="M86 102 C88 64 96 34 120 26 C144 34 152 64 154 102 L134 92 L120 104 L106 92 Z" fill="rgb(10 12 22 / 0.95)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-          <path d="M106 54 Q120 42 134 54 Q128 72 120 74 Q112 72 106 54 Z" fill="#060811" [attr.stroke]="s.secondaryColor" stroke-width="1.5" />
-          <circle cx="114" cy="56" r="2.3" [attr.fill]="s.secondaryColor" />
-          <circle cx="126" cy="56" r="2.3" [attr.fill]="s.secondaryColor" />
+          <!-- Abyssal Demon / Void Lich / Reaper with Horned Mantle & Cursed Staff -->
+          <path d="M98 32 L78 16 M142 32 L162 16" [attr.stroke]="s.secondaryColor" stroke-width="2.6" />
+          <path d="M74 108 C76 62 90 32 120 24 C150 32 164 62 166 108 L142 96 L120 112 L98 96 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <path d="M104 52 Q120 38 136 52 Q130 74 120 78 Q110 74 104 52 Z" fill="#05070e" [attr.stroke]="s.secondaryColor" stroke-width="1.6" />
+          <polygon points="109,54 117,57 111,60" [attr.fill]="s.secondaryColor" />
+          <polygon points="131,54 123,57 129,60" [attr.fill]="s.secondaryColor" />
+          <line x1="66" y1="22" x2="72" y2="114" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
+          <circle cx="66" cy="22" r="6" [attr.fill]="s.secondaryColor" opacity="0.9" />
         }
         @case ('seraph') {
-          <!-- Haloed Astral Wings & Crest -->
-          <circle cx="120" cy="30" r="10" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
-          <path d="M120 56 L66 32 L74 58 L62 74 L106 80 Z" fill="rgb(254 240 138 / 0.14)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <path d="M120 56 L174 32 L166 58 L178 74 L134 80 Z" fill="rgb(254 240 138 / 0.14)" [attr.stroke]="s.secondaryColor" stroke-width="2" />
-          <polygon points="120,40 132,68 120,98 108,68" fill="rgb(16 22 38 / 0.92)" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
+          <!-- Solar Archangel / Dawn Unicorn Crest & Celestial Pinions -->
+          <circle cx="120" cy="26" r="11" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
+          <path d="M114 58 L46 24 L60 54 L44 74 L98 84 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="s.secondaryColor" stroke-width="1.9" />
+          <path d="M126 58 L194 24 L180 54 L196 74 L142 84 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="s.secondaryColor" stroke-width="1.9" />
+          <path d="M120 32 L134 62 L120 106 L106 62 Z" fill="#10182e" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.2" />
+          <polygon points="120,44 126,64 120,86 114,64" [attr.fill]="s.secondaryColor" opacity="0.85" />
         }
         @case ('campfire') {
-          <!-- Restorative Brazier / Sacred Hearth -->
-          <path d="M90 96 L150 96 M98 104 L142 104" stroke="#8c621d" stroke-width="3.5" />
-          <path d="M120 26 C138 48 144 74 120 90 C96 74 102 48 120 26 Z" [attr.fill]="s.glowColor" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <path d="M120 44 C130 58 132 76 120 86 C108 76 110 58 120 44 Z" [attr.fill]="s.secondaryColor" opacity="0.85" />
+          <!-- Sacred Healing Sanctuary Flame / Chalice -->
+          <path d="M84 98 L156 98 M94 106 L146 106" stroke="#c8a44d" stroke-width="3.5" />
+          <path d="M120 20 C142 48 148 78 120 94 C92 78 98 48 120 20 Z" [attr.fill]="s.glowColor" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.4" />
+          <path d="M120 40 C134 58 134 78 120 90 C106 78 106 58 120 40 Z" [attr.fill]="s.secondaryColor" opacity="0.88" />
         }
         @case ('fireball') {
-          <!-- Concentric Elemental Detonation Sphere -->
-          <circle cx="120" cy="64" r="30" [attr.fill]="s.glowColor" [attr.stroke]="s.primaryColor" stroke-width="2.5" />
-          <circle cx="120" cy="64" r="17" [attr.fill]="s.primaryColor" opacity="0.7" />
-          <circle cx="120" cy="64" r="8" [attr.fill]="s.secondaryColor" />
+          <!-- Divine / Volcanic Arcane Judgment Starburst -->
+          <polygon points="120,16 132,50 168,64 132,78 120,112 108,78 72,64 108,50" [attr.fill]="s.glowColor" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2" />
+          <circle cx="120" cy="64" r="24" [attr.fill]="s.primaryColor" opacity="0.52" />
+          <circle cx="120" cy="64" r="11" [attr.fill]="s.secondaryColor" />
         }
         @case ('vortex') {
           <!-- Swirling Elemental Tempest -->
-          <path d="M84 42 C110 26 154 34 156 58 C158 84 96 86 92 64 C88 48 128 46 132 60" fill="none" [attr.stroke]="s.primaryColor" stroke-width="3" />
-          <path d="M74 68 C94 94 158 96 168 68" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" stroke-dasharray="6 4" />
+          <path d="M78 40 C110 22 162 32 164 58 C166 86 92 88 88 64 C84 46 132 44 136 60" fill="none" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="3.2" />
+          <path d="M66 68 C90 98 164 100 174 68" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.2" stroke-dasharray="6 4" />
         }
         @case ('chains') {
           <!-- Locking Runic Prism + Crossed Links -->
-          <polygon points="120,28 148,66 120,104 92,66" fill="rgb(12 24 44 / 0.85)" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <line x1="68" y1="36" x2="172" y2="96" [attr.stroke]="s.secondaryColor" stroke-width="3.2" stroke-dasharray="10 5" />
-          <line x1="172" y1="36" x2="68" y2="96" [attr.stroke]="s.secondaryColor" stroke-width="3.2" stroke-dasharray="10 5" />
+          <polygon points="120,24 152,64 120,104 88,64" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.4" />
+          <line x1="64" y1="34" x2="176" y2="94" [attr.stroke]="s.secondaryColor" stroke-width="3.2" stroke-dasharray="10 5" />
+          <line x1="176" y1="34" x2="64" y2="94" [attr.stroke]="s.secondaryColor" stroke-width="3.2" stroke-dasharray="10 5" />
         }
         @case ('shield') {
-          <!-- Arcane Bastion Aegis Shield -->
-          <path d="M86 34 L120 22 L154 34 L148 80 L120 104 L92 80 Z" fill="rgb(10 18 34 / 0.9)" [attr.stroke]="s.primaryColor" stroke-width="2.8" />
-          <path d="M98 42 L120 33 L142 42 L138 74 L120 92 L102 74 Z" [attr.fill]="s.glowColor" [attr.stroke]="s.secondaryColor" stroke-width="1.6" />
-          <polygon points="120,46 130,62 120,78 110,62" [attr.fill]="s.secondaryColor" opacity="0.8" />
+          <!-- Sacred Bastion Aegis Shield -->
+          <path d="M82 32 L120 18 L158 32 L152 82 L120 108 L88 82 Z" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.6" />
+          <path d="M96 42 L120 31 L144 42 L140 76 L120 95 L100 76 Z" [attr.fill]="s.glowColor" [attr.stroke]="s.secondaryColor" stroke-width="1.6" />
+          <polygon points="120,46 131,63 120,80 109,63" [attr.fill]="s.secondaryColor" opacity="0.88" />
         }
         @case ('blade') {
-          <!-- Descending Celestial / Arcanic Blade -->
-          <path d="M120 16 L130 78 L120 106 L110 78 Z" fill="rgb(16 22 38 / 0.95)" [attr.stroke]="s.secondaryColor" stroke-width="2.4" />
-          <line x1="94" y1="78" x2="146" y2="78" [attr.stroke]="s.primaryColor" stroke-width="3.5" />
-          <line x1="120" y1="22" x2="120" y2="94" [attr.stroke]="s.primaryColor" stroke-width="1.6" />
+          <!-- Celestial Runic Greatsword Descending with Radiant Shockwave -->
+          <polygon points="120,12 132,76 120,112 108,76" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.2" />
+          <path d="M88 76 L112 70 L128 70 L152 76 L128 82 L112 82 Z" [attr.fill]="s.primaryColor" [attr.stroke]="s.secondaryColor" stroke-width="1.4" />
+          <line x1="120" y1="18" x2="120" y2="98" [attr.stroke]="s.secondaryColor" stroke-width="1.8" />
+          <ellipse cx="120" cy="108" rx="44" ry="8" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.6" opacity="0.65" />
         }
         @case ('eclipse') {
           <!-- Occult Eclipsed Crescent & Hex Halo -->
-          <circle cx="120" cy="64" r="28" [attr.fill]="s.primaryColor" opacity="0.28" />
-          <circle cx="120" cy="64" r="26" fill="none" [attr.stroke]="s.primaryColor" stroke-width="2.5" />
-          <circle cx="128" cy="58" r="22" fill="#090b14" />
-          <polygon points="120,26 154,84 86,84" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.4" opacity="0.65" />
+          <circle cx="120" cy="64" r="30" [attr.fill]="s.primaryColor" opacity="0.34" />
+          <circle cx="120" cy="64" r="27" fill="none" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.5" />
+          <circle cx="128" cy="58" r="22" fill="#070812" />
+          <polygon points="120,24 156,86 84,86" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.5" opacity="0.72" />
         }
         @case ('siphon') {
           <!-- Spectral Claw & Twin Life-Streams -->
-          <path d="M84 96 C94 68 106 58 120 50 C134 58 146 68 156 96" fill="none" [attr.stroke]="s.primaryColor" stroke-width="3" />
-          <path d="M74 42 C96 48 108 66 120 66 C132 66 144 48 166 42" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.4" stroke-dasharray="5 3" />
-          <circle cx="120" cy="64" r="11" fill="#0b0e18" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
+          <path d="M80 98 C92 68 106 58 120 48 C134 58 148 68 160 98" fill="none" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="3.2" />
+          <path d="M70 40 C94 46 108 66 120 66 C132 66 146 46 170 40" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.4" stroke-dasharray="5 3" />
+          <circle cx="120" cy="64" r="12" fill="#0b0e18" [attr.stroke]="s.secondaryColor" stroke-width="2.2" />
         }
         @default {
           <!-- Runic Star Seal -->
-          <polygon points="120,24 152,64 120,104 88,64" fill="rgb(12 18 32 / 0.88)" [attr.stroke]="s.primaryColor" stroke-width="2.4" />
-          <circle cx="120" cy="64" r="14" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" />
+          <polygon points="120,20 156,64 120,108 84,64" [attr.fill]="'url(#body-' + uid + ')'" [attr.stroke]="'url(#rim-' + uid + ')'" stroke-width="2.4" />
+          <circle cx="120" cy="64" r="15" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" />
         }
       }
     </g>
@@ -195,84 +234,62 @@
     <g stroke-linecap="round" stroke-linejoin="round" pointer-events="none">
       @switch (s.effect) {
         @case ('SHIELD') {
-          <!-- Hexagonal Aegis Barrier Dome -->
-          <path d="M58 96 C62 42 94 22 120 22 C146 22 178 42 182 96" fill="none" stroke="#7dd3fc" stroke-width="2.2" opacity="0.72" />
-          <path d="M68 96 C72 52 98 34 120 34 C142 34 168 52 172 96" fill="none" stroke="#fef08a" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.7" />
+          <path d="M54 98 C60 40 94 20 120 20 C146 20 180 40 186 98" fill="none" stroke="#7dd3fc" stroke-width="2.2" opacity="0.72" />
+          <path d="M66 98 C72 52 98 32 120 32 C142 32 168 52 174 98" fill="none" stroke="#fef08a" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.72" />
         }
         @case ('DAMAGE') {
-          <!-- Dynamic Combat Impact Slash + Fracture Rays -->
-          <path d="M52 104 Q120 52 192 28" fill="none" stroke="#fb7185" stroke-width="3.6" opacity="0.9" />
-          <path d="M64 108 Q126 62 198 38" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.8" opacity="0.8" />
+          <path d="M48 106 Q120 50 196 26" fill="none" stroke="#fb7185" stroke-width="3.6" opacity="0.9" />
+          <path d="M62 110 Q128 62 200 36" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="1.8" opacity="0.82" />
           <path d="M168 24 L182 32 M176 20 L174 36" stroke="#fde047" stroke-width="2" />
         }
         @case ('DESTROY') {
-          <!-- Cross Shatter Cleave -->
-          <line x1="66" y1="24" x2="174" y2="104" stroke="#fb7185" stroke-width="3.2" opacity="0.88" />
-          <line x1="174" y1="24" x2="66" y2="104" stroke="#f97316" stroke-width="2.4" opacity="0.8" />
-          <circle cx="120" cy="64" r="22" fill="none" stroke="#fda4af" stroke-width="1.5" stroke-dasharray="4 4" />
+          <line x1="64" y1="22" x2="176" y2="106" stroke="#fb7185" stroke-width="3.2" opacity="0.9" />
+          <line x1="176" y1="22" x2="64" y2="106" stroke="#f97316" stroke-width="2.4" opacity="0.82" />
         }
         @case ('ATK_BUFF') {
-          <!-- Upward War Power Chevrons -->
           <g class="arcane-art-float-slow">
-            <path d="M54 88 L66 74 L78 88" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.8" />
-            <path d="M54 74 L66 60 L78 74" fill="none" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
-            <path d="M162 88 L174 74 L186 88" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.8" />
-            <path d="M162 74 L174 60 L186 74" fill="none" [attr.stroke]="s.primaryColor" stroke-width="2.2" />
+            <path d="M48 88 L60 74 L72 88 M48 74 L60 60 L72 74" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.6" />
+            <path d="M168 88 L180 74 L192 88 M168 74 L180 60 L192 74" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2.6" />
           </g>
         }
         @case ('HEAL') {
-          <!-- Restorative Floating Orbs & Plus Halo -->
           <g class="arcane-art-float-slow" stroke="#34d399">
-            <path d="M56 64 L56 76 M50 70 L62 70" stroke-width="2.6" />
-            <path d="M184 52 L184 64 M178 58 L190 58" stroke-width="2.6" />
-            <circle cx="64" cy="40" r="3" fill="#34d399" stroke="none" opacity="0.7" />
-            <circle cx="176" cy="84" r="3" fill="#fef08a" stroke="none" opacity="0.7" />
+            <path d="M50 64 L50 76 M44 70 L56 70" stroke-width="2.6" />
+            <path d="M190 52 L190 64 M184 58 L196 58" stroke-width="2.6" />
+            <circle cx="60" cy="40" r="3" fill="#34d399" stroke="none" opacity="0.75" />
+            <circle cx="180" cy="84" r="3" fill="#fef08a" stroke="none" opacity="0.75" />
           </g>
         }
         @case ('SLOW') {
-          <!-- Frosted Runic Bind Bars -->
-          <line x1="56" y1="44" x2="184" y2="44" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="8 6" opacity="0.78" />
-          <line x1="56" y1="86" x2="184" y2="86" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6" opacity="0.78" />
-          <polygon points="184,36 196,44 184,52 172,44" fill="#0ea5e9" stroke="#e0f2fe" stroke-width="1.2" />
+          <line x1="54" y1="42" x2="186" y2="42" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="8 6" opacity="0.78" />
+          <line x1="54" y1="88" x2="186" y2="88" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6" opacity="0.78" />
         }
         @case ('STEALTH') {
-          <!-- Spectral Mist Veils -->
-          <path d="M40 78 Q88 54 134 72 T208 66" fill="none" stroke="#c084fc" stroke-width="3" opacity="0.45" />
-          <path d="M32 92 Q92 70 144 86 T216 80" fill="none" stroke="#94a3b8" stroke-width="2.5" opacity="0.38" />
+          <path d="M36 78 Q88 54 134 72 T208 66" fill="none" stroke="#c084fc" stroke-width="3" opacity="0.48" />
+          <path d="M28 94 Q92 70 144 86 T216 80" fill="none" stroke="#94a3b8" stroke-width="2.5" opacity="0.4" />
         }
         @case ('ENERGY') {
-          <!-- Lightning Conduit Bolt -->
-          <polygon points="178,24 164,52 176,52 162,82 190,46 177,46" fill="#f0c96e" stroke="#fef08a" stroke-width="1.2" />
-          <path d="M64 46 L76 58 L62 66" fill="none" stroke="#34d399" stroke-width="2.2" />
+          <polygon points="182,22 168,50 180,50 166,80 194,44 181,44" fill="#f0c96e" stroke="#fef08a" stroke-width="1.2" />
         }
         @case ('PEEK') {
-          <!-- Scrying Sight Rays -->
-          <ellipse cx="182" cy="42" rx="14" ry="8" fill="#080c17" stroke="#7dd3fc" stroke-width="1.8" />
-          <circle cx="182" cy="42" r="3.5" fill="#fde047" />
-          <line x1="168" y1="42" x2="128" y2="62" stroke="#7dd3fc" stroke-width="1.4" stroke-dasharray="3 3" opacity="0.7" />
+          <ellipse cx="186" cy="40" rx="14" ry="8" fill="#080c17" stroke="#7dd3fc" stroke-width="1.8" />
+          <circle cx="186" cy="40" r="3.5" fill="#fde047" />
         }
         @case ('REACTIVE') {
-          <!-- Counter-Sigil Guard Ring -->
-          <circle cx="120" cy="64" r="46" fill="none" stroke="#f0c96e" stroke-width="1.8" stroke-dasharray="8 5" opacity="0.75" />
-          <polygon points="120,16 125,26 115,26" fill="#f0c96e" />
-          <polygon points="120,112 125,102 115,102" fill="#f0c96e" />
+          <polygon points="120,14 125,24 115,24" fill="#f0c96e" />
+          <polygon points="120,114 125,104 115,104" fill="#f0c96e" />
         }
         @case ('CURSE') {
-          <!-- Hex Ring & Downward Affliction -->
-          <circle cx="120" cy="64" r="44" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="10 4 3 4" opacity="0.75" />
-          <path d="M58 38 L58 60 M52 54 L58 62 L64 54" fill="none" stroke="#fb7185" stroke-width="2.2" />
-          <path d="M182 38 L182 60 M176 54 L182 62 L188 54" fill="none" stroke="#fb7185" stroke-width="2.2" />
+          <path d="M52 38 L52 60 M46 54 L52 62 L58 54" fill="none" stroke="#fb7185" stroke-width="2.2" />
+          <path d="M188 38 L188 60 M182 54 L188 62 L194 54" fill="none" stroke="#fb7185" stroke-width="2.2" />
         }
         @case ('SURVOL') {
-          <!-- High-Altitude Flight Wind Sweeps -->
-          <path d="M36 44 Q98 18 164 30" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" stroke-dasharray="12 5" opacity="0.75" />
-          <path d="M52 34 L68 28 L60 40" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" opacity="0.8" />
+          <path d="M34 42 Q98 16 164 28" fill="none" [attr.stroke]="s.secondaryColor" stroke-width="2" stroke-dasharray="12 5" opacity="0.78" />
         }
       }
     </g>
   </svg>
 
-  <!-- Concise Effect Readout Badge matching card description (hidden in mini compact thumbnail mode) -->
   @if (!compact()) {
     <span class="arcane-art-effect-chip">
       {{ s.effectTag }}

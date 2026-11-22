@@ -50,7 +50,7 @@ final class BotTacticalPlanner {
         this.abilities = abilities;
         this.combatResolver = combatResolver;
         this.projector = projector;
-        this.lethalSolver = new BotLethalSolver(evaluator, abilities);
+        this.lethalSolver = new BotLethalSolver(evaluator, abilities, combatResolver);
     }
 
     GameActionCommand chooseMulliganAction(GameRoom room, PlayerState bot, AiDifficulty difficulty) {

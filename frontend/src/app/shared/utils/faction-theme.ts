@@ -7,11 +7,11 @@ import {
   DeckStats,
   DeckValidationResult,
   Faction,
-  LeagueTier,
   MatchSource,
   PlayerBoardViewDto,
   PlayerGameView,
 } from '../../core/models/arcane.models';
+export { LEAGUE_LABELS } from './league-labels';
 
 export interface FactionMeta {
   code: Faction;
@@ -75,15 +75,6 @@ export const CARD_TYPE_LABELS: Record<CardType, string> = {
   SPELL_ULTIMATE: 'Sort Ultime',
   CURSE: 'Malédiction',
   ARTIFACT: 'Artefact',
-};
-
-export const LEAGUE_LABELS: Record<LeagueTier, string> = {
-  APPRENTI: 'Apprenti',
-  INITIE: 'Initié',
-  ADEPTE: 'Adepte',
-  MAGE: 'Mage',
-  ARCHIMAGE: 'Archimage',
-  GRAND_MAITRE: 'Grand Maître',
 };
 
 export interface MatchSourceMeta {

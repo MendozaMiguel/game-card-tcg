@@ -65,6 +65,9 @@ public class UserProfileEntity {
     @Column(name = "faction_wins", nullable = false, columnDefinition = "jsonb")
     private Map<String, Integer> factionWins = new HashMap<>();
 
+    @Column(name = "tutorial_completed", nullable = false)
+    private boolean tutorialCompleted = false;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
 
@@ -105,6 +108,8 @@ public class UserProfileEntity {
     public void setEquippedFinisher(String v) { this.equippedFinisher = v; touch(); }
     public Map<String, Integer> getFactionWins() { return factionWins; }
     public void setFactionWins(Map<String, Integer> factionWins) { this.factionWins = factionWins; touch(); }
+    public boolean isTutorialCompleted() { return tutorialCompleted; }
+    public void setTutorialCompleted(boolean tutorialCompleted) { this.tutorialCompleted = tutorialCompleted; touch(); }
 
     private void touch() {
         this.updatedAt = Instant.now();

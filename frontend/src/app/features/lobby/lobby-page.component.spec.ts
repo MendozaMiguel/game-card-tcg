@@ -28,6 +28,11 @@ describe('LobbyPageComponent', () => {
       mmr2v2: 1000,
       goldenShards: 0,
       arcaneCrowns: 0,
+      tutorialCompleted: true,
+    }),
+    completeTutorial: vi.fn().mockImplementation(async () => {
+      authStub.user.update((u) => (u ? { ...u, tutorialCompleted: true } : u));
+      return authStub.user();
     }),
   };
 
@@ -206,6 +211,80 @@ describe('LobbyPageComponent', () => {
     expect(host.textContent).toContain('Bienvenue dans le Sanctuaire !');
 
     stomp.globalMessages.set([]);
+    fixture.destroy();
+  });
+
+  it('shows interactive onboarding banner for new accounts, starts EASY tutorial duel with ?tutorial=1, and persists skip', async () => {
+    const router = TestBed.inject(Router);
+    const navSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const stomp = TestBed.inject(StompService);
+    stomp.connect = vi.fn();
+
+    lobbyApiStub.startAiMatch.mockClear();
+    authStub.completeTutorial.mockClear();
+    authStub.user.update((u) => (u ? { ...u, tutorialCompleted: false } : u));
+    lobbyApiStub.listDecks.mockResolvedValueOnce([
+      {
+        deckId: 'deck-fire-1',
+        name: 'Ordre du Feu',
+        primaryFaction: 'FIRE',
+        secondaryFaction: null,
+        favorite: true,
+        validAntimeta: true,
+        starter: true,
+        updatedAt: new Date().toISOString(),
+        cards: [],
+        validation: {
+          valid: true,
+          violations: [],
+          stats: {
+            totalCards: 30,
+            monsterCount: 10,
+            standardMonsterCount: 10,
+            epicMonsterCount: 0,
+            familiarCount: 10,
+            spellCategoryCount: 10,
+            cost1To2Count: 14,
+            cost3To4Count: 12,
+            cost5PlusCount: 4,
+            rampCount: 2,
+            factionCounts: { FIRE: 30 },
+            primaryFaction: 'FIRE',
+            secondaryFaction: null,
+          },
+        },
+      },
+    ]);
+
+    const fixture = TestBed.createComponent(LobbyPageComponent);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Bienvenue dans L\'Ordre des Arcanes');
+
+    const startBtn = Array.from(host.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Démarrer le Duel'),
+    );
+    expect(startBtn).toBeTruthy();
+    startBtn?.click();
+    await fixture.whenStable();
+
+    expect(lobbyApiStub.startAiMatch).toHaveBeenCalledWith('DUEL_1V1', 'deck-fire-1', null, 'EASY');
+    expect(navSpy).toHaveBeenCalledWith(['/arena', 'match-ai-1'], { queryParams: { tutorial: '1' } });
+
+    const skipBtn = Array.from(host.querySelectorAll('button')).find((b) =>
+      b.textContent?.trim() === 'Passer',
+    );
+    expect(skipBtn).toBeTruthy();
+    skipBtn?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(authStub.completeTutorial).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('#lobby-tutorial-title')).toBeNull();
     fixture.destroy();
   });
 });

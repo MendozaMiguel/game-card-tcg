@@ -189,11 +189,7 @@ li {
   box-shadow: inset 0 2px 8px 0 rgb(0 0 0 / 0.52);
 }
 
-/* Collectible card frame primitives (Container Queries + zero-shift selection) */
-.arcane-card-container {
-  container-type: inline-size;
-  container-name: arcane-card;
-}
+/* Collectible card frame primitives (zero-shift selection) */
 
 .arcane-card-frame {
   border-width: 1px;
@@ -741,13 +737,6 @@ select.arcane-input {
 .arcane-mode-card:active:not(:disabled) {
   @media (prefers-reduced-motion: no-preference) {
     transform: scale(0.985);
-  }
-}
-
-/* Always expose hover-revealed card controls on touch screens (no hover) */
-@media (hover: none) {
-  .arcane-hover-reveal {
-    opacity: 1 !important;
   }
 }
 
@@ -1349,14 +1338,6 @@ select.arcane-input {
     }
   }
 
-  .arcane-proj-bolt {
-    animation: arcaneProjectileFlight 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .arcane-proj-arrival {
-    animation: arcaneProjectileArrival 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
-  }
-
   .arcane-avatar-shield-svg {
     animation: arcaneVfxShieldBastion 0.85s var(--arcane-spring-easing) forwards;
   }
@@ -1367,42 +1348,6 @@ select.arcane-input {
 
   .arcane-avatar-impact-badge {
     animation: arcaneVfxBadgeRise 1.15s var(--arcane-bounce-easing) forwards;
-  }
-
-  @keyframes arcaneProjectileFlight {
-    0% {
-      opacity: 0;
-      transform: translate3d(0, 0, 0) rotate(var(--proj-angle, 0deg)) scale(0.68);
-    }
-    16% {
-      opacity: 1;
-      transform: translate3d(calc(var(--proj-dx, 0px) * 0.16), calc(var(--proj-dy, 0px) * 0.16), 0)
-        rotate(var(--proj-angle, 0deg)) scale(1.1);
-    }
-    82% {
-      opacity: 1;
-      transform: translate3d(calc(var(--proj-dx, 0px) * 0.94), calc(var(--proj-dy, 0px) * 0.94), 0)
-        rotate(var(--proj-angle, 0deg)) scale(1.04);
-    }
-    100% {
-      opacity: 0;
-      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) rotate(var(--proj-angle, 0deg)) scale(0.62);
-    }
-  }
-
-  @keyframes arcaneProjectileArrival {
-    0% {
-      opacity: 0;
-      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(0.45);
-    }
-    34% {
-      opacity: 1;
-      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.12);
-    }
-    100% {
-      opacity: 0;
-      transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0) scale(1.45);
-    }
   }
 }
 
@@ -1580,98 +1525,6 @@ select.arcane-input {
   color: #fda4af;
 }
 
-.arcane-projectile-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 42;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.arcane-proj-anchor {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: translate3d(var(--proj-x, 0px), var(--proj-y, 0px), 0);
-  pointer-events: none;
-}
-
-.arcane-proj-bolt {
-  position: absolute;
-  left: -44px;
-  top: -20px;
-  width: 88px;
-  height: 40px;
-  transform-origin: center;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.arcane-proj-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-.arcane-proj-anchor[data-faction='FIRE'] {
-  color: #fb923c;
-}
-
-.arcane-proj-anchor[data-faction='ICE'] {
-  color: #38bdf8;
-}
-
-.arcane-proj-anchor[data-faction='SHADOW'] {
-  color: #c084fc;
-}
-
-.arcane-proj-anchor[data-faction='LIGHT'] {
-  color: #facc15;
-}
-
-.arcane-proj-arrival {
-  position: absolute;
-  left: -34px;
-  top: -34px;
-  width: 68px;
-  height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translate3d(var(--proj-dx, 0px), var(--proj-dy, 0px), 0);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.arcane-proj-arrival-ring {
-  position: absolute;
-  inset: 6px;
-  border-radius: 999px;
-  border: 2.5px solid currentColor;
-  background: radial-gradient(circle, currentColor 0%, transparent 65%);
-  opacity: 0.72;
-}
-
-.arcane-proj-arrival-core {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 0 18px currentColor;
-}
-
-.arcane-proj-deflect-arc {
-  width: 56px;
-  height: 56px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .arcane-proj-arrival {
-    opacity: 0.85;
-  }
-}
-
 /* ==========================================================================
    Arena UX Clarity: Faction Territories, Turn Ownership & Scannable Chronicle
    ========================================================================== */
@@ -1800,61 +1653,6 @@ select.arcane-input {
   border-color: rgb(251 191 36 / 0.65);
   border-inline-start-color: #fbbf24;
   background-color: rgb(36 22 8 / 0.82);
-}
-
-@keyframes arcane-beacon-slide {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -10px) scale(0.96);
-  }
-  16%,
-  82% {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -6px) scale(0.98);
-  }
-}
-
-.arcane-turn-beacon {
-  --beacon-accent: #34d399;
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 38;
-  pointer-events: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  border-radius: 9999px;
-  border: 1.5px solid var(--beacon-accent);
-  background: rgb(8 13 24 / 0.94);
-  padding: 0.35rem 0.95rem;
-  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.95), 0 0 24px -8px var(--beacon-accent);
-  white-space: nowrap;
-
-  @media (prefers-reduced-motion: no-preference) {
-    animation: arcane-beacon-slide 2.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-}
-
-.arcane-turn-beacon[data-faction='FIRE'] {
-  --beacon-accent: #fb923c;
-}
-
-.arcane-turn-beacon[data-faction='ICE'] {
-  --beacon-accent: #38bdf8;
-}
-
-.arcane-turn-beacon[data-faction='SHADOW'] {
-  --beacon-accent: #c084fc;
-}
-
-.arcane-turn-beacon[data-faction='LIGHT'] {
-  --beacon-accent: #facc15;
 }
 
 .arcane-tab-btn {

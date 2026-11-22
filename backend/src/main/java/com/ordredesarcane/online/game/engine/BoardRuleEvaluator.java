@@ -56,8 +56,8 @@ public class BoardRuleEvaluator {
     }
 
     public boolean hasKeyword(GameRoom room, CardInstance creature, String keyword) {
-        if ("CAMOUFLAGE".equals(keyword) && creature.isCamouflaged()) {
-            return true;
+        if ("CAMOUFLAGE".equals(keyword)) {
+            return creature.isCamouflaged();
         }
         if ("CHARGE".equals(keyword) && isChargeStripped(room, creature)) {
             return false;
@@ -69,6 +69,8 @@ public class BoardRuleEvaluator {
         Set<String> result = new LinkedHashSet<>(creature.getDefinition().keywords());
         if (creature.isCamouflaged()) {
             result.add("CAMOUFLAGE");
+        } else {
+            result.remove("CAMOUFLAGE");
         }
         if (isChargeStripped(room, creature)) {
             result.remove("CHARGE");

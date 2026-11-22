@@ -8,6 +8,7 @@ import com.ordredesarcane.online.user.dto.UserProfileDto;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,5 +45,10 @@ public class ProfileController {
             @AuthenticationPrincipal PlayerPrincipal principal,
             @Valid @RequestBody UpdateCosmeticsRequest request) {
         return profileService.equipCosmetics(principal.userId(), request);
+    }
+
+    @PostMapping("/tutorial/complete")
+    public UserProfileDto completeTutorial(@AuthenticationPrincipal PlayerPrincipal principal) {
+        return profileService.markTutorialCompleted(principal.userId());
     }
 }

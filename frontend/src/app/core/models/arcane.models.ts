@@ -42,6 +42,7 @@ export type GamePhase =
   | 'FINISHED';
 
 export type GameActionType =
+  | 'MULLIGAN_REPLACE_CARD'
   | 'MULLIGAN_SWAP'
   | 'PLAY_CARD'
   | 'SET_REACTIVE_SPELL'
@@ -93,6 +94,7 @@ export interface UserProfileDto {
   equippedFinisher: string;
   factionWins: Record<string, number>;
   unlockedCosmetics: CosmeticItemDto[];
+  tutorialCompleted?: boolean;
 }
 
 export interface UpdateCosmeticsRequest {
@@ -234,6 +236,7 @@ export interface PlayerBoardViewDto {
   connected: boolean;
   controlledByUserId: string;
   mulliganCompleted: boolean;
+  mulliganReplacedSlots?: number[];
   energyTokens: number;
   deckCount: number;
   handCount: number;
