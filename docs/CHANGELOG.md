@@ -4,6 +4,48 @@
 
 ---
 
+## [2026-11-21] — Refonte Grimoire & Decks en Deux Vues (`LIST` + `EDITOR`) selon Maquettes
+
+- **Front-End ([`deckbuilder-page.component.ts`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.ts), [`deckbuilder-page.component.html`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.html), [`deckbuilder-page.component.scss`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.scss))** :
+  - **Vue Collection (`LIST` / `deck1.png`)** : affichage par défaut des decks sauvegardés avec médaillon de faction (`FIRE`/`ICE`/`SHADOW`/`LIGHT`), action directe de favori/suppression en pied de carte, et emplacement vide dédié **`Nouveau`** à côté des decks pour démarrer une création.
+  - **Vue Éditeur (`EDITOR` / `deckSuite.png`)** : colonne gauche regroupant les cartes ajoutées au deck en grille visuelle 3 colonnes dans le cadre violet (avec emplacements vides jusqu'à `6` puis défilement jusqu'à `30`, jauge 4 Lois Anti-Méta) et le bouton vert **Valider** centré en bas ; colonne droite regroupant en tête le bloc rouge de recherche & filtres (`Recherche`, `Faction`, `Type`, `Coût Énergie`, `Mot-clé / Ramp`, bouton `Réinitialiser`) suivi des cartes juxtaposées à leur cadre bleu de descriptif mécanique intégral (`KEYWORD_DESCRIPTIONS`, `+ Ajouter`, `Aperçu 3D`).
+  - Retour automatique vers la vue `LIST` après validation d'un deck et mise à jour de [`docs/DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
+- **Tests & Vérifications** :
+  - Création de [`deckbuilder-page.component.spec.ts`](../frontend/src/app/features/deckbuilder/deckbuilder-page.component.spec.ts) (`3` tests couvrant `LIST`, `Nouveau` → `EDITOR`, filtres, validation 30 cartes, favoris et édition).
+  - Build & Suite Front-End sous conteneur `node:24-alpine` : `ng build` (`499.71 kB` initial, `0` warning, `0` erreur) et `ng test --watch=false` (`9` fichiers, `27/27` tests passés).
+  - Déploiement live : reconstruction et redémarrage du conteneur `arcane-web` (`docker compose up -d --build arcane-web`).
+
+---
+
+## [2026-11-18] — Fiabilisation `start-docker.ps1` & Restauration Accès Navigateur / LAN
+
+- **Outillage Démarrage ([`start-docker.ps1`](../start-docker.ps1))** :
+  - Détection automatique de `docker.exe` sous `Program Files\Docker\Docker\resources\bin` si absent du `PATH`, démarrage automatique de Docker Desktop (`docker desktop start` avec attente jusqu'à `90s`) lorsque le moteur Linux est arrêté, puis exécution de `docker compose up -d --build`.
+  - Affichage des URLs locale (`http://localhost/`) et LAN active, avec avertissement si l'IP LAN est absente d'`ARCANE_ALLOWED_ORIGINS` ou si le profil réseau Windows actif est en mode `Public`.
+- **Environnement & Documentation** :
+  - Ajout de `http://192.168.1.170` et `http://192.168.1.170:4200` à `ARCANE_ALLOWED_ORIGINS` dans `.env` (local non suivi par Git) et recréation de `arcane-server`.
+  - Mise à jour de [`docs/INFRASTRUCTURE_AND_SECURITY.md`](./INFRASTRUCTURE_AND_SECURITY.md).
+- **Vérifications exécutées** :
+  - `.\start-docker.ps1` : `arcane-db` (`healthy`), `arcane-server` (`healthy`) et `arcane-web` actifs (`0.0.0.0:80->8080/tcp`).
+  - Sondes HTTP après démarrage : `http://localhost/` et `http://192.168.1.170/` (`200 OK`), `/api/health` (`UP`, `virtualThreadsEnabled: true`), `/api/cards` (`120`), assets `main-NF2JQJUB.js` et `styles-EPYO4WK2.css` (`200 OK`).
+
+---
+
+## [2026-11-16] — Alignement Contrat `LeagueTier` Back/Front & Origines LAN `.env`
+
+- **Corrections Front-End (`frontend/`)** :
+  - Alignement 1:1 du type [`LeagueTier`](../frontend/src/app/core/models/arcane.models.ts) et du dictionnaire [`LEAGUE_LABELS`](../frontend/src/app/shared/utils/faction-theme.ts) avec l'énumération autoritaire [`LeagueTier.java`](../backend/src/main/java/com/ordredesarcane/online/user/LeagueTier.java) (`APPRENTI`, `INITIE`, `ADEPTE`, `MAGE`, `ARCHIMAGE`, `GRAND_MAITRE`), supprimant les valeurs désynchronisées (`ADEPT`, `GRAND_ARCHIMAGE`, `MAITRE_ARCANES`) qui laissaient des libellés manquants dans l'en-tête et `/profile`.
+  - Ajout d'un test unitaire couvrant les `6` paliers `LeagueTier` dans [`faction-theme.spec.ts`](../frontend/src/app/shared/utils/faction-theme.spec.ts).
+- **Environnement local** :
+  - Mise à jour de `.env` (ignoré par Git) pour remplacer l'ancienne IP LAN `192.168.0.29` par `192.168.0.46` dans `ARCANE_ALLOWED_ORIGINS`.
+- **Vérifications exécutées** :
+  - Back-End : `mvn test` (`38` exécutés, `0` échec, `0` erreur, `0` ignoré).
+  - Typage & Tests Front-End (`node:24-alpine` + `tsc.cmd --noEmit`) : `ng test --watch=false` (`8` fichiers, `24/24` tests passés) ; `ng build` Docker `arcane-web` (`499.63 kB` initial, `0` erreur).
+  - Runtime Docker Compose (`start-docker.ps1`) : `arcane-db` (`healthy`), `arcane-server` (`healthy`, Flyway `V1`→`V4` appliquées, Hibernate 7.4 `ddl-auto: validate` OK, `120` cartes en base) et `arcane-web` actifs ; `http://localhost/` (`200 OK`, CSP active), `/api/health` (`UP`, `virtualThreadsEnabled: true`), `/api/cards` (`120`).
+  - Note : le contrôle visuel automatisé via `chrome-devtools-mcp` n'a pas pu s'attacher à Google Chrome (remote debugging `DevToolsActivePort` absent sur le poste).
+
+---
+
 ## [2026-11-15] — Préparation Dépôt GitHub, Durcissement `.gitignore` & Template `.env.example`
 
 - **Sécurité & Isolation des Secrets ([`.gitignore`](../.gitignore), [`.env.example`](../.env.example))** :

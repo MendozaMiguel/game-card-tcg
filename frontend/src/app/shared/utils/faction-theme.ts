@@ -80,10 +80,10 @@ export const CARD_TYPE_LABELS: Record<CardType, string> = {
 export const LEAGUE_LABELS: Record<LeagueTier, string> = {
   APPRENTI: 'Apprenti',
   INITIE: 'Initié',
-  ADEPT: 'Adepte',
+  ADEPTE: 'Adepte',
+  MAGE: 'Mage',
   ARCHIMAGE: 'Archimage',
-  GRAND_ARCHIMAGE: 'Grand Archimage',
-  MAITRE_ARCANES: 'Maître des Arcanes',
+  GRAND_MAITRE: 'Grand Maître',
 };
 
 export interface MatchSourceMeta {

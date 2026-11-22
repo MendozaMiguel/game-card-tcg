@@ -56,7 +56,7 @@ Définie dans [`docker-compose.yml`](../docker-compose.yml) sur le réseau bridg
 ## 3. Commandes Opérationnelles & Pipeline de Non-Régression
 
 ### Développement & Déploiement Local
-- **Stack complète Docker** : `./start-docker.ps1` ou `docker compose up -d --build`
+- **Stack complète Docker** : `./start-docker.ps1` *(initialise `.env`, résout le binaire Docker Desktop, démarre le moteur Docker si arrêté, exécute `docker compose up -d --build` et affiche les URLs `localhost` / LAN avec alerte pare-feu Windows `Public`)* ou `docker compose up -d --build`
 - **Mode hybride Dev** : `./start-dev.ps1` (démarre `arcane-db`, backend Maven port 8080, front `ng serve` port 4200 avec `proxy.conf.json`)
 - **Test sur téléphone en réseau local (LAN)** : depuis `frontend/`, `npm run start:lan` (`ng serve --host 0.0.0.0 --port 4200 --allowed-hosts`), en ajoutant l'origine locale `http://<IP_LAN>:4200` (ou `http://<IP_LAN>` sur port `80` via Docker) à `ARCANE_ALLOWED_ORIGINS` pour que CORS (`/api/**`) et STOMP WebSocket (`/ws`) autorisent l'origine mobile.
 

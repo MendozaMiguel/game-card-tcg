@@ -1,8 +1,9 @@
-import { CardDefinition, CardViewDto, PlayerGameView } from '../../core/models/arcane.models';
+import { CardDefinition, CardViewDto, LeagueTier, PlayerGameView } from '../../core/models/arcane.models';
 import {
   evaluateAntiMetaLocally,
   findEligibleTargetsForRequirement,
   formatDurationCompact,
+  LEAGUE_LABELS,
   resolveMatchSource,
 } from './faction-theme';
 
@@ -134,5 +135,20 @@ describe('Anti-Meta Client Validator & Targeting Helper', () => {
     expect(formatDurationCompact(0)).toBe('');
     expect(formatDurationCompact(null)).toBe('');
     expect(formatDurationCompact(145)).toMatch(/2.*25/);
+  });
+
+  it('maps every backend LeagueTier value to a non-empty French label', () => {
+    const tiers: LeagueTier[] = [
+      'APPRENTI',
+      'INITIE',
+      'ADEPTE',
+      'MAGE',
+      'ARCHIMAGE',
+      'GRAND_MAITRE',
+    ];
+    for (const tier of tiers) {
+      expect(LEAGUE_LABELS[tier]).toBeTruthy();
+    }
+    expect(LEAGUE_LABELS.GRAND_MAITRE).toBe('Grand Maître');
   });
 });

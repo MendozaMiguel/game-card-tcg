@@ -12,10 +12,10 @@ export type CardType =
 export type LeagueTier =
   | 'APPRENTI'
   | 'INITIE'
-  | 'ADEPT'
+  | 'ADEPTE'
+  | 'MAGE'
   | 'ARCHIMAGE'
-  | 'GRAND_ARCHIMAGE'
-  | 'MAITRE_ARCANES';
+  | 'GRAND_MAITRE';
 
 export type CosmeticType =
   | 'CARD_FOIL'

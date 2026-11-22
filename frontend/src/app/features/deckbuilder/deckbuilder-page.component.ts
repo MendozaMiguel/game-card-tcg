@@ -18,9 +18,13 @@ import {
   lucideChevronLeft,
   lucideChevronRight,
   lucideEye,
+  lucideFlame,
+  lucideMoon,
   lucidePlus,
+  lucideSnowflake,
   lucideSparkles,
   lucideStar,
+  lucideSun,
   lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
@@ -33,6 +37,7 @@ import { FormAriaSyncDirective } from '../../shared/directives/form-aria-sync.di
 import {
   CARD_TYPE_LABELS,
   FACTION_META,
+  KEYWORD_DESCRIPTIONS,
   evaluateAntiMetaLocally,
 } from '../../shared/utils/faction-theme';
 import { animateCardGridEntrance } from '../../shared/utils/motion-presets';
@@ -41,6 +46,8 @@ interface DraftDeckEntry {
   card: CardDefinition;
   foil: boolean;
 }
+
+type DeckbuilderViewMode = 'LIST' | 'EDITOR';
 
 @Component({
   selector: 'app-deckbuilder-page',
@@ -53,14 +60,19 @@ interface DraftDeckEntry {
       lucideChevronLeft,
       lucideChevronRight,
       lucideEye,
+      lucideFlame,
+      lucideMoon,
       lucidePlus,
+      lucideSnowflake,
       lucideSparkles,
       lucideStar,
+      lucideSun,
       lucideTrash2,
       lucideX,
     }),
   ],
   templateUrl: './deckbuilder-page.component.html',
+  styleUrl: './deckbuilder-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeckbuilderPageComponent implements OnInit {
@@ -77,14 +89,16 @@ export class DeckbuilderPageComponent implements OnInit {
 
   protected readonly factionMeta = FACTION_META;
   protected readonly typeLabels = CARD_TYPE_LABELS;
+  protected readonly keywordDescriptions = KEYWORD_DESCRIPTIONS;
 
   protected readonly allCards = signal<readonly CardDefinition[]>([]);
   protected readonly decks = signal<readonly DeckDto[]>([]);
   protected readonly loadingCatalog = signal(true);
   protected readonly saving = signal(false);
 
+  protected readonly viewMode = signal<DeckbuilderViewMode>('LIST');
   protected readonly editingDeckId = signal<string | null>(null);
-  protected readonly draftName = signal('Nouveau Grimoire');
+  protected readonly draftName = signal('Nouveau Deck');
   protected readonly draftFavorite = signal(false);
   protected readonly draftEntries = signal<readonly DraftDeckEntry[]>([]);
 
@@ -96,19 +110,34 @@ export class DeckbuilderPageComponent implements OnInit {
 
   protected readonly previewedCard = signal<CardDefinition | null>(null);
   protected readonly previewFoilActive = signal(false);
-  protected readonly showDraftListOnMobile = signal(false);
+  protected readonly deleteCandidateId = signal<string | null>(null);
+  protected readonly deleteCandidateName = signal('');
 
   protected readonly draftCardIdSet = computed(
     () => new Set(this.draftEntries().map((e) => e.card.cardId)),
   );
 
+  protected readonly hasActiveFilters = computed(
+    () =>
+      this.searchQuery().trim().length > 0 ||
+      this.factionFilter() !== 'ALL' ||
+      this.typeFilter() !== 'ALL' ||
+      this.costFilter() !== 'ALL' ||
+      this.keywordFilter() !== 'ALL',
+  );
+
+  protected readonly placeholderSlots = computed(() => {
+    const count = Math.max(0, 6 - this.draftEntries().length);
+    return Array.from({ length: count }, (_, idx) => idx);
+  });
+
   constructor() {
     this.destroyRef.onDestroy(() => this.stopGridAnim());
 
     effect(() => {
-      if (this.loadingCatalog()) return;
+      if (this.viewMode() !== 'EDITOR' || this.loadingCatalog()) return;
       const tiles = this.catalogTiles();
-      const key = `${this.factionFilter()}|${this.typeFilter()}|${this.costFilter()}|${this.keywordFilter()}|${this.searchQuery()}|${tiles.length}`;
+      const key = `${this.viewMode()}|${this.factionFilter()}|${this.typeFilter()}|${this.costFilter()}|${this.keywordFilter()}|${this.searchQuery()}|${tiles.length}`;
       if (tiles.length > 0 && key !== this.lastAnimatedFilterKey) {
         this.lastAnimatedFilterKey = key;
         this.stopGridAnim();
@@ -161,10 +190,6 @@ export class DeckbuilderPageComponent implements OnInit {
       ]);
       this.allCards.set(cards);
       this.decks.set(userDecks);
-      if (userDecks.length > 0) {
-        const fav = userDecks.find((d) => d.favorite) ?? userDecks[0];
-        this.selectDeck(fav);
-      }
     } catch (err) {
       this.announcer.pushToast(extractApiErrorMessage(err), 'error');
     } finally {
@@ -176,6 +201,21 @@ export class DeckbuilderPageComponent implements OnInit {
     return Object.entries(counts) as [Faction, number][];
   }
 
+  protected factionIconName(faction: Faction | null): string {
+    switch (faction) {
+      case 'FIRE':
+        return 'lucideFlame';
+      case 'ICE':
+        return 'lucideSnowflake';
+      case 'SHADOW':
+        return 'lucideMoon';
+      case 'LIGHT':
+        return 'lucideSun';
+      default:
+        return 'lucideSparkles';
+    }
+  }
+
   protected selectDeck(deck: DeckDto): void {
     this.editingDeckId.set(deck.deckId);
     this.draftName.set(deck.name);
@@ -183,11 +223,32 @@ export class DeckbuilderPageComponent implements OnInit {
     this.draftEntries.set(deck.cards.map((dc) => ({ card: dc.card, foil: dc.foil })));
   }
 
+  protected openDeckInEditor(deck: DeckDto): void {
+    this.selectDeck(deck);
+    this.lastAnimatedFilterKey = '';
+    this.viewMode.set('EDITOR');
+  }
+
   protected startNewDeck(): void {
     this.editingDeckId.set(null);
-    this.draftName.set('Deck Personnalisé');
+    this.draftName.set('Nouveau Deck');
     this.draftFavorite.set(false);
     this.draftEntries.set([]);
+    this.resetFilters();
+    this.lastAnimatedFilterKey = '';
+    this.viewMode.set('EDITOR');
+  }
+
+  protected backToDeckList(): void {
+    this.viewMode.set('LIST');
+  }
+
+  protected resetFilters(): void {
+    this.searchQuery.set('');
+    this.factionFilter.set('ALL');
+    this.typeFilter.set('ALL');
+    this.costFilter.set('ALL');
+    this.keywordFilter.set('ALL');
   }
 
   protected toggleCardInDraft(card: CardDefinition): void {
@@ -276,7 +337,8 @@ export class DeckbuilderPageComponent implements OnInit {
       const updatedList = await this.lobbyApi.listDecks();
       this.decks.set(updatedList);
       this.selectDeck(saved);
-      this.announcer.pushToast(`Deck « ${saved.name} » enregistré.`, 'success');
+      this.viewMode.set('LIST');
+      this.announcer.pushToast(`Deck « ${saved.name} » validé et enregistré.`, 'success');
     } catch (err) {
       this.announcer.pushToast(extractApiErrorMessage(err), 'error');
     } finally {
@@ -289,14 +351,23 @@ export class DeckbuilderPageComponent implements OnInit {
       const updated = await this.lobbyApi.toggleFavoriteDeck(deckId);
       const list = await this.lobbyApi.listDecks();
       this.decks.set(list);
-      this.selectDeck(updated);
-      this.announcer.pushToast(`Deck favori : ${updated.name}`, 'success');
+      if (this.editingDeckId() === updated.deckId) {
+        this.draftFavorite.set(updated.favorite);
+      }
+      this.announcer.pushToast(
+        updated.favorite ? `Deck favori : ${updated.name}` : `Retiré des favoris : ${updated.name}`,
+        'success',
+      );
     } catch (err) {
       this.announcer.pushToast(extractApiErrorMessage(err), 'error');
     }
   }
 
-  protected openDeleteDialog(): void {
+  protected openDeleteDialog(deck?: DeckDto): void {
+    const id = deck?.deckId ?? this.editingDeckId();
+    if (!id) return;
+    this.deleteCandidateId.set(id);
+    this.deleteCandidateName.set(deck?.name ?? this.draftName());
     this.deleteDialogRef()?.nativeElement.showModal();
   }
 
@@ -338,17 +409,18 @@ export class DeckbuilderPageComponent implements OnInit {
   }
 
   protected async confirmDeleteDeck(): Promise<void> {
-    const id = this.editingDeckId();
+    const id = this.deleteCandidateId();
     this.closeDeleteDialog();
+    this.deleteCandidateId.set(null);
     if (!id) return;
     try {
       await this.lobbyApi.deleteDeck(id);
       const remaining = await this.lobbyApi.listDecks();
       this.decks.set(remaining);
-      if (remaining.length > 0) {
-        this.selectDeck(remaining[0]);
-      } else {
-        this.startNewDeck();
+      if (this.editingDeckId() === id) {
+        this.editingDeckId.set(null);
+        this.draftEntries.set([]);
+        this.viewMode.set('LIST');
       }
       this.announcer.pushToast('Deck supprimé.', 'info');
     } catch (err) {
